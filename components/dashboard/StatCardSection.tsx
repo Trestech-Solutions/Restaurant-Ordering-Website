@@ -24,7 +24,7 @@ export function StatCardSection({
   const getBgClass = () => {
     switch (variant) {
       case 'whatsapp':
-        return 'bg-green-bg'
+        return 'bg-primary-dashboard-bg'
       case 'website':
         return 'bg-blue-bg'
       default:
@@ -35,7 +35,7 @@ export function StatCardSection({
   const getBorderClass = () => {
     switch (variant) {
       case 'whatsapp':
-        return 'border-green-border'
+        return 'border-primary-dashboard-border'
       case 'website':
         return 'border-blue-border'
       default:
@@ -46,7 +46,7 @@ export function StatCardSection({
   const getTitleClass = () => {
     switch (variant) {
       case 'whatsapp':
-        return 'text-green'
+        return 'text-primary-dashboard'
       case 'website':
         return 'text-blue'
       default:
@@ -96,7 +96,7 @@ export function StatCardSection({
 
             {stat.trend && (
               <div className="text-sm font-medium text-gray-600">
-                <span className={stat.trend.direction === 'up' ? 'text-green-600' : 'text-red-600'}>
+                <span className={stat.trend.direction === 'up' ? 'text-primary-dashboard' : 'text-red-600'}>
                   {stat.trend.direction === 'up' ? '↑' : '↓'} {stat.trend.percentage}% from last week
                 </span>
               </div>

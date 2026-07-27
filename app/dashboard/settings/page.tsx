@@ -131,13 +131,13 @@ export default function SettingsPage() {
               onClick={() => handlePlatformChange('whatsapp')}
               className={`p-6 rounded-lg border-2 transition-all text-left ${
                 activePlatform === 'whatsapp'
-                  ? 'border-green-600 bg-green-50'
-                  : 'border-gray-200 bg-white hover:border-green-200'
+                  ? 'border-primary-dashboard bg-primary-dashboard/10'
+                  : 'border-gray-200 bg-white hover:border-primary-dashboard/30'
               }`}
             >
               <div className="flex justify-center mb-4">
-                <div className={`p-4 rounded-lg ${activePlatform === 'whatsapp' ? 'bg-green-200' : 'bg-gray-100'}`}>
-                  <MessageCircle className={`w-8 h-8 ${activePlatform === 'whatsapp' ? 'text-green-700' : 'text-gray-600'}`} />
+                <div className={`p-4 rounded-lg ${activePlatform === 'whatsapp' ? 'bg-primary-dashboard/20' : 'bg-gray-100'}`}>
+                  <MessageCircle className={`w-8 h-8 ${activePlatform === 'whatsapp' ? 'text-primary-dashboard' : 'text-gray-600'}`} />
                 </div>
               </div>
               <h3 className="font-bold text-center text-gray-900 mb-2">WhatsApp Only</h3>

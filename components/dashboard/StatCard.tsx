@@ -33,7 +33,7 @@ export function StatCard({
         {trend && (
           <div className="mt-2 flex items-center gap-1">
             <span
-              className={`text-xs font-semibold ${trend.direction === 'up' ? 'text-green' : 'text-red'}`}
+              className={`text-xs font-semibold ${trend.direction === 'up' ? 'text-primary-dashboard' : 'text-red'}`}
             >
               {trend.direction === 'up' ? '↑' : '↓'} {trend.percentage}%
             </span>

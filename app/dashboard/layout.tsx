@@ -1,9 +1,9 @@
 'use client'
 
-import type { Metadata } from 'next'
 import { Sidebar } from '@/components/shared/Sidebar'
 import { Topbar } from '@/components/shared/Topbar'
 import { PlatformProvider } from '@/lib/context/PlatformContext'
+import { SidebarProvider, useSidebar } from '@/lib/context/SidebarContext'
 import { AuthProvider } from '@/lib/context/AuthContext'
 import { useAuth } from '@/lib/context/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -15,21 +15,29 @@ function DashboardLayoutContent({
   children: React.ReactNode
 }>) {
   const { user, isLoading } = useAuth()
+  const { collapsed } = useSidebar()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    if (!isLoading && user?.role !== 'restaurant') {
-      router.push('/login')
+  }, [])
+
+  useEffect(() => {
+    if (mounted && !isLoading) {
+      if (!user) {
+        router.push('/login')
+      } else if (user.is_staff) {
+        router.push('/admin')
+      }
     }
-  }, [user, isLoading, router])
+  }, [mounted, user, isLoading, router])
 
   if (!mounted || isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
 
-  if (user?.role !== 'restaurant') {
+  if (!user || user.is_staff) {
     return null
   }
 
@@ -38,7 +46,11 @@ function DashboardLayoutContent({
       <div className="min-h-screen bg-background">
         <Sidebar />
         <Topbar />
-        <main className="ml-64 mt-20 p-8">
+        <main
+          className={`pt-20 p-8 transition-all duration-200 ${
+            collapsed ? 'ml-20' : 'ml-64'
+          }`}
+        >
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
@@ -55,7 +67,9 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <SidebarProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </SidebarProvider>
     </AuthProvider>
   )
 }

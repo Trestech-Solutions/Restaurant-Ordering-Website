@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 
 @theme inline {
+  --color-primary-dashboard: #16A34A;
+  --color-primary-dashboard-bg: #ECFDF3;
+  --color-primary-dashboard-border: #D1FADF;
   --color-orange: #F59E0B;
   --color-orange-dark: #EA8C00;
   --color-ink: #18181B;

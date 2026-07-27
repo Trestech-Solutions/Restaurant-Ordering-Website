@@ -21,9 +21,9 @@ export default function LoginPage() {
       persistLogin(data)
       // is_staff flag determines admin vs restaurant user
       if (data.user.is_staff) {
-        router.push('/dashboard')
-      } else {
         router.push('/admin')
+      } else {
+        router.push('/dashboard')
       }
     },
   })

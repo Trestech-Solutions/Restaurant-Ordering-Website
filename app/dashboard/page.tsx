@@ -48,7 +48,7 @@ export default function DashboardPage() {
               onClick={() => setChannel('whatsapp')}
               className={`px-5 py-2 rounded-md font-semibold text-sm transition-all flex items-center gap-2 ${
                 channel === 'whatsapp'
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-primary-dashboard text-white'
                   : 'bg-transparent text-gray-700 hover:text-gray-900'
               }`}
             >

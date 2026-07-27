@@ -20,7 +20,7 @@ export function Button({
     'inline-flex items-center justify-center font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variantClasses = {
-    primary: 'bg-primary text-primary-foreground hover:bg-orange-dark',
+    primary: 'bg-primary-dashboard text-white hover:bg-primary-dashboard/90',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-gray-500',
     ghost: 'bg-transparent text-foreground border border-border hover:bg-muted',
     danger: 'bg-red text-white hover:bg-red/90',

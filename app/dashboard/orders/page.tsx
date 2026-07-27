@@ -102,8 +102,8 @@ export default function OrdersPage() {
                 onClick={() => setChannelFilter('whatsapp')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   channelFilter === 'whatsapp'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-green-50 text-green-700 hover:bg-green-100'
+                    ? 'bg-primary-dashboard text-white'
+                    : 'bg-primary-dashboard/10 text-primary-dashboard hover:bg-primary-dashboard/20'
                 }`}
               >
                 WhatsApp

@@ -21,6 +21,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Role-based route protection
+  if (userCookie && pathname.startsWith('/admin')) {
+    try {
+      const userData = JSON.parse(userCookie)
+      if (!userData.is_staff) {
+        // Non-staff users cannot access /admin, redirect to their dashboard
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    } catch {
+      // Invalid cookie — redirect to login
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
   return NextResponse.next()
 }
 

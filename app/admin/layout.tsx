@@ -52,7 +52,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (mounted && !isLoading && !user) router.push('/login')
+    if (mounted && !isLoading) {
+      if (!user) {
+        router.push('/login')
+      } else if (!user.is_staff) {
+        // Non-staff users should go to their own dashboard
+        router.push('/dashboard')
+      }
+    }
   }, [mounted, isLoading, user, router])
 
   // Close sidebar on route change (mobile)
@@ -66,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  if (!user) return null
+  if (!user || !user.is_staff) return null
 
   const isActive = (href: string) =>
     href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)

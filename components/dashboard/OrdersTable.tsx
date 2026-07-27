@@ -54,7 +54,7 @@ export function OrdersTable({ orders, isLoading = false }: OrdersTableProps) {
       <TableBody>
         {orders.map((order) => (
           <TableRow key={order.id} isClickable>
-            <TableCell className="font-medium text-primary">{order.orderNumber}</TableCell>
+            <TableCell className="font-medium text-primary-dashboard">{order.orderNumber}</TableCell>
             <TableCell>{order.customer}</TableCell>
             <TableCell className="text-muted-foreground text-xs">
               {order.items.length} item{order.items.length !== 1 ? 's' : ''}

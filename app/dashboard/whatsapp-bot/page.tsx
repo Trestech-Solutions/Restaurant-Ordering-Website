@@ -115,7 +115,7 @@ export default function WhatsAppBotPage() {
                   <button
                     onClick={handleToggleAutoReply}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      autoReplyEnabled ? 'bg-green' : 'bg-gray-400'
+                      autoReplyEnabled ? 'bg-primary-dashboard' : 'bg-gray-400'
                     }`}
                   >
                     <span
@@ -137,7 +137,7 @@ export default function WhatsAppBotPage() {
                   <button
                     onClick={handleToggleBusinessHours}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      businessHours ? 'bg-green' : 'bg-gray-400'
+                      businessHours ? 'bg-primary-dashboard' : 'bg-gray-400'
                     }`}
                   >
                     <span

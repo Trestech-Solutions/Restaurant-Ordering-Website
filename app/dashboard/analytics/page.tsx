@@ -21,8 +21,8 @@ export default function AnalyticsPage() {
           title="Total Revenue"
           value={`$${sampleAnalytics.totalRevenue.toLocaleString()}`}
           icon={DollarSign}
-          iconBgColor="bg-green-bg"
-          iconColor="text-green"
+          iconBgColor="bg-primary-dashboard-bg"
+          iconColor="text-primary-dashboard"
           trend={{ direction: 'up', percentage: 15 }}
         />
         <StatCard
@@ -37,8 +37,8 @@ export default function AnalyticsPage() {
           title="Avg Order Value"
           value={`$${sampleAnalytics.averageOrderValue.toFixed(2)}`}
           icon={TrendingUp}
-          iconBgColor="bg-orange-bg"
-          iconColor="text-orange"
+          iconBgColor="bg-primary-dashboard-bg"
+          iconColor="text-primary-dashboard"
           trend={{ direction: 'up', percentage: 5 }}
         />
         <StatCard
