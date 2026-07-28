@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { MapPin, Navigation, ChevronDown, X } from 'lucide-react'
 import { useCart, type OrderType } from '@/lib/context/CartContext'
 
@@ -54,10 +55,14 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
 
         {/* Logo area */}
         <div className="flex flex-col items-center pt-8 pb-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-[#c8102e] bg-white shadow-md">
-            <span className="text-center text-[10px] font-extrabold leading-tight text-[#c8102e]">
-              UNITED<br />KING
-            </span>
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden">
+            <Image
+              src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
+              alt="United King"
+              width={80}
+              height={80}
+              className="object-contain"
+            />
           </div>
         </div>
 

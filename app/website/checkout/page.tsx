@@ -103,10 +103,14 @@ export default function CheckoutPage() {
           </Link>
 
           {/* Logo */}
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white">
-            <span className="text-center text-[9px] font-extrabold leading-tight text-[#c8102e]">
-              UNITED<br />KING
-            </span>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white overflow-hidden">
+            <Image
+              src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
+              alt="United King"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
           </div>
 
           <div className="text-right">
