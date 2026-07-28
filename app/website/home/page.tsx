@@ -83,7 +83,7 @@ export default function HomePage() {
     <div className="min-h-screen font-sans text-neutral-800">
 
       {/* Topbar */}
-      <header className="bg-[#c8102e] text-white sticky top-0 z-30">
+      <header className="bg-[#c8102e] text-white sticky top-0 z-30 relative">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 md:px-8">
           <button className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
             <MapPin size={16} />
@@ -98,17 +98,19 @@ export default function HomePage() {
             021-111-022-022
           </a>
 
-          <div className="flex flex-1 justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white overflow-hidden">
-              <Image
-                src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
-                alt="United King"
-                width={56}
-                height={56}
-                className="object-contain"
-              />
-            </div>
+          {/* Logo — large, overlaps hero carousel */}
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-12 z-40 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl overflow-hidden border-4 border-white">
+            <Image
+              src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
+              alt="United King"
+              width={96}
+              height={96}
+              className="object-contain"
+            />
           </div>
+
+          {/* Spacer to maintain center alignment */}
+          <div className="flex-1" />
 
           <div className="hidden items-center gap-4 text-sm md:flex">
             <a href="#" onClick={(e) => { e.preventDefault(); setAuthModalOpen(true) }} className="flex items-center gap-1.5 hover:underline">
