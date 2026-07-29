@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,11 +43,35 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+const LS_LOCATION   = 'uk_location'
+const LS_ORDER_TYPE = 'uk_order_type'
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [orderType, setOrderType] = useState<OrderType>('delivery')
-  const [location, setLocation] = useState('')
-  const [items, setItems] = useState<CartItem[]>([])
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  // Initialise from localStorage so values survive page navigation
+  const [orderType, setOrderTypeState] = useState<OrderType>('delivery')
+  const [location, setLocationState]   = useState('')
+  const [items, setItems]              = useState<CartItem[]>([])
+  const [isCartOpen, setIsCartOpen]    = useState(false)
+  const [hydrated, setHydrated]        = useState(false)
+
+  // Hydrate from localStorage once on client
+  useEffect(() => {
+    const savedLocation  = localStorage.getItem(LS_LOCATION)   || ''
+    const savedOrderType = localStorage.getItem(LS_ORDER_TYPE) as OrderType | null
+    if (savedLocation)  setLocationState(savedLocation)
+    if (savedOrderType) setOrderTypeState(savedOrderType)
+    setHydrated(true)
+  }, [])
+
+  const setLocation = useCallback((loc: string) => {
+    setLocationState(loc)
+    localStorage.setItem(LS_LOCATION, loc)
+  }, [])
+
+  const setOrderType = useCallback((type: OrderType) => {
+    setOrderTypeState(type)
+    localStorage.setItem(LS_ORDER_TYPE, type)
+  }, [])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'quantity'>) => {
     setItems((prev) => {
@@ -81,7 +105,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => setItems([]), [])
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const subtotal   = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
 
   return (
     <CartContext.Provider
@@ -96,13 +120,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         isCartOpen,
-        openCart: () => setIsCartOpen(true),
+        openCart:  () => setIsCartOpen(true),
         closeCart: () => setIsCartOpen(false),
         totalItems,
         subtotal,
       }}
     >
-      {children}
+      {/* Don't render children until localStorage is read to avoid flicker */}
+      {hydrated ? children : null}
     </CartContext.Provider>
   )
 }

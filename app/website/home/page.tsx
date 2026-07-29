@@ -225,7 +225,7 @@ export default function HomePage() {
         </p>
       </section>
 
-      <footer className="relative bg-[#c8102e] pt-12 text-white rounded-tl-3xl rounded-tr-3xl">
+      <footer className="relative overflow-visible bg-[#c8102e] pt-16 text-white rounded-tl-3xl rounded-tr-3xl">
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-4 pb-10 md:grid-cols-4 md:px-8">
           <div>
             <div className="mb-3 overflow-hidden rounded-full w-16 h-16 border-2 border-[#f7c948]">
@@ -238,27 +238,32 @@ export default function HomePage() {
             <h4 className="mb-3 text-sm font-bold">Information</h4>
             <p className="mb-3 text-sm">021-111-022-022</p>
             <ul className="space-y-2 text-sm text-white/90">
-              <li><a href="#" className="hover:underline">About Us</a></li>
-              <li><a href="#" className="hover:underline">Submit Complaint</a></li>
-              <li><a href="#" className="hover:underline">Contact Us</a></li>
+              <li><a href="/website/about" className="hover:underline">About Us</a></li>
+              <li><a href="/website/complaint" className="hover:underline">Submit Complaint</a></li>
+              <li><a href="/website/contact" className="hover:underline">Contact Us</a></li>
             </ul>
           </div>
 
-          <div className="flex justify-center md:justify-start">
-            <div className="h-52 w-28 rounded-2xl border-4 border-neutral-900 bg-neutral-900 shadow-xl sm:h-64 sm:w-36">
-              <div className="h-full w-full overflow-hidden rounded-xl bg-white">
-                <Image src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop"
-                  alt="App preview" width={144} height={256} className="h-full w-full object-cover" />
-              </div>
+          <div className="relative flex justify-center md:justify-start">
+            <div className="absolute -top-16 w-28 sm:w-36">
+              <Image
+                src="https://unitedkingonline.com/_next/image?url=%2Fassets%2Fimages%2Funitedking%2Fmobile-mockup.png&w=2048&q=75"
+                alt="App preview"
+                width={144}
+                height={280}
+                className="w-full object-contain drop-shadow-2xl"
+              />
             </div>
+            {/* Spacer so the grid column keeps its height */}
+            <div className="h-44 w-28 sm:w-36" />
           </div>
 
           <div>
             <h4 className="mb-3 text-lg font-bold">Get The App!</h4>
             <p className="mb-4 text-sm text-white/90">Easy, Fast and Convenient.</p>
             <div className="flex flex-col gap-2">
-              <button className="rounded-md bg-black px-4 py-2 text-left text-xs">Download on App Store</button>
-              <button className="rounded-md bg-black px-4 py-2 text-left text-xs">GET IT ON Google Play</button>
+              <a href="https://apps.apple.com/us/app/united-king/id1616868468" target="_blank" rel="noopener noreferrer" className="rounded-md bg-black px-4 py-2 text-left text-xs text-white hover:bg-neutral-800 transition-colors">Download on App Store</a>
+              <a href="https://play.google.com/store/apps/details?id=com.indolj.unitedking" target="_blank" rel="noopener noreferrer" className="rounded-md bg-black px-4 py-2 text-left text-xs text-white hover:bg-neutral-800 transition-colors">GET IT ON Google Play</a>
             </div>
           </div>
         </div>

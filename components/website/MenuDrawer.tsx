@@ -3,11 +3,11 @@
 import { X } from 'lucide-react'
 
 const MENU_ITEMS = [
-  { label: 'About Us',         href: '#' },
-  { label: 'Blog',             href: '#' },
-  { label: 'Contact Us',       href: '#' },
-  { label: 'Our Locations',    href: '#' },
-  { label: 'Submit Complaint', href: '#' },
+  { label: 'About Us',         href: '/website/about' },
+  { label: 'Blog',             href: '/website/blog' },
+  { label: 'Contact Us',       href: '/website/contact' },
+  { label: 'Our Locations',    href: '/website/locations' },
+  { label: 'Submit Complaint', href: '/website/complaint' },
 ]
 
 interface MenuDrawerProps {
