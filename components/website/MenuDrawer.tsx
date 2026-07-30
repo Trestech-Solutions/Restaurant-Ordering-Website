@@ -1,6 +1,7 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { X, LogIn, UserCircle } from 'lucide-react'
+import { useCart } from '@/lib/context/CartContext'
 
 const MENU_ITEMS = [
   { label: 'About Us',         href: '/website/about' },
@@ -13,9 +14,17 @@ const MENU_ITEMS = [
 interface MenuDrawerProps {
   isOpen: boolean
   onClose: () => void
+  onLoginClick: () => void
 }
 
-export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
+export function MenuDrawer({ isOpen, onClose, onLoginClick }: MenuDrawerProps) {
+  const { user } = useCart()
+
+  const handleAuthClick = () => {
+    onClose()
+    onLoginClick()
+  }
+
   return (
     <>
       {/* Backdrop */}
@@ -28,29 +37,30 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
 
       {/* Drawer — slides in from right */}
       <div
-        className={`fixed right-0 top-0 z-50 flex h-full w-72 flex-col bg-[#c8102e] shadow-2xl transition-transform duration-300 ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-64 flex-col bg-[#c8102e] shadow-2xl transition-transform duration-300 sm:w-72 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Close button */}
-        <div className="flex justify-end p-4">
+        <div className="flex justify-end p-3 sm:p-4">
           <button
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white hover:bg-white/20 transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-white/20 transition-colors sm:h-8 sm:w-8"
           >
-            <X size={18} />
+            <X size={16} className="sm:hidden" />
+            <X size={18} className="hidden sm:block" />
           </button>
         </div>
 
         {/* Nav links */}
-        <nav className="flex flex-col gap-3 px-5 pt-2">
+        <nav className="flex flex-col gap-2.5 px-4 sm:gap-3 sm:px-5">
           {MENU_ITEMS.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={onClose}
-              className="rounded-lg bg-[#f7c948] px-5 py-3.5 text-sm font-bold text-neutral-900 hover:bg-yellow-400 transition-colors"
+              className="rounded-lg bg-[#f7c948] px-4 py-3 text-sm font-bold text-neutral-900 hover:bg-yellow-400 transition-colors sm:px-5 sm:py-3.5"
             >
               {item.label}
             </a>

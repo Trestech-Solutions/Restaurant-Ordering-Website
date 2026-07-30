@@ -108,45 +108,46 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
   const canConfirm = orderType === 'pickup' || (!!selectedCity && !!selectedArea)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
       <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl">
 
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+          className="absolute right-3 top-3 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors sm:right-4 sm:top-4"
           aria-label="Close"
         >
-          <X size={18} />
+          <X size={16} className="sm:hidden" />
+          <X size={18} className="hidden sm:block" />
         </button>
 
         {/* Logo */}
-        <div className="flex flex-col items-center pt-8 pb-2">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden">
+        <div className="flex flex-col items-center pt-6 pb-1 sm:pt-8 sm:pb-2">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden sm:h-20 sm:w-20">
             <Image
               src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
               alt="United King"
               width={80}
               height={80}
-              className="object-contain"
+              className="h-full w-full object-contain"
             />
           </div>
         </div>
 
-        <div className="px-8 pb-8">
+        <div className="px-5 pb-6 sm:px-8 sm:pb-8">
           {/* Title */}
-          <h2 className="mb-5 text-center text-lg font-bold text-neutral-800">
+          <h2 className="mb-4 text-center text-base font-bold text-neutral-800 sm:mb-5 sm:text-lg">
             Select your order type
           </h2>
 
           {/* Delivery / Pickup pill toggle */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-5 flex justify-center sm:mb-6">
             <div className="flex rounded-full border border-neutral-300 bg-neutral-100 p-1 gap-1">
               {(['delivery', 'pickup'] as OrderType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setOrderType(type)}
-                  className={`rounded-full px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
+                  className={`rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all sm:px-6 sm:py-2 sm:text-xs ${
                     orderType === type
                       ? 'bg-[#c8102e] text-white shadow-sm'
                       : 'text-neutral-500 hover:text-neutral-800'
@@ -166,33 +167,35 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               </p>
 
               {/* Use Current Location */}
-              <div className="mb-4 flex justify-center">
+              <div className="mb-3.5 flex justify-center sm:mb-4">
                 <button
                   onClick={handleUseCurrentLocation}
-                  className="flex items-center gap-2 rounded-full bg-[#c8102e] px-5 py-2 text-xs font-semibold text-white hover:bg-[#a80d26] transition-colors"
+                  className="flex items-center gap-1.5 rounded-full bg-[#c8102e] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#a80d26] transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
                 >
-                  <Navigation size={13} />
+                  <Navigation size={12} className="sm:hidden" />
+                  <Navigation size={13} className="hidden sm:block" />
                   Use Current Location
                 </button>
               </div>
 
               {/* Branch dropdown */}
-              <div className="relative mb-3">
+              <div className="relative mb-2.5 sm:mb-3">
                 <select
                   value={selectedBranchId}
                   onChange={(e) => setSelectedBranchId(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-10 text-sm text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e]"
+                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
                 >
                   {UK_BRANCHES.map((b) => (
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 sm:hidden" />
+                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hidden sm:block" />
               </div>
 
               {/* Address + Get Directions */}
-              <div className="mb-5 flex items-center justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2.5">
-                <p className="text-xs text-neutral-600">
+              <div className="mb-5 flex items-start justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2">
+                <p className="text-[11px] leading-relaxed text-neutral-600 sm:px-3 sm:py-2.5 sm:text-xs">
                   <span className="font-semibold text-neutral-800">Location: </span>
                   {activeBranch.address}
                 </p>
@@ -200,10 +203,11 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                   href={activeBranch.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex shrink-0 items-center gap-1 rounded-full bg-[#c8102e] px-3 py-1 text-[11px] font-semibold text-white hover:bg-red-700 transition-colors"
+                  className="mt-0.5 flex shrink-0 items-center gap-1 rounded-full bg-[#c8102e] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700 transition-colors sm:px-3 sm:py-1 sm:text-[11px]"
                 >
                   Get Directions
-                  <ExternalLink size={10} />
+                  <ExternalLink size={9} className="sm:hidden" />
+                  <ExternalLink size={10} className="hidden sm:block" />
                 </a>
               </div>
             </>
@@ -217,41 +221,44 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               </p>
 
               {/* Use Current Location */}
-              <div className="mb-4 flex justify-center">
+              <div className="mb-3.5 flex justify-center sm:mb-4">
                 <button
                   onClick={handleUseCurrentLocation}
-                  className="flex items-center gap-2 rounded-full bg-[#c8102e] px-5 py-2 text-xs font-semibold text-white hover:bg-[#a80d26] transition-colors"
+                  className="flex items-center gap-1.5 rounded-full bg-[#c8102e] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#a80d26] transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
                 >
-                  <Navigation size={13} />
+                  <Navigation size={12} className="sm:hidden" />
+                  <Navigation size={13} className="hidden sm:block" />
                   Use Current Location
                 </button>
               </div>
 
               {/* City dropdown */}
-              <div className="relative mb-3">
+              <div className="relative mb-2.5 sm:mb-3">
                 <select
                   value={selectedCity}
                   onChange={(e) => { setSelectedCity(e.target.value); setSelectedArea('') }}
-                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-10 text-sm text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e]"
+                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
                 >
                   <option value="">Select City</option>
                   {DELIVERY_CITIES.map((c) => <option key={c}>{c}</option>)}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 sm:hidden" />
+                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hidden sm:block" />
               </div>
 
               {/* Area dropdown */}
-              <div className="relative mb-3">
+              <div className="relative mb-2.5 sm:mb-3">
                 <select
                   value={selectedArea}
                   onChange={(e) => setSelectedArea(e.target.value)}
                   disabled={!selectedCity}
-                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-10 text-sm text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400"
+                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
                 >
                   <option value="">Please select your location</option>
                   {(DELIVERY_AREAS[selectedCity] ?? []).map((a) => <option key={a}>{a}</option>)}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 sm:hidden" />
+                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hidden sm:block" />
               </div>
 
               {/* Nearest branch strip — shown when area has a mapped branch */}
@@ -260,8 +267,8 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                 const nearestBranch = UK_BRANCHES.find((b) => b.id === nearestId)
                 if (!nearestBranch) return null
                 return (
-                  <div className="mb-4 flex items-center justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2.5">
-                    <p className="text-xs text-neutral-600">
+                  <div className="mb-4 flex items-start justify-between gap-2 rounded-lg bg-neutral-50 px-3 py-2">
+                    <p className="text-[11px] leading-relaxed text-neutral-600 sm:text-xs">
                       <span className="font-semibold text-neutral-800">Nearest Branch: </span>
                       {nearestBranch.address}
                     </p>
@@ -269,10 +276,11 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                       href={nearestBranch.mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex shrink-0 items-center gap-1 rounded-full bg-[#c8102e] px-3 py-1 text-[11px] font-semibold text-white hover:bg-red-700 transition-colors"
+                      className="mt-0.5 flex shrink-0 items-center gap-1 rounded-full bg-[#c8102e] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700 transition-colors sm:px-3 sm:py-1 sm:text-[11px]"
                     >
                       Get Directions
-                      <ExternalLink size={10} />
+                      <ExternalLink size={9} className="sm:hidden" />
+                      <ExternalLink size={10} className="hidden sm:block" />
                     </a>
                   </div>
                 )
@@ -286,7 +294,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
           <button
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className="w-full rounded-xl bg-[#c8102e] py-3 text-sm font-bold text-white transition-all hover:bg-[#a80d26] disabled:cursor-not-allowed disabled:opacity-40"
+            className="w-full rounded-xl bg-[#c8102e] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#a80d26] disabled:cursor-not-allowed disabled:opacity-40 sm:py-3 sm:text-sm"
           >
             Select
           </button>

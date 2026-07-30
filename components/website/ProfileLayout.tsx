@@ -172,7 +172,13 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <a href="#" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-transform">
+      <a
+        href="https://wa.me/9233366655786"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="WhatsApp"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-transform"
+      >
         <MessageCircle size={26} fill="white" />
       </a>
 
@@ -182,7 +188,11 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
       {corporateModalOpen && (
         <CorporateOrderModal onClose={() => setCorporateModalOpen(false)} />
       )}
-      <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MenuDrawer
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onLoginClick={() => setAuthModalOpen(true)}
+      />
     </div>
   )
 }

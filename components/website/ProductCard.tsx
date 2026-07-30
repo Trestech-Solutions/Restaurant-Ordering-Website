@@ -69,8 +69,8 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
       onClick={() => onOpen?.(product)}
       className={`group overflow-hidden rounded-2xl border-2 border-transparent bg-white shadow-sm transition-all duration-300 hover:border-[#c8102e] hover:shadow-xl ${onOpen ? 'cursor-pointer' : ''}`}
     >
-      {/* Image */}
-      <div className="relative h-56 w-full overflow-hidden">
+      {/* Image — responsive height */}
+      <div className="relative h-40 w-full overflow-hidden sm:h-48 md:h-52 lg:h-56">
         <Image
           src={product.image}
           alt={product.name}
@@ -78,31 +78,31 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {product.tag && (
-          <span className="absolute left-3 top-3 rounded bg-[#f7c948] px-2.5 py-1 text-[11px] font-bold text-neutral-900">
+          <span className="absolute left-2 top-2 rounded bg-[#f7c948] px-2 py-0.5 text-[10px] font-bold text-neutral-900 sm:px-2.5 sm:py-1 sm:text-[11px]">
             {product.tag}
           </span>
         )}
         {product.discount && (
-          <span className="absolute right-3 top-3 rounded bg-[#c8102e] px-2.5 py-1 text-[11px] font-bold text-white">
+          <span className="absolute right-2 top-2 rounded bg-[#c8102e] px-2 py-0.5 text-[10px] font-bold text-white sm:px-2.5 sm:py-1 sm:text-[11px]">
             {product.discount}
           </span>
         )}
       </div>
 
-      {/* Body */}
-      <div className="flex flex-col items-center px-5 pb-6 pt-4 text-center flex-1">
-        <h3 className="text-lg font-bold text-neutral-900 leading-snug">{product.name}</h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-neutral-500">
+      {/* Body — responsive padding & typography */}
+      <div className="flex flex-col items-center px-3 pb-5 pt-3 text-center flex-1 sm:px-5 sm:pb-6 sm:pt-4">
+        <h3 className="text-base font-bold text-neutral-900 leading-snug sm:text-lg">{product.name}</h3>
+        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-neutral-500 sm:mt-2 sm:text-sm">
           {product.description}
         </p>
 
-        {/* Size / option selector — always reserve space so cards stay aligned */}
-        <div className="mt-4 min-h-[32px] flex flex-wrap justify-center gap-2">
+        {/* Size / option selector */}
+        <div className="mt-3 min-h-[28px] flex flex-wrap justify-center gap-1.5 sm:mt-4 sm:gap-2">
           {product.options.map((opt) => (
             <button
               key={opt}
               onClick={(e) => handleOptionClick(e, opt)}
-              className={`rounded-full border px-3.5 py-1 text-xs font-semibold transition-colors ${
+              className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors sm:px-3.5 sm:py-1 sm:text-xs ${
                 selectedOption === opt
                   ? 'border-[#c8102e] bg-[#c8102e] text-white'
                   : 'border-neutral-300 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e]'
@@ -114,44 +114,46 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
         </div>
 
         {/* Price row */}
-        <div className="mt-5 flex items-baseline justify-center gap-2">
-          {product.fromLabel && <span className="text-sm text-neutral-500">From</span>}
+        <div className="mt-3.5 flex items-baseline justify-center gap-1.5 sm:mt-5 sm:gap-2">
+          {product.fromLabel && <span className="text-xs text-neutral-500 sm:text-sm">From</span>}
           {product.originalPrice && (
-            <span className="text-sm text-neutral-400 line-through">Rs. {product.originalPrice}</span>
+            <span className="text-xs text-neutral-400 line-through sm:text-sm">Rs. {product.originalPrice}</span>
           )}
-          <span className="text-base font-bold text-neutral-900">Rs. {product.price}</span>
+          <span className="text-sm font-bold text-neutral-900 sm:text-base">Rs. {product.price}</span>
         </div>
 
         {/* Add to cart / stepper */}
         {cartQty > 0 ? (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="mt-4 flex items-center gap-2 rounded-full border-2 border-[#c8102e] px-2 py-1"
+            className="mt-3 flex items-center gap-1.5 rounded-full border-2 border-[#c8102e] px-1.5 py-1 sm:mt-4 sm:gap-2 sm:px-2 sm:py-1"
           >
             <button
               onClick={handleDecrease}
-              className="flex h-7 w-7 items-center justify-center rounded-full text-[#c8102e] hover:bg-[#c8102e]/10 transition-colors"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-[#c8102e] hover:bg-[#c8102e]/10 transition-colors sm:h-7 sm:w-7"
               aria-label="Decrease"
             >
-              <Minus size={14} />
+              <Minus size={12} className="sm:hidden" />
+              <Minus size={14} className="hidden sm:block" />
             </button>
-            <span className="w-6 text-center text-sm font-bold text-neutral-900">{cartQty}</span>
+            <span className="w-5 text-center text-xs font-bold text-neutral-900 sm:w-6 sm:text-sm">{cartQty}</span>
             <button
               onClick={handleIncrease}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors sm:h-7 sm:w-7"
               aria-label="Increase"
             >
-              <Plus size={14} />
+              <Plus size={12} className="sm:hidden" />
+              <Plus size={14} className="hidden sm:block" />
             </button>
           </div>
         ) : (
           <button
             onClick={handleAdd}
-            className={`mt-4 flex items-center justify-center gap-2 rounded-full px-10 py-2.5 text-sm font-bold transition-all ${
+            className={`mt-3 flex items-center justify-center gap-1.5 rounded-full px-7 py-2 text-xs font-bold transition-all sm:mt-4 sm:gap-2 sm:px-10 sm:py-2.5 sm:text-sm ${
               added ? 'bg-green-600 text-white' : 'bg-[#c8102e] text-white hover:bg-[#a80d26]'
             }`}
           >
-            {added ? <><Check size={15} />Added!</> : 'ADD'}
+            {added ? <><Check size={13} className="sm:hidden" /><Check size={15} className="hidden sm:block" />Added!</> : 'ADD'}
           </button>
         )}
       </div>

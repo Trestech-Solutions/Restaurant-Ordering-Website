@@ -12,25 +12,27 @@ interface CategoryNavProps {
 export function CategoryNav({ categories, activeCategoryId, onSelect }: CategoryNavProps) {
   return (
     <nav className="bg-[#c8102e] sticky top-0 z-30">
-      <div className="mx-auto flex max-w-[1400px] overflow-x-auto scrollbar-hide">
+      <div className="mx-auto flex max-w-[1400px] overflow-x-auto scrollbar-hide snap-x snap-mandatory touch-pan-x">
         {categories.map((cat) => {
           const isActive = cat.id === activeCategoryId
           return (
             <button
               key={cat.id}
               onClick={() => onSelect(cat.id)}
-              className={`relative flex flex-1 min-w-[130px] flex-col items-center justify-center gap-2 px-4 py-5 text-sm font-bold transition-colors ${
+              className={`snap-start relative flex min-w-[90px] flex-1 flex-col items-center justify-center gap-1.5 px-2 py-3 text-xs font-bold transition-colors sm:min-w-[110px] sm:gap-2 sm:px-3 sm:py-4 sm:text-sm md:min-w-[130px] md:px-4 md:py-5 md:text-base ${
                 isActive
                   ? 'bg-[#f7c948] text-neutral-900'
                   : 'text-white hover:bg-white/10'
               }`}
             >
               {cat.badge && (
-                <span className="absolute left-0 top-0 rounded-br-md bg-white px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-[#c8102e]">
+                <span className="absolute left-0 top-0 rounded-br-md bg-white px-1 py-0.5 text-[8px] font-extrabold uppercase text-[#c8102e] sm:px-1.5 sm:py-0.5 sm:text-[9px]">
                   {cat.badge}
                 </span>
               )}
-              <Icon icon={cat.icon} width={48} height={48} />
+              <div className="flex h-8 w-8 items-center justify-center sm:h-10 sm:w-10 md:h-12 md:w-12">
+                <Icon icon={cat.icon} width="100%" height="100%" />
+              </div>
               <span className="text-center leading-tight whitespace-nowrap">{cat.label}</span>
             </button>
           )

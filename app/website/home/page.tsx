@@ -74,8 +74,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen font-sans text-neutral-800">
-      {/* Hero carousel — full viewport height minus topbar */}
-      <section className="relative overflow-hidden" style={{ height: 'calc(80vh - 57px)' }}>
+      {/* Hero carousel — responsive height */}
+      <section className="relative overflow-hidden h-[30vh] sm:h-[40vh] md:h-[55vh] lg:h-[70vh] xl:h-[80vh]">
         {HERO_SLIDES.map((s, i) => (
           <div
             key={s.id}
@@ -84,33 +84,35 @@ export default function HomePage() {
             }`}
           >
             <Image src={s.image} alt={s.title} fill priority={i === 0} className="object-cover object-center" />
-
-         
           </div>
         ))}
 
-        {/* Prev / Next arrows */}
+        {/* Prev / Next arrows — responsive sizing */}
         <button
           onClick={() => goToSlide(currentSlide - 1)}
           aria-label="Previous"
-          className="absolute left-0 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
+          className="absolute left-0 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={18} className="sm:hidden" />
+          <ChevronLeft size={20} className="hidden sm:block md:hidden" />
+          <ChevronLeft size={24} className="hidden md:block" />
         </button>
         <button
           onClick={() => goToSlide(currentSlide + 1)}
           aria-label="Next"
-          className="absolute right-0 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
+          className="absolute right-0 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={18} className="sm:hidden" />
+          <ChevronRight size={20} className="hidden sm:block md:hidden" />
+          <ChevronRight size={24} className="hidden md:block" />
         </button>
 
-        {/* Secure payments badge */}
-        <div className="absolute bottom-6 right-6 z-20 hidden rounded-md bg-white/95 px-4 py-2 shadow-md sm:flex sm:flex-col sm:gap-1">
-          <span className="text-[10px] font-bold tracking-wide text-neutral-700">SECURE PAYMENTS</span>
-          <div className="flex gap-2">
-            <span className="rounded border border-neutral-300 px-2 py-0.5 text-[10px] font-bold text-blue-700">VISA</span>
-            <span className="rounded border border-neutral-300 px-2 py-0.5 text-[10px] font-bold text-orange-600">MasterCard</span>
+        {/* Secure payments badge — hide on xs, show sm+ */}
+        <div className="absolute bottom-2 right-2 z-20 hidden rounded-md bg-white/95 px-2 py-1 shadow-md sm:bottom-6 sm:right-6 sm:flex sm:flex-col sm:gap-1 sm:px-4 sm:py-2">
+          <span className="text-[8px] font-bold tracking-wide text-neutral-700 sm:text-[10px]">SECURE PAYMENTS</span>
+          <div className="flex gap-1 sm:gap-2">
+            <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-blue-700 sm:px-2 sm:text-[10px]">VISA</span>
+            <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-orange-600 sm:px-2 sm:text-[10px]">MasterCard</span>
           </div>
         </div>
       </section>

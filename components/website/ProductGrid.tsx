@@ -15,12 +15,13 @@ export function ProductGrid({ products, searchQuery }: ProductGridProps) {
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-          <ShoppingBag size={28} className="text-neutral-400" />
+      <div className="flex flex-col items-center justify-center py-12 text-center sm:py-20">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 sm:mb-4 sm:h-16 sm:w-16">
+          <ShoppingBag size={22} className="text-neutral-400 sm:hidden" />
+          <ShoppingBag size={28} className="text-neutral-400 hidden sm:block" />
         </div>
-        <p className="font-semibold text-neutral-700">No products found</p>
-        <p className="mt-1 text-sm text-neutral-400">
+        <p className="font-semibold text-neutral-700 text-sm sm:text-base">No products found</p>
+        <p className="mt-1 text-xs text-neutral-400 sm:text-sm">
           {searchQuery ? `No results for "${searchQuery}"` : 'No products in this category yet'}
         </p>
       </div>
@@ -29,7 +30,7 @@ export function ProductGrid({ products, searchQuery }: ProductGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.id} product={p} onOpen={setSelected} />
         ))}

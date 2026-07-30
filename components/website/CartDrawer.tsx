@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef } from 'react'
-import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as PlusIcon } from 'lucide-react'
+import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as PlusIcon, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/context/CartContext'
 import { ALL_PRODUCTS } from '@/lib/data/website-products'
 
@@ -93,17 +94,6 @@ export function CartDrawer() {
           ) : (
             <EmptyCart />
           )}
-
-          {/* Add more items */}
-          <div className="px-5 py-4">
-            <Link
-              href="/"
-              onClick={closeCart}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-600 hover:text-[#c8102e] transition-colors"
-            >
-              <Plus size={16} /> Add more items
-            </Link>
-          </div>
 
           {/* Popular with your order */}
           {items.length > 0 && (
@@ -217,22 +207,36 @@ export function CartDrawer() {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyCart() {
+  const router = useRouter()
+  const { closeCart } = useCart()
+
+  const handleStart = () => {
+    closeCart()
+    router.push('/')
+  }
+
   return (
-    <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center px-6">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100">
-        <Trash2 size={36} className="text-neutral-300" />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center px-6 py-8">
+      <div className="flex h-36 w-36 items-center justify-center">
+        <ShoppingBag size={130} strokeWidth={1.5} className="text-[#c8102e]" />
       </div>
-      <div>
-        <p className="font-semibold text-neutral-700">Your cart is empty</p>
-        <p className="mt-1 text-sm text-neutral-400">Add items to get started</p>
+
+      <div className="space-y-2">
+        <h3 className="text-2xl font-bold text-[#c8102e]">
+          Your Cart is Empty
+        </h3>
+        <p className="mx-auto max-w-[260px] text-sm leading-relaxed text-neutral-500">
+          Looks like you haven&apos;t added anything to your cart yet. Start
+          exploring and shop your favorite items!
+        </p>
       </div>
-      <Link
-        href="/"
-        onClick={() => {}}
-        className="mt-2 rounded-xl bg-[#c8102e] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors"
+
+      <button
+        onClick={handleStart}
+        className="mt-2 rounded-md bg-[#c8102e] px-6 py-2.5 text-sm font-semibold text-[#f7c948] hover:bg-[#a80d26] transition-colors shadow-sm"
       >
-        Start Shopping
-      </Link>
+        Browse Product
+      </button>
     </div>
   )
 }
