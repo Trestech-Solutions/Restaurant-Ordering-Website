@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     clearSession()
     setUser(null)
-    router.push('/login')
+    router.push('/')
   }, [router])
 
   const getRefreshToken = useCallback(

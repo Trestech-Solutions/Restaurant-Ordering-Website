@@ -65,7 +65,7 @@ export default function BlogDetailPage() {
 
           {/* Logo */}
           <Link
-            href="/website/home"
+            href="/"
             className="absolute left-1/2 -translate-x-1/2 -bottom-12 z-40 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl overflow-hidden border-4 border-white"
           >
             <Image

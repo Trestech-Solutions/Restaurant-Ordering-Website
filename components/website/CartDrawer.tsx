@@ -97,7 +97,7 @@ export function CartDrawer() {
           {/* Add more items */}
           <div className="px-5 py-4">
             <Link
-              href="/website/home"
+              href="/"
               onClick={closeCart}
               className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-600 hover:text-[#c8102e] transition-colors"
             >
@@ -227,7 +227,7 @@ function EmptyCart() {
         <p className="mt-1 text-sm text-neutral-400">Add items to get started</p>
       </div>
       <Link
-        href="/website/home"
+        href="/"
         onClick={() => {}}
         className="mt-2 rounded-xl bg-[#c8102e] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors"
       >

@@ -6,9 +6,9 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Trestech - Restaurant Management Dashboard",
+  title: "United King - Premier Bakery in Karachi",
   description:
-    "Professional restaurant management and operations dashboard for orders, menu, WhatsApp bot, analytics, and website management.",
+    "United King is Karachi's premier bakery, offering a wide selection of cakes, sweets, mithai, frozen food and fast food.",
 };
 
 export const viewport: Viewport = {

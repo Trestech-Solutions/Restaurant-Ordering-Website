@@ -130,7 +130,7 @@ export default function CheckoutPage() {
     clearCart(); setIsPlacing(false); setOrder(snap)
   }
 
-  if (order) return <OrderReceipt order={order} onPlaceAnother={() => router.push('/website/home')} />
+  if (order) return <OrderReceipt order={order} onPlaceAnother={() => router.push('/')} />
 
   const branchLabel = location || branch
     ? (location ? location : (branch ? `United King ${branch.charAt(0).toUpperCase() + branch.slice(1)}` : ''))
@@ -453,7 +453,7 @@ export default function CheckoutPage() {
               {isPlacing ? <><Spinner />Placing Order...</> : <>Place Order</>}
             </button>
 
-            <Link href="/website/home" className="flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-semibold">
+            <Link href="/" className="flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-semibold">
               <ArrowLeft size={14} />← continue to add more items
             </Link>
           </div>

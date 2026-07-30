@@ -31,7 +31,7 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (user === null) router.replace('/website/home')
+    if (user === null) router.replace('/')
   }, [user, router])
 
   if (!user) return null
@@ -58,7 +58,7 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
           </a>
 
           <Link
-            href="/website/home"
+            href="/"
             className="absolute left-1/2 -translate-x-1/2 -bottom-12 z-40 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl overflow-hidden border-4 border-white"
           >
             <Image

@@ -2,8 +2,6 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from "axios";
-import { store } from "../../redux/store";
-import { logout } from "../../redux/slices/auth";
 
 const BASE_URL = "https://api.trestechsolutions.com/api";
 
@@ -15,21 +13,19 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request Interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("trestech_token"); 
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("trestech_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-
     return config;
   },
   (error: AxiosError) => Promise.reject(error)
 );
 
-// Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
 
@@ -38,7 +34,12 @@ axiosInstance.interceptors.response.use(
 
     switch (status) {
       case 401:
-        store.dispatch(logout());
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("trestech_token");
+          localStorage.removeItem("trestech_refresh_token");
+          localStorage.removeItem("trestech_user");
+          document.cookie = "user=; path=/; max-age=0";
+        }
         break;
 
       case 403:

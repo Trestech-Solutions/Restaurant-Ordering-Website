@@ -23,7 +23,7 @@ export function WebsiteNavbar({
   const pathname = usePathname()
   const { totalItems, openCart, location, openLocationModal } = useCart()
 
-  const isHome  = pathname === '/website/home'
+  const isHome  = pathname === '/' || pathname === '/website/home'
   const isAbout = pathname === '/website/about'
 
   const isOverlap = !isAbout
@@ -67,7 +67,7 @@ export function WebsiteNavbar({
           021-111-022-022
         </a>
 
-        {isHome ? LogoContent : <Link href="/website/home">{LogoContent}</Link>}
+        {isHome ? LogoContent : <Link href="/">{LogoContent}</Link>}
 
         <div className="flex-1" />
 

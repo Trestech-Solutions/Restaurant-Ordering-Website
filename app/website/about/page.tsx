@@ -169,7 +169,7 @@ export default function AboutUsPage() {
         <p className="mt-3 text-sm text-neutral-700">
           Over 250 delicious items crafted with 40+ years of passion.
         </p>
-        <Link href="/website/home">
+        <Link href="/">
           <button className="mt-6 rounded-full bg-[#c8102e] px-8 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors">
             Order Now
           </button>
