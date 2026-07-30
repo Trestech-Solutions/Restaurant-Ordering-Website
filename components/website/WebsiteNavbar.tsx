@@ -1,10 +1,11 @@
+// components/website/WebsiteNavbar.tsx
 'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  MapPin, Phone, Menu, ShoppingCart, User,
+  MapPin, Phone, Menu, ShoppingCart,
 } from 'lucide-react'
 import { useCart } from '@/lib/context/CartContext'
 import { UserDropdown } from '@/components/website/UserDropdown'
@@ -59,7 +60,7 @@ export function WebsiteNavbar({
   )
 
   return (
-    <header className="bg-[#c8102e] text-white relative relative">
+    <header className="bg-[#c8102e] text-white relative">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 md:gap-4 md:px-8 md:py-2.5">
         <button
           onClick={handleLocationClick}
@@ -88,24 +89,18 @@ export function WebsiteNavbar({
 
         <div className="flex-1" />
 
-        <div className="hidden items-center gap-4 text-sm md:flex">
+        <div className="flex items-center gap-3 text-sm sm:gap-4">
           <UserDropdown onLoginClick={onLoginClick} />
-          <span className="text-white/50">|</span>
+
+          <span className="hidden text-white/50 md:inline">|</span>
+
           <button
             onClick={onCorporateClick}
-            className="rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900"
+            className="hidden rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900 md:block"
           >
             Corporate &amp; Special Event Orders
           </button>
         </div>
-
-        <button
-          onClick={onLoginClick}
-          className="md:hidden flex items-center gap-1 rounded-full p-1.5 hover:bg-white/10 transition-colors sm:p-2"
-          aria-label="Sign in or Register"
-        >
-          <User size={18} />
-        </button>
 
         <button
           onClick={openCart}
