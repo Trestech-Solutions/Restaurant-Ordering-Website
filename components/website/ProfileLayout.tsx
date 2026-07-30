@@ -29,6 +29,12 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
   const [corporateModalOpen, setCorporateModalOpen] = useState(false)
   const [menuOpen, setMenuOpen]                     = useState(false)
 
+  const isCheckout = pathname === '/website/checkout'
+  const handleLocationClick = () => {
+    if (isCheckout) router.push('/')
+    else openLocationModal()
+  }
+
   // Redirect if not logged in
   useEffect(() => {
     if (user === null) router.replace('/')
@@ -43,7 +49,7 @@ export function ProfileLayout({ children }: { children: React.ReactNode }) {
       <header className="bg-[#c8102e] text-white relative relative">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 md:px-8">
           <button
-            onClick={openLocationModal}
+            onClick={handleLocationClick}
             className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900"
           >
             <MapPin size={16} />

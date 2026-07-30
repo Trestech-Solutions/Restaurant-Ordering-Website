@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   MapPin, Phone, Menu, ShoppingCart, User,
 } from 'lucide-react'
@@ -21,7 +21,18 @@ export function WebsiteNavbar({
   onMenuClick,
 }: WebsiteNavbarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { totalItems, openCart, location, openLocationModal } = useCart()
+
+  const isCheckout = pathname === '/website/checkout'
+
+  const handleLocationClick = () => {
+    if (isCheckout) {
+      router.push('/')
+    } else {
+      openLocationModal()
+    }
+  }
 
   const isHome  = pathname === '/' || pathname === '/website/home'
   const isAbout = pathname === '/website/about'
@@ -51,7 +62,7 @@ export function WebsiteNavbar({
     <header className="bg-[#c8102e] text-white relative relative">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 md:gap-4 md:px-8 md:py-2.5">
         <button
-          onClick={openLocationModal}
+          onClick={handleLocationClick}
           className="flex items-center gap-1.5 rounded bg-[#f7c948] px-2 py-1 text-[10px] font-semibold text-neutral-900 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-xs"
         >
           <MapPin size={14} className="sm:hidden" />

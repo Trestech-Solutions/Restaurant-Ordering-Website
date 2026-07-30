@@ -133,6 +133,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const setLocation = useCallback((loc: string) => {
     setLocationState(loc)
     localStorage.setItem(LS_LOCATION, loc)
+    setItems([])
   }, [])
 
   const setBranch = useCallback((b: string) => {

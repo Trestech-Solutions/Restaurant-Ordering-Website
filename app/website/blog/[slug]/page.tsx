@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import {
   MapPin, Phone, User, Menu, ShoppingCart,
   Search, ArrowUp, MessageCircle, Clock, ChevronLeft, ChevronRight, Calendar,
@@ -16,11 +16,19 @@ import { UserDropdown } from '@/components/website/UserDropdown'
 import { getPostBySlug, getRelatedPosts } from '@/lib/data/blog-posts'
 
 export default function BlogDetailPage() {
+  const pathname = usePathname()
+  const router = useRouter()
   const { totalItems, openCart, location, openLocationModal } = useCart()
   const [authModalOpen, setAuthModalOpen]           = useState(false)
   const [corporateModalOpen, setCorporateModalOpen] = useState(false)
   const [menuOpen, setMenuOpen]                     = useState(false)
   const [relatedStart, setRelatedStart]             = useState(0)
+
+  const isCheckout = pathname === '/website/checkout'
+  const handleLocationClick = () => {
+    if (isCheckout) router.push('/')
+    else openLocationModal()
+  }
 
   const params   = useParams()
   const slug     = typeof params.slug === 'string' ? params.slug : ''
@@ -51,7 +59,7 @@ export default function BlogDetailPage() {
       {/* ── Topbar ──────────────────────────────────────────────────────── */}
       <header className="bg-[#c8102e] text-white relative relative">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 md:px-8">
-          <button onClick={openLocationModal} className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
+          <button onClick={handleLocationClick} className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
               <MapPin size={16} />
               <span className="text-left leading-tight">
                 Change Location<br />
