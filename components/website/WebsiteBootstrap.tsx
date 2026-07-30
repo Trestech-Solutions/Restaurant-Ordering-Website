@@ -5,29 +5,34 @@ import { OrderTypeModal } from './OrderTypeModal'
 import { useCart } from '@/lib/context/CartContext'
 
 /**
- * Shows the OrderTypeModal only when no location has been saved yet.
- * Once a location is set it persists in localStorage, so the modal
- * won't appear again on subsequent page visits or navigations.
- * It can be re-triggered by clicking "Change Location" in the topbar.
+ * - Shows OrderTypeModal on first visit (when no location saved).
+ * - Also shows it whenever openLocationModal() is called from anywhere
+ *   (e.g. the "Change Location" button in the topbar).
  */
 export function WebsiteBootstrap() {
-  const { location } = useCart()
-  const [showModal, setShowModal] = useState(false)
+  const { location, locationModalOpen, closeLocationModal } = useCart()
+  const [showOnce, setShowOnce] = useState(false)
 
-  // After the CartProvider hydrates from localStorage, show the modal
-  // only if there is still no location saved.
+  // Show on first load only if location not yet set
   useEffect(() => {
-    if (!location) {
-      setShowModal(true)
-    }
+    if (!location) setShowOnce(true)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-dismiss as soon as the user picks a location
+  // Auto-dismiss the first-visit modal once location is picked
   useEffect(() => {
-    if (location) setShowModal(false)
+    if (location) setShowOnce(false)
   }, [location])
 
-  if (!showModal) return null
+  const isOpen = showOnce || locationModalOpen
 
-  return <OrderTypeModal onClose={() => setShowModal(false)} />
+  if (!isOpen) return null
+
+  return (
+    <OrderTypeModal
+      onClose={() => {
+        setShowOnce(false)
+        closeLocationModal()
+      }}
+    />
+  )
 }

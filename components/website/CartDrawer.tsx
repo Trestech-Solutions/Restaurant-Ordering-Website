@@ -1,13 +1,21 @@
 'use client'
 
-import { X, Plus, Minus, Trash2, ShoppingBag, ChevronRight } from 'lucide-react'
+import { useRef } from 'react'
+import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as PlusIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/lib/context/CartContext'
+import { ALL_PRODUCTS } from '@/lib/data/website-products'
 
-// ─── Delivery fee config ──────────────────────────────────────────────────────
-const DELIVERY_FEE = 99
-const FREE_DELIVERY_THRESHOLD = 1500
+const TAX_RATE     = 0.18
+const DELIVERY_FEE = 200
+
+function fmtDateTimeDelivery() {
+  const d = new Date(Date.now() + 60 * 60 * 1000)
+  const date = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return { date, time }
+}
 
 export function CartDrawer() {
   const {
@@ -16,77 +24,62 @@ export function CartDrawer() {
     items,
     removeItem,
     updateQuantity,
-    clearCart,
     subtotal,
-    totalItems,
     orderType,
+    addItem,
   } = useCart()
 
-  const deliveryFee = orderType === 'delivery' && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0
-  const total = subtotal + deliveryFee
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const tax        = Math.round(subtotal * TAX_RATE)
+  const deliveryFee = orderType === 'delivery' ? DELIVERY_FEE : 0
+  const grandTotal = subtotal + tax + deliveryFee
+  const { date, time } = fmtDateTimeDelivery()
+
+  const popularItems = ALL_PRODUCTS.slice(0, 8)
+
+  const scrollPopular = (dir: 'left' | 'right') => {
+    if (!scrollRef.current) return
+    scrollRef.current.scrollBy({ left: dir === 'left' ? -220 : 220, behavior: 'smooth' })
+  }
+
+  const handleAddPopular = (prod: typeof ALL_PRODUCTS[number]) => {
+    addItem({
+      id: prod.id,
+      name: prod.name,
+      price: parseInt(prod.price, 10),
+      image: prod.image,
+      selectedOption: prod.options[0] || undefined,
+    })
+  }
 
   return (
     <>
-      {/* Backdrop */}
       {isCartOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 transition-opacity"
-          onClick={closeCart}
-        />
+        <div className="fixed inset-0 z-40 bg-black/50 transition-opacity" onClick={closeCart} />
       )}
 
-      {/* Drawer */}
       <aside
         className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ${
           isCartOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <ShoppingBag size={20} className="text-[#c8102e]" />
-            <h2 className="text-base font-bold text-neutral-900">
-              Your Cart
-              {totalItems > 0 && (
-                <span className="ml-2 rounded-full bg-[#c8102e] px-2 py-0.5 text-xs font-semibold text-white">
-                  {totalItems}
-                </span>
-              )}
-            </h2>
-          </div>
-          <div className="flex items-center gap-3">
-            {items.length > 0 && (
-              <button
-                onClick={clearCart}
-                className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
-              >
-                Clear all
-              </button>
-            )}
-            <button
-              onClick={closeCart}
-              aria-label="Close cart"
-              className="rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100 transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-5 py-4">
+          <h2 className="text-lg font-bold text-neutral-900">Your Cart</h2>
+          <button
+            onClick={closeCart}
+            aria-label="Close cart"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors shadow-sm"
+          >
+            <X size={18} strokeWidth={3} />
+          </button>
         </div>
 
-        {/* Order type pill */}
-        <div className="border-b border-neutral-100 bg-neutral-50 px-5 py-2">
-          <span className="text-xs text-neutral-500">
-            Order type:{' '}
-            <span className="font-semibold capitalize text-[#c8102e]">{orderType}</span>
-          </span>
-        </div>
-
-        {/* Cart items */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
-          {items.length === 0 ? (
-            <EmptyCart />
-          ) : (
-            <ul className="space-y-4">
+        {/* ── Scrollable body ── */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Cart items */}
+          {items.length > 0 ? (
+            <div className="px-5 pb-2">
               {items.map((item) => (
                 <CartItemRow
                   key={`${item.id}-${item.selectedOption}`}
@@ -96,19 +89,125 @@ export function CartDrawer() {
                   onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
                 />
               ))}
-            </ul>
+            </div>
+          ) : (
+            <EmptyCart />
+          )}
+
+          {/* Add more items */}
+          <div className="px-5 py-4">
+            <Link
+              href="/website/home"
+              onClick={closeCart}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-600 hover:text-[#c8102e] transition-colors"
+            >
+              <Plus size={16} /> Add more items
+            </Link>
+          </div>
+
+          {/* Popular with your order */}
+          {items.length > 0 && (
+            <div className="px-5 pb-5">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div>
+                  <p className="text-sm font-bold text-neutral-800">Popular with your order</p>
+                  <p className="text-xs text-neutral-500">Customers often buy these together</p>
+                </div>
+                <div className="flex gap-1.5 pt-0.5">
+                  <button
+                    onClick={() => scrollPopular('left')}
+                    aria-label="Scroll left"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={() => scrollPopular('right')}
+                    aria-label="Scroll right"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div
+                ref={scrollRef}
+                className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2"
+              >
+                {popularItems.map((prod) => (
+                  <div key={prod.id} className="shrink-0 w-[110px]">
+                    <div className="relative w-[110px] h-[110px] rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50">
+                      <Image src={prod.image} alt={prod.name} fill className="object-cover" />
+                      <button
+                        onClick={() => handleAddPopular(prod)}
+                        aria-label={`Add ${prod.name}`}
+                        className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#c8102e] shadow-md hover:bg-[#c8102e] hover:text-white transition-colors border border-neutral-200"
+                      >
+                        <PlusIcon size={14} strokeWidth={3} />
+                      </button>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-neutral-800">Rs. {prod.price}</p>
+                      <p className="text-[11px] text-neutral-500 truncate">{prod.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Price summary ── */}
+          {items.length > 0 && (
+            <div className="px-5 pb-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-neutral-800">Total</span>
+                  <span className="font-semibold text-neutral-800">Rs. {subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Tax 18%</span>
+                  <span className="text-neutral-600">Rs. {tax.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Delivery Fee</span>
+                  <span className="text-neutral-600">
+                    {orderType === 'pickup' ? '—' : `Rs. ${deliveryFee.toLocaleString()}`}
+                  </span>
+                </div>
+                <div className="border-t border-neutral-200 pt-2 mt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-neutral-900">Grand Total</span>
+                    <span className="font-bold text-neutral-900">Rs. {grandTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Checkout section — only when cart has items */}
+        {/* ── Bottom sticky section ── */}
         {items.length > 0 && (
-          <CheckoutSection
-            subtotal={subtotal}
-            deliveryFee={deliveryFee}
-            total={total}
-            orderType={orderType}
-            freeDeliveryThreshold={FREE_DELIVERY_THRESHOLD}
-          />
+          <div className="border-t border-neutral-100 bg-white px-5 pt-4 pb-6 space-y-3">
+            <Link
+              href="/website/checkout"
+              onClick={closeCart}
+              className="flex w-full items-center justify-between rounded-xl bg-[#c8102e] px-6 py-3.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors shadow-md"
+            >
+              <span className="pl-2">Checkout</span>
+              <ArrowRight size={18} className="text-[#f7c948]" />
+            </Link>
+
+            {orderType === 'delivery' && (
+              <div className="rounded-lg bg-sky-50 border border-sky-100 px-4 py-3">
+                <p className="text-sm leading-relaxed text-neutral-700">
+                  Your order will be delivered approximately in 60 minutes on{' '}
+                  <span className="font-bold text-sky-700">{date}</span> at{' '}
+                  <span className="font-bold text-sky-700">{time}</span>
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </aside>
     </>
@@ -119,14 +218,21 @@ export function CartDrawer() {
 
 function EmptyCart() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+    <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center px-6">
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100">
-        <ShoppingBag size={36} className="text-neutral-300" />
+        <Trash2 size={36} className="text-neutral-300" />
       </div>
       <div>
         <p className="font-semibold text-neutral-700">Your cart is empty</p>
         <p className="mt-1 text-sm text-neutral-400">Add items to get started</p>
       </div>
+      <Link
+        href="/website/home"
+        onClick={() => {}}
+        className="mt-2 rounded-xl bg-[#c8102e] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors"
+      >
+        Start Shopping
+      </Link>
     </div>
   )
 }
@@ -142,134 +248,45 @@ interface CartItemRowProps {
 
 function CartItemRow({ item, onRemove, onIncrease, onDecrease }: CartItemRowProps) {
   return (
-    <li className="flex gap-3">
+    <div className="flex items-center gap-3 py-3 first:pt-2">
       {/* Image */}
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-neutral-100">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-neutral-100 bg-neutral-50">
         <Image src={item.image} alt={item.name} fill className="object-cover" />
       </div>
 
       {/* Details */}
-      <div className="flex flex-1 flex-col justify-between">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-neutral-900 leading-tight">{item.name}</p>
-            {item.selectedOption && (
-              <p className="mt-0.5 text-xs text-neutral-400">{item.selectedOption}</p>
-            )}
-          </div>
+      <div className="flex flex-1 items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-neutral-900 leading-tight truncate">
+            {item.name}
+            {item.selectedOption ? ` (${item.selectedOption})` : ''}
+          </p>
+          <p className="mt-1 text-sm font-bold text-neutral-900">
+            Rs. {(item.price * item.quantity).toLocaleString()}
+          </p>
+        </div>
+
+        {/* Quantity stepper — red outlined with trash/minus/plus */}
+        <div className="flex items-center shrink-0 rounded-md border border-[#c8102e] overflow-hidden">
           <button
-            onClick={onRemove}
-            aria-label="Remove item"
-            className="mt-0.5 rounded p-0.5 text-neutral-300 hover:text-red-500 transition-colors"
+            onClick={onDecrease}
+            aria-label="Decrease or remove"
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors"
           >
-            <Trash2 size={14} />
+            {item.quantity <= 1 ? <Trash2 size={13} /> : <Minus size={13} strokeWidth={3} />}
+          </button>
+          <span className="w-7 text-center text-sm font-semibold text-neutral-900 bg-white">
+            {item.quantity}
+          </span>
+          <button
+            onClick={onIncrease}
+            aria-label="Increase quantity"
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors"
+          >
+            <Plus size={13} strokeWidth={3} />
           </button>
         </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-neutral-900">
-            Rs. {(item.price * item.quantity).toLocaleString()}
-          </span>
-          {/* Quantity stepper */}
-          <div className="flex items-center gap-2 rounded-full border border-neutral-200 px-1 py-0.5">
-            <button
-              onClick={onDecrease}
-              aria-label="Decrease quantity"
-              className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors"
-            >
-              <Minus size={12} />
-            </button>
-            <span className="w-4 text-center text-sm font-semibold text-neutral-900">
-              {item.quantity}
-            </span>
-            <button
-              onClick={onIncrease}
-              aria-label="Increase quantity"
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors"
-            >
-              <Plus size={12} />
-            </button>
-          </div>
-        </div>
       </div>
-    </li>
-  )
-}
-
-// ─── Checkout section ─────────────────────────────────────────────────────────
-
-interface CheckoutSectionProps {
-  subtotal: number
-  deliveryFee: number
-  total: number
-  orderType: string
-  freeDeliveryThreshold: number
-}
-
-function CheckoutSection({
-  subtotal,
-  deliveryFee,
-  total,
-  orderType,
-  freeDeliveryThreshold,
-}: CheckoutSectionProps) {
-  const remaining = freeDeliveryThreshold - subtotal
-
-  return (
-    <div className="border-t border-neutral-200 bg-white px-5 py-5">
-      {/* Free delivery progress */}
-      {orderType === 'delivery' && subtotal < freeDeliveryThreshold && (
-        <div className="mb-4">
-          <p className="mb-1.5 text-xs text-neutral-500">
-            Add{' '}
-            <span className="font-semibold text-[#c8102e]">
-              Rs. {remaining.toLocaleString()}
-            </span>{' '}
-            more for free delivery
-          </p>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
-            <div
-              className="h-full rounded-full bg-[#c8102e] transition-all duration-300"
-              style={{ width: `${Math.min((subtotal / freeDeliveryThreshold) * 100, 100)}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Price breakdown */}
-      <div className="mb-4 space-y-2 text-sm">
-        <div className="flex justify-between text-neutral-600">
-          <span>Subtotal</span>
-          <span>Rs. {subtotal.toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between text-neutral-600">
-          <span>Delivery fee</span>
-          <span>
-            {deliveryFee === 0 ? (
-              <span className="font-semibold text-green-600">Free</span>
-            ) : (
-              `Rs. ${deliveryFee}`
-            )}
-          </span>
-        </div>
-        <div className="flex justify-between border-t border-neutral-200 pt-2 font-bold text-neutral-900">
-          <span>Total</span>
-          <span>Rs. {total.toLocaleString()}</span>
-        </div>
-      </div>
-
-      {/* Checkout CTA */}
-      <Link
-        href="/website/checkout"
-        onClick={() => {}}
-        className="flex w-full items-center justify-between rounded-xl bg-[#c8102e] px-5 py-3.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors"
-      >
-        <span>Proceed to Checkout</span>
-        <div className="flex items-center gap-1">
-          <span>Rs. {total.toLocaleString()}</span>
-          <ChevronRight size={16} />
-        </div>
-      </Link>
     </div>
   )
 }

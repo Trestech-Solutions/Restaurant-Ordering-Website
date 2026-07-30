@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { ProductCard, type ProductData } from './ProductCard'
+import { ProductDetailModal } from './ProductDetailModal'
 import { ShoppingBag } from 'lucide-react'
 
 interface ProductGridProps {
@@ -9,6 +11,8 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ products, searchQuery }: ProductGridProps) {
+  const [selected, setSelected] = useState<ProductData | null>(null)
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -17,19 +21,23 @@ export function ProductGrid({ products, searchQuery }: ProductGridProps) {
         </div>
         <p className="font-semibold text-neutral-700">No products found</p>
         <p className="mt-1 text-sm text-neutral-400">
-          {searchQuery
-            ? `No results for "${searchQuery}"`
-            : 'No products in this category yet'}
+          {searchQuery ? `No results for "${searchQuery}"` : 'No products in this category yet'}
         </p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} onOpen={setSelected} />
+        ))}
+      </div>
+
+      {selected && (
+        <ProductDetailModal product={selected} onClose={() => setSelected(null)} />
+      )}
+    </>
   )
 }

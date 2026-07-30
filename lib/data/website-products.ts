@@ -15,6 +15,10 @@ export interface Category {
   subCategories: SubCategory[]
 }
 
+// Branch IDs — must match BranchInfo.id in OrderTypeModal
+// '*' means available at all branches
+export type BranchAvailability = string[] | '*'
+
 // ─── Categories ───────────────────────────────────────────────────────────────
 
 export const CATEGORIES: Category[] = [
@@ -124,12 +128,13 @@ export const CATEGORIES: Category[] = [
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
-export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: string })[] = [
+export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: string; branchIds: BranchAvailability })[] = [
   // ── New Arrival / Ice Cream ────────────────────────────────────────────────
   {
     id: 'kulfi-falooda',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: '*',
     name: 'Kulfi Falooda',
     description: 'Enjoy the authentic taste of Classic Plain Kulfi Falooda, rich, creamy, and perfectly chilled.',
     price: '1148',
@@ -144,6 +149,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'peshawari-ice-cream',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'clifton', 'bahadurabad', 'karimabad'],
     name: 'Peshawari Ice Cream (475 ML)',
     description: 'Indulge in the rich and creamy delight of Peshawari Ice Cream, inspired by tradition.',
     price: '895',
@@ -155,6 +161,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kulfi-assorted',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: '*',
     name: 'Riwayati Kulfi - Assorted (6pcs)',
     description: 'A wide range of delicious kulfi flavours perfect for every occasion.',
     price: '1010',
@@ -166,6 +173,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kulfi-malai-khoya',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: '*',
     name: 'Riwayati Kulfi - Malai Khoya',
     description: 'Malai Khoya kulfi, a popular choice to beat the summer heat.',
     price: '190',
@@ -176,6 +184,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kulfi-mango',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: ['gulshan-iqbal', 'maskan', 'north-karachi', 'bahadurabad', 'sharfabad', 'karimabad'],
     name: 'Riwayati Kulfi - Mango',
     description: 'Mango Kulfi combining the richness of kulfi with fresh mango flavour.',
     price: '170',
@@ -186,6 +195,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kulfi-pista',
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
+    branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'garden-east'],
     name: 'Riwayati Kulfi - Pista',
     description: 'Kulfi Pista Matki, sure to please your taste buds and leave you wanting more.',
     price: '170',
@@ -197,6 +207,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'gulab-jamun',
     categoryId: 'new-arrival',
     subCategoryId: 'sweets',
+    branchIds: '*',
     name: 'Gulab Jamun (12 Pcs)',
     description: 'Soft, spongy gulab jamuns soaked in rose-flavoured sugar syrup.',
     price: '450',
@@ -209,6 +220,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'deal-family-pack',
     categoryId: 'deals',
     subCategoryId: 'family',
+    branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'clifton', 'bahadurabad', 'national-stadium'],
     name: 'Family Ice Cream Pack',
     description: 'A complete family pack with assorted ice cream flavours.',
     price: '2500',
@@ -222,6 +234,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'deal-combo-1',
     categoryId: 'deals',
     subCategoryId: 'combo',
+    branchIds: '*',
     name: 'Combo Deal - 2 Kulfis + Falooda',
     description: 'Best value combo — 2 kulfis with a large falooda.',
     price: '650',
@@ -236,6 +249,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'mango-kulfi',
     categoryId: 'mangoverse',
     subCategoryId: 'mango-ice-cream',
+    branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'bahadurabad', 'clifton', 'sharfabad'],
     name: 'Aam Wala Kulfi',
     description: 'Pure mango kulfi made with fresh Sindhri mangoes.',
     price: '220',
@@ -247,6 +261,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'mango-barfi',
     categoryId: 'mangoverse',
     subCategoryId: 'mango-sweets',
+    branchIds: '*',
     name: 'Mango Barfi',
     description: 'Traditional barfi infused with the sweetness of ripe mangoes.',
     price: '380',
@@ -259,6 +274,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'samosa-6',
     categoryId: 'savories',
     subCategoryId: 'samosa',
+    branchIds: '*',
     name: 'Crispy Samosa (6 Pcs)',
     description: 'Crispy golden samosas filled with spiced potato and peas.',
     price: '280',
@@ -269,6 +285,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'spring-rolls',
     categoryId: 'savories',
     subCategoryId: 'rolls',
+    branchIds: ['gulshan-iqbal', 'dha', 'clifton', 'bahadurabad', 'north-nazimabad', 'maskan'],
     name: 'Chicken Spring Rolls (6 Pcs)',
     description: 'Crispy spring rolls stuffed with seasoned chicken and vegetables.',
     price: '320',
@@ -280,6 +297,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'birthday-cake',
     categoryId: 'cakes',
     subCategoryId: 'birthday',
+    branchIds: '*',
     name: 'Classic Birthday Cake',
     description: 'Soft, moist vanilla sponge with fresh cream icing.',
     price: '1800',
@@ -290,6 +308,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'premium-chocolate-cake',
     categoryId: 'cakes',
     subCategoryId: 'premium',
+    branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'maskan', 'national-stadium'],
     name: 'Premium Chocolate Truffle',
     description: 'Rich dark chocolate ganache layered over moist chocolate sponge.',
     price: '2800',
@@ -304,6 +323,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kaju-barfi',
     categoryId: 'sweets',
     subCategoryId: 'barfi',
+    branchIds: '*',
     name: 'Kaju Barfi (250g)',
     description: 'Premium cashew barfi, perfect for gifting and celebrations.',
     price: '650',
@@ -314,6 +334,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'motichoor-ladoo',
     categoryId: 'sweets',
     subCategoryId: 'ladoo',
+    branchIds: ['bahadurabad', 'karimabad', 'north-nazimabad', 'gulshan-iqbal', 'sharfabad'],
     name: 'Motichoor Ladoo (500g)',
     description: 'Soft, melt-in-the-mouth motichoor ladoos made fresh daily.',
     price: '480',
@@ -325,6 +346,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'falooda-classic',
     categoryId: 'desserts',
     subCategoryId: 'falooda',
+    branchIds: '*',
     name: 'Classic Falooda',
     description: 'Traditional falooda with vermicelli, basil seeds and rose syrup.',
     price: '290',
@@ -335,6 +357,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'kulfi-regular',
     categoryId: 'desserts',
     subCategoryId: 'kulfi',
+    branchIds: '*',
     name: 'Malai Kulfi (1 PC)',
     description: 'Classic creamy malai kulfi, chilled to perfection.',
     price: '150',
@@ -346,6 +369,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'butter-cookies',
     categoryId: 'biscuits',
     subCategoryId: 'cookies',
+    branchIds: '*',
     name: 'Butter Cookies Box',
     description: 'Crisp, buttery cookies — perfect with tea.',
     price: '350',
@@ -356,6 +380,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'chocolate-biscuits',
     categoryId: 'biscuits',
     subCategoryId: 'biscuits',
+    branchIds: ['gulshan-iqbal', 'dha', 'clifton', 'bahadurabad', 'maskan'],
     name: 'Chocolate Biscuits (Pack of 12)',
     description: 'Rich cocoa biscuits with a smooth chocolate coat.',
     price: '280',
@@ -367,6 +392,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'gift-box-premium',
     categoryId: 'gifts',
     subCategoryId: 'boxes',
+    branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'national-stadium', 'maskan'],
     name: 'Premium Mithai Gift Box',
     description: 'A curated selection of premium sweets in a beautiful gift box.',
     price: '1200',
@@ -378,6 +404,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
     id: 'gift-hamper',
     categoryId: 'gifts',
     subCategoryId: 'hampers',
+    branchIds: '*',
     name: 'Eid Special Hamper',
     description: 'Festive hamper with sweets, biscuits and dry fruits.',
     price: '2200',

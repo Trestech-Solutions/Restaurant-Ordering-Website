@@ -11,11 +11,11 @@ import {
 import { useCart } from '@/lib/context/CartContext'
 import { AuthModal } from '@/components/website/AuthModal'
 import { CorporateOrderModal } from '@/components/website/CorporateOrderModal'
-import { MenuDrawer } from '@/components/website/MenuDrawer'
+import { UserDropdown } from '@/components/website/UserDropdown'
 import { getPostBySlug, getRelatedPosts } from '@/lib/data/blog-posts'
 
 export default function BlogDetailPage() {
-  const { totalItems, openCart, location } = useCart()
+  const { totalItems, openCart, location, openLocationModal } = useCart()
   const [authModalOpen, setAuthModalOpen]           = useState(false)
   const [corporateModalOpen, setCorporateModalOpen] = useState(false)
   const [menuOpen, setMenuOpen]                     = useState(false)
@@ -48,17 +48,15 @@ export default function BlogDetailPage() {
     <div className="min-h-screen font-sans text-neutral-800">
 
       {/* ── Topbar ──────────────────────────────────────────────────────── */}
-      <header className="bg-[#c8102e] text-white sticky top-0 z-30 relative">
+      <header className="bg-[#c8102e] text-white relative relative">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 md:px-8">
-          <Link href="/website/home">
-            <button className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
+          <button onClick={openLocationModal} className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
               <MapPin size={16} />
               <span className="text-left leading-tight">
                 Change Location<br />
                 <span className="font-normal">{location || 'NED University'}</span>
               </span>
             </button>
-          </Link>
 
           <a href="tel:021111022022" className="hidden items-center gap-2 text-sm font-medium sm:flex">
             <Phone size={16} />
@@ -82,10 +80,7 @@ export default function BlogDetailPage() {
           <div className="flex-1" />
 
           <div className="hidden items-center gap-4 text-sm md:flex">
-            <button onClick={() => setAuthModalOpen(true)} className="flex items-center gap-1.5 hover:underline">
-              <User size={16} />
-              Sign in / Register
-            </button>
+            <UserDropdown onLoginClick={() => setAuthModalOpen(true)} />
             <span className="text-white/50">|</span>
             <button
               onClick={() => setCorporateModalOpen(true)}

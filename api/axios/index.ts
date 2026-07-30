@@ -5,7 +5,7 @@ import axios, {
 import { store } from "../../redux/store";
 import { logout } from "../../redux/slices/auth";
 
-const BASE_URL = "http://169.58.32.56:8000/api";
+const BASE_URL = "https://api.trestechsolutions.com/api";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
