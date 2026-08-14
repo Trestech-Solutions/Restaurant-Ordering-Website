@@ -25,6 +25,7 @@ const ORDER_HISTORY_QUERY_KEY = ['storefront-customer-orders'];
 // ─── Login ────────────────────────────────────────────────────────────────────
 
 export type LoginPayload = {
+  restaurant: number;  // required by CustomerLoginSerializer
   phone: string;
   password: string;
 };
@@ -170,7 +171,7 @@ export function useUpdateMyProfile(options?: {
   const mutation = useMutation<CustomerProfile, ApiError, UpdateCustomerPayload>({
     mutationFn: (payload) =>
       api
-        .patch<CustomerProfile>(
+        .put<CustomerProfile>(
           API_ENDPOINTS.StorefrontCustomerAuth.updateMyProfile,
           payload
         )

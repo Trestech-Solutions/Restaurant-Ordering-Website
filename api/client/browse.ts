@@ -13,8 +13,6 @@ import { useEffect as reactUseEffect } from 'react';
 
 export { extractErrorMessage } from '../types';
 
-// ─── Get Branches ─────────────────────────────────────────────────────────────
-
 export function useGetBranches(options?: {
   restaurantId?: string | number;
   onSuccess?: (data: Branch[]) => void;
@@ -27,9 +25,8 @@ export function useGetBranches(options?: {
     queryFn: () =>
       api
         .get<{ results?: Branch[] } | Branch[]>(
-          buildUrl(API_ENDPOINTS.StorefrontBrowse.getBranches, {
-            restaurant_id: restaurantId,
-          })
+          API_ENDPOINTS.StorefrontBrowse.getBranches,
+          { params: { restaurant: restaurantId } }
         )
         .then((r) => {
           const data = r.data as { results?: Branch[] } | Branch[];
@@ -68,9 +65,8 @@ export function useGetAreas(options?: {
     queryFn: () =>
       api
         .get<{ results?: Area[] } | Area[]>(
-          buildUrl(API_ENDPOINTS.StorefrontBrowse.getAreas, {
-            restaurant_id: restaurantId,
-          })
+          API_ENDPOINTS.StorefrontBrowse.getAreas,
+          { params: { branch: restaurantId } }
         )
         .then((r) => {
           const data = r.data as { results?: Area[] } | Area[];
@@ -99,23 +95,26 @@ export function useGetAreas(options?: {
 
 export function useGetMenu(params: {
   branchId: string | number | null;
-  areaId: string | number | null;
+  areaId?: string | number | null;
   onSuccess?: (data: MenuResponse) => void;
   onError?: (message: string) => void;
 }) {
-  const enabled = params.branchId !== null && params.areaId !== null;
+  // area is optional — only require branchId to load menu
+  const enabled = params.branchId !== null && params.branchId !== undefined;
 
   const query = useQuery<MenuResponse, ApiError>({
     queryKey: ['storefront-menu', params.branchId, params.areaId],
-    queryFn: () =>
-      api
-        .get<MenuResponse>(
-          buildUrl(API_ENDPOINTS.StorefrontBrowse.getMenu, {
-            branch_id: params.branchId as string | number,
-            area_id: params.areaId as string | number,
-          })
-        )
-        .then((r) => r.data),
+    queryFn: () => {
+      const queryParams: Record<string, string | number> = {
+        branch: params.branchId as string | number,
+      }
+      if (params.areaId !== null && params.areaId !== undefined) {
+        queryParams.area = params.areaId as string | number
+      }
+      return api
+        .get<MenuResponse>(API_ENDPOINTS.StorefrontBrowse.getMenu, { params: queryParams })
+        .then((r) => r.data)
+    },
     enabled,
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 30,

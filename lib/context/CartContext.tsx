@@ -81,6 +81,8 @@ interface CartContextType {
   // Computed
   totalItems: number
   subtotal: number
+  // The live cart token from the API (undefined if no API cart yet)
+  cartToken: string | null
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -230,6 +232,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { data: apiCart, isLoading: cartLoading } = useGetCart({
     cartToken,
   })
+
+  // Persist the API cart token to localStorage whenever we receive a cart
+  useEffect(() => {
+    if (apiCart?.token && apiCart.token !== getCartToken()) {
+      setCartToken(apiCart.token)
+    }
+  }, [apiCart?.token])
 
   const addToCartMutation = useAddToCart()
   const updateQuantityMutation = useUpdateCartQuantity()
@@ -410,6 +419,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     closeCart: () => setIsCartOpen(false),
     totalItems,
     subtotal: effectiveSubtotal,
+    cartToken: apiCart?.token ?? getCartToken(),
   }
 
   // Expose registerProductId via a custom property on the context object

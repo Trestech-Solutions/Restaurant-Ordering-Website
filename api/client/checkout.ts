@@ -134,6 +134,8 @@ export function buildLoggedInPayload(params: {
   address_id?: number;
   address?: string;
   city?: string;
+  customer_name?: string;
+  customer_phone?: string;
   order_type: 'delivery' | 'pickup';
   payment_method: 'cod' | 'card' | 'online' | 'wallet';
   branch?: number;
@@ -155,6 +157,8 @@ export function buildLoggedInPayload(params: {
     address_id: params.address_id,
     address: params.address,
     city: params.city,
+    customer_name: params.customer_name,
+    customer_phone: params.customer_phone,
     order_type: params.order_type,
     payment_method: params.payment_method,
     branch: params.branch,

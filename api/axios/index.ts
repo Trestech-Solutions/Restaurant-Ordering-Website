@@ -47,7 +47,7 @@ axiosInstance.interceptors.response.use(
         break;
 
       case 404:
-        console.error("Not Found:", error.response?.data);
+        // 404s are handled by the calling hook — no global log needed
         break;
 
       case 500:

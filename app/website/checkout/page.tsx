@@ -20,6 +20,8 @@ import {
   buildLoggedInPayload,
 } from '@/api/client/checkout'
 import { useGetOrder } from '@/api/client/checkout'
+import { useAddToCart } from '@/api/client/cart'
+import { useGetAddresses, useAddAddress } from '@/api/client/customer'
 import { setCartToken } from '@/api/utils'
 import type { Order } from '@/api/types'
 
@@ -50,11 +52,22 @@ const labelClass = 'mb-2 block text-sm font-semibold text-neutral-700'
 export default function CheckoutPage() {
   const router = useRouter()
   const {
-    items, orderType, user, addresses, addAddress, branch, location, subtotal, clearCart, areaId,
+    items, orderType, user, addAddress: addLocalAddress, branch, location, subtotal, clearCart, areaId, cartToken: liveCartToken,
   } = useCart()
 
   const numericBranch = branch ? Number(branch) : undefined
   const numericArea = areaId ?? undefined
+
+  // ─── API addresses for logged-in users ─────────────────────────────────────
+  const { data: apiAddresses = [], isLoading: loadingAddresses } = useGetAddresses()
+  const apiAddrAdder = useAddAddress({
+    onSuccess(newAddr) {
+      setSelectedAddressId(String(newAddr.id))
+      setShowAddrForm(false)
+      setNewAddrLine('')
+      setNewAddrCity('Karachi')
+    },
+  })
 
   // ─── Guest checkout form state ──────────────────────────────────────────────
   const [title, setTitle]                       = useState('Mr.')
@@ -85,11 +98,15 @@ export default function CheckoutPage() {
   const tax        = Math.round(subtotal * TAX_RATE)
   const fee        = orderType === 'delivery' ? DELIVERY_FEE : 0
   const grandTotal = subtotal + tax + fee - discount
-  const selectedAddr = addresses.find((a) => a.id === selectedAddressId)
+
+  // selectedAddr is from the API address list (real backend IDs)
+  const selectedAddr = apiAddresses.find((a) => String(a.id) === selectedAddressId)
 
   reactUseEffect(() => {
-    if (addresses.length > 0 && !selectedAddressId) setSelectedAddressId(addresses[0].id)
-  }, [addresses]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (apiAddresses.length > 0 && !selectedAddressId) {
+      setSelectedAddressId(String(apiAddresses[0].id))
+    }
+  }, [apiAddresses]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const guestReady =
     guestFullName.trim() !== '' &&
@@ -103,8 +120,16 @@ export default function CheckoutPage() {
 
   const handleAddAddress = () => {
     if (!newAddrLine.trim()) return
-    addAddress({ line1: newAddrLine.trim(), city: newAddrCity })
-    setNewAddrLine(''); setNewAddrCity('Karachi'); setShowAddrForm(false)
+    if (user) {
+      // Save to backend for logged-in users
+      apiAddrAdder.addAddress({
+        address: newAddrLine.trim(),
+        city: newAddrCity,
+      })
+    } else {
+      addLocalAddress({ line1: newAddrLine.trim(), city: newAddrCity })
+      setNewAddrLine(''); setNewAddrCity('Karachi'); setShowAddrForm(false)
+    }
   }
 
   // ─── Checkout mutations ─────────────────────────────────────────────────────
@@ -147,7 +172,7 @@ export default function CheckoutPage() {
       image: i.product_image || '',
       quantity: i.quantity,
       selectedOption: i.variant_name || undefined,
-      variantId: i.variant ?? null,
+      variantId: null,
     }))
     const snap: OrderSnapshot = {
       orderNo: o.order_no,
@@ -170,11 +195,58 @@ export default function CheckoutPage() {
     setOrder(snap)
   }
 
-  const isPlacing = checkoutGuest.isPending || checkoutLoggedIn.isPending
+  // ─── Sync local items → API cart to obtain a real cart UUID token ────────────
+  // useAddToCart used only for the sync step; declared here so it's before isPlacing
+  const addToCartMutation = useAddToCart()
+
+  const isPlacing = checkoutGuest.isPending || checkoutLoggedIn.isPending || addToCartMutation.isPending
+
+  async function ensureCartToken(): Promise<string> {
+    // If we already have a live token, use it
+    if (liveCartToken) return liveCartToken
+
+    // Build the list of items that have a valid numeric product ID
+    const syncable = items.filter((i) => i.productId !== null && !isNaN(Number(i.productId)))
+    if (syncable.length === 0) return ''
+
+    let resolvedToken = ''
+    for (const item of syncable) {
+      try {
+        const res = await addToCartMutation.addToCartAsync({
+          product: item.productId as number,
+          quantity: item.quantity,
+          variant: item.variantId ?? undefined,
+          // Pass the token we got from the previous item, or omit to create a new cart
+          cart_token: resolvedToken || undefined,
+          branch: numericBranch,
+          area: numericArea,
+        })
+        // Backend may return full Cart (has .token) or CartItem (has .cart_token embedded)
+        const asCart = res as import('@/api/types').Cart
+        const asItem = res as any
+        const token = asCart?.token || asItem?.cart_token || asItem?.cart?.token || ''
+        if (token && !resolvedToken) {
+          resolvedToken = token
+          setCartToken(resolvedToken)
+        }
+      } catch {
+        // If one item fails, stop — we likely have a token from previous items already
+        break
+      }
+    }
+    return resolvedToken
+  }
 
   const handlePlaceOrder = async () => {
     if (!canPlace) return
     setErrorMsg('')
+
+    // Ensure we have a real API cart token before submitting
+    const resolvedToken = await ensureCartToken()
+    if (!resolvedToken) {
+      setErrorMsg('Unable to create cart. Please try adding items again.')
+      return
+    }
 
     const common = {
       order_type: orderType as 'delivery' | 'pickup',
@@ -193,14 +265,16 @@ export default function CheckoutPage() {
     }
 
     if (user) {
-      const selAddressId = selectedAddressId ? Number(selectedAddressId) : undefined
+      const selAddressId = selectedAddr ? Number(selectedAddr.id) : undefined
       const payload = buildLoggedInPayload({
         ...common,
+        customer_name: user.name,
+        customer_phone: user.phone,
         address_id: selAddressId,
-        address: selectedAddr ? `${selectedAddr.line1}, ${selectedAddr.city}` : undefined,
+        address: selectedAddr ? `${selectedAddr.address}, ${selectedAddr.city}` : undefined,
         city: selectedAddr?.city,
       })
-      checkoutLoggedIn.checkoutLoggedIn(payload)
+      checkoutLoggedIn.checkoutLoggedIn({ ...payload, cart_token: resolvedToken })
     } else {
       const payload = buildGuestPayload({
         ...common,
@@ -214,7 +288,7 @@ export default function CheckoutPage() {
         landmark: guestLandmark || undefined,
         city: orderType === 'delivery' ? (location?.split(', ').pop() || 'Karachi') : undefined,
       })
-      checkoutGuest.checkoutGuest(payload)
+      checkoutGuest.checkoutGuest({ ...payload, cart_token: resolvedToken })
     }
   }
 
@@ -432,16 +506,21 @@ export default function CheckoutPage() {
                 {orderType === 'delivery' && (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-neutral-700">Please Select an address from the list shown</p>
-                    {addresses.map((addr) => {
-                      const sel = selectedAddressId === addr.id
+                    {loadingAddresses && (
+                      <div className="flex items-center gap-2 text-sm text-neutral-500">
+                        <Loader2 size={13} className="animate-spin text-[#c8102e]" /> Loading addresses…
+                      </div>
+                    )}
+                    {apiAddresses.map((addr) => {
+                      const sel = selectedAddressId === String(addr.id)
                       return (
-                        <button key={addr.id} onClick={() => setSelectedAddressId(addr.id)}
+                        <button key={addr.id} onClick={() => setSelectedAddressId(String(addr.id))}
                           className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                             sel
                               ? 'border-green-600 bg-white text-green-700'
                               : 'border-neutral-200 text-neutral-700 hover:border-neutral-300'
                           }`}>
-                          <span>{addr.line1}, {addr.city}</span>
+                          <span>{addr.address}, {addr.city}</span>
                           {sel
                             ? <CheckCircle size={18} className="shrink-0 text-green-600 fill-green-600 text-white" />
                             : <Circle size={18} className="shrink-0 text-neutral-400" />}
@@ -457,7 +536,9 @@ export default function CheckoutPage() {
                           {['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad'].map((c) => <option key={c}>{c}</option>)}
                         </select>
                         <div className="flex gap-2">
-                          <button onClick={handleAddAddress} className="flex-1 rounded-lg bg-[#c8102e] py-2 text-xs font-bold text-white hover:bg-red-700">Save</button>
+                          <button onClick={handleAddAddress} disabled={apiAddrAdder.isPending} className="flex-1 rounded-lg bg-[#c8102e] py-2 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50">
+                            {apiAddrAdder.isPending ? 'Saving…' : 'Save'}
+                          </button>
                           <button onClick={() => setShowAddrForm(false)} className="flex-1 rounded-lg border border-neutral-300 py-2 text-xs font-semibold text-neutral-600">Cancel</button>
                         </div>
                       </div>

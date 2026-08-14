@@ -243,10 +243,18 @@ export type ProductOption = {
 };
 
 export type MenuResponse = {
-  categories: MenuCategory[];
-  branch: number;
-  area: number;
-  currency: string;
+  // Backend returns the full storefront payload from GET /storefront/menu/
+  branch:           Record<string, unknown>;
+  area:             Record<string, unknown> | null;
+  settings:         Record<string, unknown>;
+  branch_settings:  Record<string, unknown>;
+  business_hours:   unknown[];
+  sizes:            unknown[];
+  addon_categories: unknown[];
+  // The actual menu tree — categories each containing items directly
+  menu: MenuCategory[];
+  // Fallback: some versions expose a flat `categories` key instead of `menu`
+  categories?: MenuCategory[];
 };
 
 // ─── Storefront Cart ─────────────────────────────────────────────────────────
@@ -335,6 +343,8 @@ export type LoggedInCheckoutPayload = CheckoutPayloadBase & {
   address_id?: number;
   address?: string;
   city?: string;
+  customer_name?: string;
+  customer_phone?: string;
 };
 
 export type OrderItem = {
@@ -395,21 +405,43 @@ export type CheckoutResponse = {
 
 // ─── Storefront Customer Auth & Profile ──────────────────────────────────────
 
+// ─── Customer Registration (matches CustomerRegisterSerializer) ───────────────
+// Backend fields: restaurant (id), name, phone, email?, password, password_confirm
+
 export type RegisterPayload = {
-  username?: string;
-  first_name: string;
-  last_name?: string;
-  email?: string;
-  phone: string;
-  password: string;
-  password_confirm: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  restaurant: number;      // required — FK to Restaurant
+  name: string;            // required — customer display name
+  phone: string;           // required — unique per restaurant
+  email?: string;          // optional
+  password: string;        // required — min 8 chars (Django validator)
+  password_confirm: string;// required — must match password
 };
 
+// Backend register/login response: { access, refresh, customer: { id, restaurant, name, phone, email, is_active, date_joined } }
 export type CustomerLoginResponse = {
   access: string;
   refresh: string;
-  user: CustomerUser;
+  customer: {
+    id: number;
+    restaurant: number;
+    name: string;
+    phone: string;
+    email: string;
+    is_active: boolean;
+    date_joined: string;
+  };
+  // Legacy fallback — some versions return `user` instead of `customer`
+  user?: {
+    id: number;
+    username?: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    gender?: string | null;
+    is_active: boolean;
+    date_joined: string;
+  };
 };
 
 export type CustomerUser = {
@@ -445,28 +477,19 @@ export type CustomerAddress = {
   id: number;
   customer: number;
   label?: string | null;
-  line1: string;
-  line2?: string | null;
+  address: string;        // backend field name (not line1)
+  landmark?: string | null;
   city: string;
-  state?: string | null;
-  postal_code?: string | null;
-  country?: string | null;
   is_default: boolean;
-  phone?: string | null;
   created_at: string;
-  updated_at: string;
 };
 
 export type AddAddressPayload = {
   label?: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state?: string;
-  postal_code?: string;
-  country?: string;
+  address: string;        // required by backend
+  landmark?: string;
+  city?: string;
   is_default?: boolean;
-  phone?: string;
 };
 
 export type UpdateAddressPayload = Partial<AddAddressPayload>;

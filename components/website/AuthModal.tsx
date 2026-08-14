@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { X, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { useCart } from '@/lib/context/CartContext'
 import { useLogin, useRegister } from '@/api/client/customer'
+import { getRestaurantId } from '@/api/utils'
 import type { RegisterPayload, CustomerLoginResponse } from '@/api/types'
 
 const COUNTRY_CODES = [
@@ -29,22 +30,16 @@ function persistTokens(data: CustomerLoginResponse) {
   if (typeof window === 'undefined') return
   localStorage.setItem(TOKEN_KEY, data.access)
   localStorage.setItem(REFRESH_KEY, data.refresh)
+  // Backend returns `customer` on storefront auth; fallback to `user` for compatibility
+  const c = data.customer ?? data.user
+  if (!c) return
   localStorage.setItem(USER_KEY, JSON.stringify({
-    id: data.user.id,
-    username: data.user.username,
-    email: data.user.email,
-    first_name: data.user.first_name,
-    last_name: data.user.last_name,
-    phone: data.user.phone,
-    role: null,
-    role_name: null,
-    group: null,
-    group_name: null,
-    is_active: data.user.is_active,
-    is_staff: false,
-    date_joined: data.user.date_joined,
-    created_at: data.user.date_joined,
-    updated_at: data.user.date_joined,
+    id: c.id,
+    name: (data.customer?.name) ?? `${(data.user as any)?.first_name ?? ''} ${(data.user as any)?.last_name ?? ''}`.trim(),
+    phone: c.phone,
+    email: c.email || '',
+    is_active: c.is_active,
+    date_joined: c.date_joined,
   }))
 }
 
@@ -67,13 +62,11 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
   const [showLoginPass, setShowLoginPass] = useState(false)
 
   // Register state
-  const [regFirst, setRegFirst]       = useState('')
-  const [regLast, setRegLast]         = useState('')
+  const [regName,  setRegName]        = useState('')
   const [regEmail, setRegEmail]       = useState('')
   const [regPhone, setRegPhone]       = useState('')
-  const [regPass, setRegPass]         = useState('')
+  const [regPass,  setRegPass]        = useState('')
   const [regPass2, setRegPass2]       = useState('')
-  const [regGender, setRegGender]     = useState<'Male' | 'Female' | 'Other'>('Male')
   const [showRegPass, setShowRegPass] = useState(false)
 
   const [error, setError] = useState('')
@@ -82,11 +75,11 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
   const login = useLogin({
     onSuccess(data) {
       persistTokens(data)
+      const c = data.customer ?? data.user
       setUser({
-        name: `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username,
-        phone: data.user.phone,
-        email: data.user.email || undefined,
-        gender: (data.user.gender as any) || undefined,
+        name: data.customer?.name ?? `${(data.user as any)?.first_name ?? ''} ${(data.user as any)?.last_name ?? ''}`.trim(),
+        phone: c?.phone ?? '',
+        email: c?.email || undefined,
       })
       onClose()
     },
@@ -95,11 +88,11 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
   const register = useRegister({
     onSuccess(data) {
       persistTokens(data)
+      const c = data.customer ?? data.user
       setUser({
-        name: `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username,
-        phone: data.user.phone,
-        email: data.user.email || undefined,
-        gender: (data.user.gender as any) || undefined,
+        name: data.customer?.name ?? `${(data.user as any)?.first_name ?? ''} ${(data.user as any)?.last_name ?? ''}`.trim(),
+        phone: c?.phone ?? '',
+        email: c?.email || undefined,
       })
       onClose()
     },
@@ -124,25 +117,28 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
       return
     }
     setError('')
-    login.login({ phone: normalizePhone(loginPhone), password: loginPass })
+    login.login({
+      restaurant: Number(getRestaurantId()),
+      phone: normalizePhone(loginPhone),
+      password: loginPass,
+    })
   }
 
   const handleRegister = () => {
-    if (!regFirst.trim()) { setError('First name is required'); return }
+    if (!regName.trim()) { setError('Name is required'); return }
     const cleaned = regPhone.replace(/\D/g, '')
     if (cleaned.length < 10) { setError('Please enter a valid mobile number'); return }
-    if (regPass.length < 6) { setError('Password must be at least 6 characters'); return }
+    if (regPass.length < 8) { setError('Password must be at least 8 characters'); return }
     if (regPass !== regPass2) { setError('Passwords do not match'); return }
     setError('')
 
     const payload: RegisterPayload = {
-      first_name: regFirst.trim(),
-      last_name: regLast.trim() || undefined,
+      restaurant: Number(getRestaurantId()),
+      name: regName.trim(),
       email: regEmail.trim() || undefined,
       phone: normalizePhone(regPhone),
       password: regPass,
       password_confirm: regPass2,
-      gender: regGender,
     }
     register.register(payload)
   }
@@ -269,29 +265,17 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
           {/* ── REGISTER ───────────────────────────────────────────────── */}
           {step === 'register' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
-                    First Name
-                  </label>
-                  <input
-                    value={regFirst}
-                    onChange={(e) => { setRegFirst(e.target.value); setError('') }}
-                    placeholder="John"
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
-                    Last Name (optional)
-                  </label>
-                  <input
-                    value={regLast}
-                    onChange={(e) => setRegLast(e.target.value)}
-                    placeholder="Doe"
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
-                  />
-                </div>
+              {/* Full Name */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Full Name <span className="text-[#c8102e]">*</span>
+                </label>
+                <input
+                  value={regName}
+                  onChange={(e) => { setRegName(e.target.value); setError('') }}
+                  placeholder="e.g. John Doe"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                />
               </div>
 
               <div>
@@ -365,25 +349,6 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                   placeholder="Re-enter password"
                   className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
                 />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-semibold text-neutral-700 sm:text-sm">
-                  Gender
-                </label>
-                <div className="flex gap-5">
-                  {(['Male', 'Female', 'Other'] as const).map((g) => (
-                    <label key={g} className="flex cursor-pointer items-center gap-2 text-xs text-neutral-700 sm:text-sm">
-                      <input
-                        type="radio"
-                        checked={regGender === g}
-                        onChange={() => setRegGender(g)}
-                        className="accent-[#c8102e]"
-                      />
-                      {g}
-                    </label>
-                  ))}
-                </div>
               </div>
 
               <button

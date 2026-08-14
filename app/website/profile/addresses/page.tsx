@@ -67,21 +67,19 @@ export default function AddressesPage() {
 
   const handleSave = () => {
     if (!line1.trim()) return
+    // Combine line1 + line2 into the single `address` field the backend expects
+    const addressStr = line2.trim() ? `${line1.trim()}, ${line2.trim()}` : line1.trim()
     if (editingId) {
       const payload: UpdateAddressPayload = {
-        line1: line1.trim(),
-        line2: line2.trim() || undefined,
+        address: addressStr,
         city,
-        postal_code: postal.trim() || undefined,
         label: label !== 'other' ? label : undefined,
       }
       addrUpdater.updateAddress({ customer_address_id: editingId, payload })
     } else {
       const payload: AddAddressPayload = {
-        line1: line1.trim(),
-        line2: line2.trim() || undefined,
+        address: addressStr,
         city,
-        postal_code: postal.trim() || undefined,
         label: label !== 'other' ? label : undefined,
       }
       addrAdder.addAddress(payload)
