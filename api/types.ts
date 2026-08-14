@@ -166,3 +166,321 @@ export type RestaurantsListParams = ListParams & {
   is_active?: boolean;
   city?: string;
 };
+
+// ─── Storefront Browse ───────────────────────────────────────────────────────
+
+export type Branch = {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  phone: string;
+  latitude?: string | null;
+  longitude?: string | null;
+  is_active: boolean;
+  opening_time?: string | null;
+  closing_time?: string | null;
+  restaurant: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Area = {
+  id: number;
+  name: string;
+  city: string;
+  branch?: number | null;
+  branch_name?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MenuCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  icon?: string | null;
+  badge?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  sub_categories: MenuSubCategory[];
+};
+
+export type MenuSubCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  products: Product[];
+};
+
+export type Product = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  base_price: string;
+  original_price?: string | null;
+  from_label?: boolean;
+  image?: string | null;
+  tag?: string | null;
+  discount?: string | null;
+  branch_ids?: (string | number)[] | '*';
+  options: ProductOption[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProductOption = {
+  id: number;
+  name: string;
+  price_adjustment?: string | number;
+};
+
+export type MenuResponse = {
+  categories: MenuCategory[];
+  branch: number;
+  area: number;
+  currency: string;
+};
+
+// ─── Storefront Cart ─────────────────────────────────────────────────────────
+
+export type CartItem = {
+  id: number;
+  cart: number;
+  product: number;
+  product_name: string;
+  product_image?: string | null;
+  variant?: number | null;
+  variant_name?: string | null;
+  quantity: number;
+  unit_price: string;
+  subtotal: string;
+  options?: Record<string, unknown> | null;
+  special_instructions?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Cart = {
+  token: string;
+  customer?: number | null;
+  branch?: number | null;
+  area?: number | null;
+  items: CartItem[];
+  subtotal: string;
+  tax?: string;
+  discount?: string;
+  total: string;
+  total_items: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AddCartItemPayload = {
+  product: number;
+  quantity: number;
+  variant?: number;
+  options?: Record<string, unknown>;
+  special_instructions?: string;
+  cart_token?: string;
+  branch?: number;
+  area?: number;
+};
+
+export type UpdateCartItemPayload = {
+  quantity: number;
+};
+
+// ─── Storefront Checkout ─────────────────────────────────────────────────────
+
+export type CheckoutPayloadBase = {
+  cart_token: string;
+  branch?: number;
+  area?: number;
+  order_type: 'delivery' | 'pickup';
+  payment_method: 'cod' | 'card' | 'online' | 'wallet';
+  subtotal: number | string;
+  tax?: number | string;
+  delivery_fee?: number | string;
+  discount?: number | string;
+  total: number | string;
+  special_instructions?: string;
+  voucher_code?: string;
+  change_amount?: string | number;
+  is_gift?: boolean;
+};
+
+export type GuestCheckoutPayload = CheckoutPayloadBase & {
+  customer_type: 'guest';
+  title?: string;
+  first_name: string;
+  last_name?: string;
+  phone: string;
+  alt_phone?: string;
+  email?: string;
+  address?: string;
+  landmark?: string;
+  city?: string;
+};
+
+export type LoggedInCheckoutPayload = CheckoutPayloadBase & {
+  customer_type: 'logged_in';
+  address_id?: number;
+  address?: string;
+  city?: string;
+};
+
+export type OrderItem = {
+  id: number;
+  product: number;
+  product_name: string;
+  product_image?: string | null;
+  variant_name?: string | null;
+  quantity: number;
+  unit_price: string;
+  subtotal: string;
+};
+
+export type Order = {
+  id: number;
+  order_no: string;
+  order_type: 'delivery' | 'pickup';
+  payment_method: string;
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  status:
+    | 'received'
+    | 'accepted'
+    | 'preparing'
+    | 'ready'
+    | 'out_for_delivery'
+    | 'delivered'
+    | 'cancelled';
+  branch: number;
+  branch_name?: string;
+  area?: number | null;
+  area_name?: string | null;
+  customer?: number | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  delivery_address?: string | null;
+  subtotal: string;
+  tax: string;
+  delivery_fee: string;
+  discount: string;
+  total: string;
+  special_instructions?: string | null;
+  voucher_code?: string | null;
+  items: OrderItem[];
+  placed_at: string;
+  estimated_delivery_at?: string | null;
+  delivered_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CheckoutResponse = {
+  success: boolean;
+  order: Order;
+  message?: string;
+  redirect_url?: string | null;
+};
+
+// ─── Storefront Customer Auth & Profile ──────────────────────────────────────
+
+export type RegisterPayload = {
+  username?: string;
+  first_name: string;
+  last_name?: string;
+  email?: string;
+  phone: string;
+  password: string;
+  password_confirm: string;
+  gender?: 'Male' | 'Female' | 'Other';
+};
+
+export type CustomerLoginResponse = {
+  access: string;
+  refresh: string;
+  user: CustomerUser;
+};
+
+export type CustomerUser = {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  gender?: string | null;
+  is_active: boolean;
+  date_joined: string;
+};
+
+export type CustomerProfile = {
+  id: number;
+  user: CustomerUser;
+  gender?: string | null;
+  phone: string;
+  default_address?: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UpdateCustomerPayload = {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  gender?: string;
+};
+
+export type CustomerAddress = {
+  id: number;
+  customer: number;
+  label?: string | null;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+  is_default: boolean;
+  phone?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AddAddressPayload = {
+  label?: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postal_code?: string;
+  country?: string;
+  is_default?: boolean;
+  phone?: string;
+};
+
+export type UpdateAddressPayload = Partial<AddAddressPayload>;
+
+export type OrderHistoryItem = {
+  id: number;
+  order_no: string;
+  order_type: string;
+  status: string;
+  total: string;
+  placed_at: string;
+  estimated_delivery_at?: string | null;
+  delivered_at?: string | null;
+  branch_name?: string | null;
+  payment_method: string;
+  items_count: number;
+};

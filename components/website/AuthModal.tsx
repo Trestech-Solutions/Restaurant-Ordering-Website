@@ -1,14 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect as reactUseEffect } from 'react'
 import Image from 'next/image'
-import { X, AlertCircle } from 'lucide-react'
+import { X, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { useCart } from '@/lib/context/CartContext'
-
-// ─── Static credentials ───────────────────────────────────────────────────────
-const VALID_PHONE = '03366655786'
-const VALID_OTP   = '123456'
-const MOCK_USER   = { name: 'Syed', phone: VALID_PHONE }
+import { useLogin, useRegister } from '@/api/client/customer'
+import type { RegisterPayload, CustomerLoginResponse } from '@/api/types'
 
 const COUNTRY_CODES = [
   { code: '+92', flag: '🇵🇰' },
@@ -17,223 +14,414 @@ const COUNTRY_CODES = [
   { code: '+971', flag: '🇦🇪' },
 ]
 
-type Step = 'phone' | 'otp'
+type Step = 'login' | 'register'
 
 interface AuthModalProps {
   onClose: () => void
   onGuestContinue: () => void
 }
 
+const TOKEN_KEY = 'trestech_token'
+const REFRESH_KEY = 'trestech_refresh_token'
+const USER_KEY = 'trestech_user'
+
+function persistTokens(data: CustomerLoginResponse) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(TOKEN_KEY, data.access)
+  localStorage.setItem(REFRESH_KEY, data.refresh)
+  localStorage.setItem(USER_KEY, JSON.stringify({
+    id: data.user.id,
+    username: data.user.username,
+    email: data.user.email,
+    first_name: data.user.first_name,
+    last_name: data.user.last_name,
+    phone: data.user.phone,
+    role: null,
+    role_name: null,
+    group: null,
+    group_name: null,
+    is_active: data.user.is_active,
+    is_staff: false,
+    date_joined: data.user.date_joined,
+    created_at: data.user.date_joined,
+    updated_at: data.user.date_joined,
+  }))
+}
+
+function normalizePhone(raw: string): string {
+  let cleaned = raw.replace(/\D/g, '')
+  if (cleaned.startsWith('92')) cleaned = cleaned.slice(2)
+  if (cleaned.startsWith('0')) cleaned = cleaned.slice(1)
+  return '0' + cleaned
+}
+
 export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
   const { setUser } = useCart()
 
-  const [step, setStep]           = useState<Step>('phone')
+  const [step, setStep]           = useState<Step>('login')
   const [countryCode, setCC]      = useState('+92')
-  const [mobile, setMobile]       = useState('')
-  const [otp, setOtp]             = useState(['', '', '', '', '', ''])
-  const [error, setError]         = useState('')
-  const [sending, setSending]     = useState(false)
-  const [countdown, setCountdown] = useState(0)
 
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+  // Login state
+  const [loginPhone, setLoginPhone]   = useState('')
+  const [loginPass, setLoginPass]     = useState('')
+  const [showLoginPass, setShowLoginPass] = useState(false)
 
-  // Countdown timer for resend
-  useEffect(() => {
-    if (countdown <= 0) return
-    const t = setTimeout(() => setCountdown((c) => c - 1), 1000)
-    return () => clearTimeout(t)
-  }, [countdown])
+  // Register state
+  const [regFirst, setRegFirst]       = useState('')
+  const [regLast, setRegLast]         = useState('')
+  const [regEmail, setRegEmail]       = useState('')
+  const [regPhone, setRegPhone]       = useState('')
+  const [regPass, setRegPass]         = useState('')
+  const [regPass2, setRegPass2]       = useState('')
+  const [regGender, setRegGender]     = useState<'Male' | 'Female' | 'Other'>('Male')
+  const [showRegPass, setShowRegPass] = useState(false)
 
-  // Auto-focus first OTP box when step changes
-  useEffect(() => {
-    if (step === 'otp') otpRefs.current[0]?.focus()
-  }, [step])
+  const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
 
-  const handleSendOtp = () => {
-    const cleaned = mobile.replace(/\D/g, '')
+  const login = useLogin({
+    onSuccess(data) {
+      persistTokens(data)
+      setUser({
+        name: `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username,
+        phone: data.user.phone,
+        email: data.user.email || undefined,
+        gender: (data.user.gender as any) || undefined,
+      })
+      onClose()
+    },
+  })
+
+  const register = useRegister({
+    onSuccess(data) {
+      persistTokens(data)
+      setUser({
+        name: `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username,
+        phone: data.user.phone,
+        email: data.user.email || undefined,
+        gender: (data.user.gender as any) || undefined,
+      })
+      onClose()
+    },
+  })
+
+  reactUseEffect(() => {
+    if (login.isPending || register.isPending) {
+      setSending(true)
+    } else {
+      setSending(false)
+    }
+  }, [login.isPending, register.isPending])
+
+  const handleLogin = () => {
+    const cleaned = loginPhone.replace(/\D/g, '')
     if (cleaned.length < 10) {
       setError('Please enter a valid mobile number')
       return
     }
-    setError('')
-    setSending(true)
-    // Simulate API delay
-    setTimeout(() => {
-      setSending(false)
-      setStep('otp')
-      setCountdown(44)
-    }, 800)
-  }
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return
-    const next = [...otp]
-    next[index] = value
-    setOtp(next)
-    setError('')
-    if (value && index < 5) otpRefs.current[index + 1]?.focus()
-  }
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
-    }
-  }
-
-  const handleVerifyOtp = () => {
-    const entered = otp.join('')
-    if (entered.length < 6) {
-      setError('Please enter the 6-digit OTP')
+    if (loginPass.length < 6) {
+      setError('Please enter your password (min 6 characters)')
       return
     }
-    if (entered !== VALID_OTP) {
-      setError('Invalid OTP. Please try again.')
-      setOtp(['', '', '', '', '', ''])
-      otpRefs.current[0]?.focus()
-      return
-    }
-    setUser(MOCK_USER)
-    onClose()
+    setError('')
+    login.login({ phone: normalizePhone(loginPhone), password: loginPass })
   }
 
-  const handleResend = () => {
-    setOtp(['', '', '', '', '', ''])
+  const handleRegister = () => {
+    if (!regFirst.trim()) { setError('First name is required'); return }
+    const cleaned = regPhone.replace(/\D/g, '')
+    if (cleaned.length < 10) { setError('Please enter a valid mobile number'); return }
+    if (regPass.length < 6) { setError('Password must be at least 6 characters'); return }
+    if (regPass !== regPass2) { setError('Passwords do not match'); return }
     setError('')
-    setCountdown(44)
-    otpRefs.current[0]?.focus()
+
+    const payload: RegisterPayload = {
+      first_name: regFirst.trim(),
+      last_name: regLast.trim() || undefined,
+      email: regEmail.trim() || undefined,
+      phone: normalizePhone(regPhone),
+      password: regPass,
+      password_confirm: regPass2,
+      gender: regGender,
+    }
+    register.register(payload)
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
-      <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl">
-
-        {/* Close */}
+      <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition-colors"
+          className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-200 text-neutral-600 hover:bg-neutral-300 transition-colors z-10"
         >
           <X size={14} />
         </button>
 
-        {/* ── PHONE STEP ──────────────────────────────────────────────── */}
-        {step === 'phone' && (
-          <div className="px-5 py-6 sm:px-8 sm:py-8">
-            <h2 className="mb-1 text-lg font-bold text-neutral-900 sm:text-xl">Enter your Mobile Number</h2>
-            <p className="mb-5 text-xs text-neutral-500 sm:mb-6 sm:text-sm">
-              Please confirm your country code and enter your mobile number
-            </p>
+        {/* Tab bar */}
+        <div className="grid grid-cols-2 border-b border-neutral-200">
+          {(['login', 'register'] as Step[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => { setStep(s); setError('') }}
+              className={`py-4 text-sm font-bold uppercase tracking-wide transition-colors ${
+                step === s
+                  ? 'bg-white text-[#c8102e] border-b-2 border-[#c8102e]'
+                  : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-100'
+              }`}
+            >
+              {s === 'login' ? 'Login' : 'Register'}
+            </button>
+          ))}
+        </div>
 
-            {/* Mobile input */}
-            <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
-              <select
-                value={countryCode}
-                onChange={(e) => setCC(e.target.value)}
-                className="border-r border-neutral-300 bg-neutral-50 px-2 py-2.5 text-xs text-neutral-700 outline-none sm:px-2 sm:py-3 sm:text-sm"
-              >
-                {COUNTRY_CODES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
-                ))}
-              </select>
-              <input
-                type="tel"
-                placeholder="3366655786"
-                value={mobile}
-                onChange={(e) => { setMobile(e.target.value.replace(/\D/g, '')); setError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
-                className="flex-1 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+        <div className="px-5 py-6 sm:px-8 sm:py-8">
+          {/* Brand header */}
+          <div className="flex flex-col items-center mb-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden sm:h-16 sm:w-16 mb-3">
+              <Image
+                src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
+                alt="United King"
+                width={64}
+                height={64}
+                className="h-full w-full object-contain"
               />
             </div>
-
-            {error && <p className="mt-2 text-[11px] text-red-500 sm:text-xs">{error}</p>}
-
-            <button
-              onClick={handleSendOtp}
-              disabled={sending}
-              className="mt-4 w-full rounded-lg bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:mt-5 sm:py-3.5 sm:text-sm"
-            >
-              {sending ? 'Sending OTP...' : 'Login / Register'}
-            </button>
-
-            <div className="my-4 flex items-center gap-3">
-              <div className="flex-1 border-t border-neutral-200" />
-              <span className="text-[11px] text-neutral-400 sm:text-xs">Or</span>
-              <div className="flex-1 border-t border-neutral-200" />
-            </div>
-
-            <button
-              onClick={onGuestContinue}
-              className="w-full rounded-lg border-2 border-[#f7c948] bg-[#f7c948]/10 py-2.5 text-xs font-bold text-[#b8860b] hover:bg-[#f7c948]/20 transition-colors sm:py-3.5 sm:text-sm"
-            >
-              Order as Guest
-            </button>
-          </div>
-        )}
-
-        {/* ── OTP STEP ────────────────────────────────────────────────── */}
-        {step === 'otp' && (
-          <div className="px-5 py-6 sm:px-8 sm:py-8">
-            <h2 className="mb-3 text-base font-bold text-neutral-900 sm:mb-4 sm:text-lg">
-              Please enter the verification code
+            <h2 className="text-lg font-bold text-neutral-900 sm:text-xl">
+              {step === 'login' ? 'Welcome Back' : 'Create Account'}
             </h2>
-
-            {/* Info banner */}
-            <div className="mb-5 flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2.5 text-[11px] text-blue-700 sm:mb-6 sm:px-4 sm:py-3 sm:text-xs">
-              <AlertCircle size={13} className="mt-0.5 shrink-0 sm:hidden" />
-              <AlertCircle size={14} className="mt-0.5 shrink-0 hidden sm:block" />
-              <p>
-                Hello, an OTP has been sent to your Phone Number. Please verify the OTP to
-                retrieve your name, number and address.
-              </p>
-            </div>
-
-            {/* 6-box OTP input */}
-            <div className="mb-2 flex justify-center gap-1.5 sm:gap-2">
-              {otp.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { otpRefs.current[i] = el }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(i, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                  className="h-10 w-8 rounded-lg border border-neutral-300 text-center text-base font-bold text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition-all sm:h-12 sm:w-10 sm:text-lg"
-                />
-              ))}
-            </div>
-
-            {/* Countdown */}
-            <p className="mb-4 text-center text-[11px] text-neutral-500 sm:text-xs">
-              {countdown > 0 ? (
-                <>({countdown})</>
-              ) : (
-                <button onClick={handleResend} className="text-[#c8102e] font-semibold hover:underline">
-                  Resend OTP
-                </button>
-              )}
+            <p className="text-xs text-neutral-500 sm:text-sm mt-1">
+              {step === 'login'
+                ? 'Enter your phone number and password'
+                : 'Register to order faster next time'}
             </p>
-
-            {error && (
-              <p className="mb-3 text-center text-[11px] text-red-500 sm:text-xs">{error}</p>
-            )}
-
-            <button
-              onClick={handleVerifyOtp}
-              className="w-full rounded-xl bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] transition-colors sm:py-3 sm:text-sm"
-            >
-              Verify OTP
-            </button>
-
-            <button
-              onClick={() => { setStep('phone'); setOtp(['','','','','','']); setError('') }}
-              className="mt-3 w-full text-center text-[11px] text-neutral-400 hover:text-neutral-600 sm:text-xs"
-            >
-              ← Change number
-            </button>
           </div>
-        )}
+
+          {error && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-[11px] text-red-700 sm:px-4 sm:text-xs">
+              <AlertCircle size={13} className="mt-0.5 shrink-0" />
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* ── LOGIN ──────────────────────────────────────────────────── */}
+          {step === 'login' && (
+            <>
+              <div className="mb-4">
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Mobile Number
+                </label>
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCC(e.target.value)}
+                    className="border-r border-neutral-300 bg-neutral-50 px-2 py-2.5 text-xs text-neutral-700 outline-none sm:py-3 sm:text-sm"
+                  >
+                    {COUNTRY_CODES.map((c) => (
+                      <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    placeholder="3366655786"
+                    value={loginPhone}
+                    onChange={(e) => { setLoginPhone(e.target.value.replace(/\D/g, '')); setError('') }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                    className="flex-1 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Password
+                </label>
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                  <input
+                    type={showLoginPass ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={loginPass}
+                    onChange={(e) => { setLoginPass(e.target.value); setError('') }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                    className="flex-1 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPass((v) => !v)}
+                    className="px-3 text-neutral-400 hover:text-neutral-700 transition-colors"
+                    aria-label="Toggle password"
+                  >
+                    {showLoginPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogin}
+                disabled={sending}
+                className="w-full rounded-lg bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
+              >
+                {sending ? 'Logging in...' : 'Login'}
+              </button>
+            </>
+          )}
+
+          {/* ── REGISTER ───────────────────────────────────────────────── */}
+          {step === 'register' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                    First Name
+                  </label>
+                  <input
+                    value={regFirst}
+                    onChange={(e) => { setRegFirst(e.target.value); setError('') }}
+                    placeholder="John"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                    Last Name (optional)
+                  </label>
+                  <input
+                    value={regLast}
+                    onChange={(e) => setRegLast(e.target.value)}
+                    placeholder="Doe"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Mobile Number
+                </label>
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCC(e.target.value)}
+                    className="border-r border-neutral-300 bg-neutral-50 px-2 py-2.5 text-xs text-neutral-700 outline-none sm:py-3 sm:text-sm"
+                  >
+                    {COUNTRY_CODES.map((c) => (
+                      <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    placeholder="3366655786"
+                    value={regPhone}
+                    onChange={(e) => { setRegPhone(e.target.value.replace(/\D/g, '')); setError('') }}
+                    className="flex-1 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Email (optional)
+                </label>
+                <input
+                  type="email"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="john@example.com"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Password
+                </label>
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                  <input
+                    type={showRegPass ? 'text' : 'password'}
+                    value={regPass}
+                    onChange={(e) => { setRegPass(e.target.value); setError('') }}
+                    placeholder="Min 6 characters"
+                    className="flex-1 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPass((v) => !v)}
+                    className="px-3 text-neutral-400 hover:text-neutral-700 transition-colors"
+                    aria-label="Toggle password"
+                  >
+                    {showRegPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={regPass2}
+                  onChange={(e) => { setRegPass2(e.target.value); setError('') }}
+                  placeholder="Re-enter password"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-semibold text-neutral-700 sm:text-sm">
+                  Gender
+                </label>
+                <div className="flex gap-5">
+                  {(['Male', 'Female', 'Other'] as const).map((g) => (
+                    <label key={g} className="flex cursor-pointer items-center gap-2 text-xs text-neutral-700 sm:text-sm">
+                      <input
+                        type="radio"
+                        checked={regGender === g}
+                        onChange={() => setRegGender(g)}
+                        className="accent-[#c8102e]"
+                      />
+                      {g}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleRegister}
+                disabled={sending}
+                className="w-full rounded-lg bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
+              >
+                {sending ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </div>
+          )}
+
+          {step === 'login' && (
+            <>
+              <div className="my-4 flex items-center gap-3">
+                <div className="flex-1 border-t border-neutral-200" />
+                <span className="text-[11px] text-neutral-400 sm:text-xs">Or</span>
+                <div className="flex-1 border-t border-neutral-200" />
+              </div>
+
+              <button
+                onClick={onGuestContinue}
+                className="w-full rounded-lg border-2 border-[#f7c948] bg-[#f7c948]/10 py-2.5 text-xs font-bold text-[#b8860b] hover:bg-[#f7c948]/20 transition-colors sm:py-3.5 sm:text-sm"
+              >
+                Order as Guest
+              </button>
+            </>
+          )}
+
+          {step === 'register' && (
+            <button
+              onClick={() => { setStep('login'); setError('') }}
+              className="mt-4 w-full text-center text-[11px] text-neutral-500 hover:text-neutral-700 sm:text-xs"
+            >
+              Already have an account? <span className="text-[#c8102e] font-semibold">Login →</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

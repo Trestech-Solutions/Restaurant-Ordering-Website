@@ -1,23 +1,25 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect as reactUseEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart, useRegisterProductId } from '@/lib/context/CartContext'
 import { CategoryNav } from '@/components/website/CategoryNav'
 import { SubCategoryNav } from '@/components/website/SubCategoryNav'
 import { SearchBar } from '@/components/website/SearchBar'
 import { ProductGrid } from '@/components/website/ProductGrid'
-import { CATEGORIES, ALL_PRODUCTS } from '@/lib/data/website-products'
+import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
+import { useGetMenu } from '@/api/client/browse'
+import type { ProductData } from '@/components/website/ProductCard'
+import type { MenuResponse, Product as ApiProduct } from '@/api/types'
 
 const HERO_SLIDES = [
   {
     id: 'slide-1',
     image: 'https://assets.indolj.io/upload/1780653167-Mango---Webslider-jpg.jpeg?ver=10',
     title: "mango"
-
   },
   {
     id: 'slide-2',
@@ -26,24 +28,132 @@ const HERO_SLIDES = [
   },
 ]
 
+const DEFAULT_ICON = 'solar:cup-hot-bold-duotone'
+
+function transformMenu(
+  menu: MenuResponse | undefined,
+): {
+  categories: Category[]
+  products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
+  idPairs: Array<{ clientId: string; numericId: number }>
+} {
+  if (!menu?.categories || menu.categories.length === 0) {
+    const idPairs = FALLBACK_PRODS.map((p, idx) => ({
+      clientId: p.id,
+      numericId: p.productId ?? idx + 1,
+    }))
+    const productsWithId = FALLBACK_PRODS.map((p, idx) => ({
+      ...p,
+      productId: p.productId ?? idx + 1,
+    }))
+    return { categories: FALLBACK_CATS, products: productsWithId, idPairs }
+  }
+
+  const products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[] = []
+  const idPairs: Array<{ clientId: string; numericId: number }> = []
+
+  const categories: Category[] = menu.categories.map((cat) => {
+    const catId = cat.slug || String(cat.id)
+    const subCats: Category['subCategories'] = (cat.sub_categories ?? []).map((sc) => {
+      const subId = sc.slug || String(sc.id)
+
+      ;(sc.products ?? []).forEach((p: ApiProduct) => {
+        const options = (p.options ?? []).map((o) => o.name)
+        const priceFloat = parseFloat(p.base_price || '0')
+        const priceInt = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
+        const branchIds: string[] | '*' =
+          p.branch_ids === '*' || !p.branch_ids
+            ? '*'
+            : (p.branch_ids as (string | number)[]).map(String)
+        const clientId = p.slug || String(p.id)
+        idPairs.push({ clientId, numericId: p.id })
+        products.push({
+          id: clientId,
+          productId: p.id,
+          categoryId: catId,
+          subCategoryId: subId,
+          branchIds,
+          name: p.name,
+          description: p.description || '',
+          price: String(priceInt),
+          originalPrice: p.original_price ? String(Math.round(parseFloat(String(p.original_price)))) : undefined,
+          fromLabel: !!p.from_label,
+          options,
+          tag: p.tag || undefined,
+          discount: p.discount || undefined,
+          image: p.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop',
+        })
+      })
+
+      return { id: subId, label: sc.name }
+    })
+
+    if (subCats.length === 0) subCats.push({ id: `${catId}-all`, label: 'All Items' })
+
+    return {
+      id: catId,
+      label: cat.name,
+      icon: cat.icon || DEFAULT_ICON,
+      badge: cat.badge || undefined,
+      subCategories: subCats,
+    }
+  })
+
+  return { categories, products, idPairs }
+}
+
 export default function HomePage() {
-  const { branch } = useCart()
+  const { branch, areaId } = useCart()
+  const registerProductId = useRegisterProductId()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [activeCategoryId, setActiveCategoryId] = useState(CATEGORIES[0].id)
-  const [activeSubCategoryId, setActiveSubCategoryId] = useState(CATEGORIES[0].subCategories[0].id)
   const [searchQuery, setSearchQuery] = useState('')
+
+  const branchId = branch ? Number(branch) : NaN
+  const numericBranch = isNaN(branchId) ? null : branchId
+  const numericArea = areaId
+
+  const { data: menu } = useGetMenu({
+    branchId: numericBranch,
+    areaId: numericArea,
+  })
+
+  const { categories, products, idPairs } = useMemo(() => transformMenu(menu), [menu])
+
+  // Register product IDs after render — never during render
+  reactUseEffect(() => {
+    idPairs.forEach(({ clientId, numericId }) => registerProductId(clientId, numericId))
+  }, [idPairs, registerProductId])
+
+  const [activeCategoryId, setActiveCategoryId] = useState<string>(() =>
+    categories[0]?.id ?? FALLBACK_CATS[0].id
+  )
+  const [activeSubCategoryId, setActiveSubCategoryId] = useState<string>(() =>
+    categories[0]?.subCategories?.[0]?.id ?? FALLBACK_CATS[0].subCategories[0].id
+  )
+
+  reactUseEffect(() => {
+    if (categories.length === 0) return
+    const c = categories.find((cc) => cc.id === activeCategoryId)
+    if (!c) {
+      setActiveCategoryId(categories[0].id)
+      setActiveSubCategoryId(categories[0].subCategories[0].id)
+    } else if (!c.subCategories.some((sc) => sc.id === activeSubCategoryId)) {
+      setActiveSubCategoryId(c.subCategories[0].id)
+    }
+  }, [categories, activeCategoryId, activeSubCategoryId])
 
   const goToSlide = useCallback((index: number) => {
     setCurrentSlide((index + HERO_SLIDES.length) % HERO_SLIDES.length)
   }, [])
 
-  useEffect(() => {
+  reactUseEffect(() => {
     const t = setInterval(() => setCurrentSlide((p) => (p + 1) % HERO_SLIDES.length), 4500)
     return () => clearInterval(t)
   }, [])
 
   const handleCategoryChange = (catId: string) => {
-    const cat = CATEGORIES.find((c) => c.id === catId)!
+    const cat = categories.find((c) => c.id === catId)
+    if (!cat) return
     setActiveCategoryId(catId)
     setActiveSubCategoryId(cat.subCategories[0].id)
     setSearchQuery('')
@@ -55,12 +165,12 @@ export default function HomePage() {
   }
 
   const activeCategory = useMemo(
-    () => CATEGORIES.find((c) => c.id === activeCategoryId)!,
-    [activeCategoryId]
+    () => categories.find((c) => c.id === activeCategoryId) ?? categories[0] ?? FALLBACK_CATS[0],
+    [categories, activeCategoryId]
   )
 
   const filteredProducts = useMemo(() => {
-    return ALL_PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       const matchCat    = p.categoryId === activeCategoryId
       const matchSub    = p.subCategoryId === activeSubCategoryId
       const matchBranch = !branch || p.branchIds === '*' || p.branchIds.includes(branch)
@@ -70,7 +180,7 @@ export default function HomePage() {
         p.description.toLowerCase().includes(searchQuery.toLowerCase())
       return matchCat && matchSub && matchBranch && matchSearch
     })
-  }, [activeCategoryId, activeSubCategoryId, searchQuery, branch])
+  }, [activeCategoryId, activeSubCategoryId, searchQuery, branch, products])
 
   return (
     <div className="min-h-screen font-sans text-neutral-800">
@@ -119,13 +229,13 @@ export default function HomePage() {
 
       {/* Category nav — sticks right below hero */}
       <CategoryNav
-        categories={CATEGORIES}
+        categories={categories}
         activeCategoryId={activeCategoryId}
         onSelect={handleCategoryChange}
       />
 
       <SubCategoryNav
-        subCategories={activeCategory.subCategories}
+        subCategories={activeCategory?.subCategories ?? []}
         activeSubCategoryId={activeSubCategoryId}
         onSelect={handleSubCategoryChange}
       />
@@ -133,13 +243,13 @@ export default function HomePage() {
       <SearchBar
         value={searchQuery}
         onChange={setSearchQuery}
-        placeholder={`Search in ${activeCategory.label}...`}
+        placeholder={`Search in ${activeCategory?.label ?? ''}...`}
       />
 
       <section className="mx-auto max-w-[1400px] px-4 py-8 md:px-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-neutral-900">{activeCategory.label}</h2>
+            <h2 className="text-xl font-bold text-neutral-900">{activeCategory?.label ?? ''}</h2>
             <p className="text-sm text-neutral-500">
               {filteredProducts.length} item{filteredProducts.length !== 1 ? 's' : ''} found
             </p>

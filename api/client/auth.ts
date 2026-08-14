@@ -1,9 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import api from "../axios";
-import API_ENDPOINTS from "../endpoint";
-
-// ─── Shared error shape from DRF ─────────────────────────────────────────────
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import api from '../axios';
+import API_ENDPOINTS from '../endpoint';
 
 type ApiError = {
   detail?: string;
@@ -11,17 +9,14 @@ type ApiError = {
 };
 
 function extractErrorMessage(err: unknown): string {
-  if (err && typeof err === "object") {
+  if (err && typeof err === 'object') {
     const e = err as ApiError;
-    if (typeof e.detail === "string") return e.detail;
-    // DRF field-level errors → join first messages
+    if (typeof e.detail === 'string') return e.detail;
     const firstField = Object.values(e)[0];
     if (Array.isArray(firstField)) return firstField[0] as string;
   }
-  return "Something went wrong. Please try again.";
+  return 'Something went wrong. Please try again.';
 }
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type LoginPayload = {
   username: string;
@@ -58,18 +53,18 @@ export type ResetPasswordPayload = {
   new_password: string;
 };
 
-// ─── Login ────────────────────────────────────────────────────────────────────
-
 export function useLogin(options?: {
   onSuccess?: (data: LoginResponse) => void;
   onError?: (message: string) => void;
 }) {
   const mutation = useMutation<LoginResponse, ApiError, LoginPayload>({
     mutationFn: (payload) =>
-      api.post<LoginResponse>(API_ENDPOINTS.auth.login, payload).then((r) => r.data),
+      api
+        .post<LoginResponse>(API_ENDPOINTS.StorefrontCustomerAuth.login, payload)
+        .then((r) => r.data),
 
     onSuccess(data) {
-      toast.success("Logged in successfully.");
+      toast.success('Logged in successfully.');
       options?.onSuccess?.(data);
     },
     onError(err) {
@@ -86,8 +81,6 @@ export function useLogin(options?: {
   };
 }
 
-// ─── Refresh Token ────────────────────────────────────────────────────────────
-
 export function useRefreshToken(options?: {
   onSuccess?: (data: { access: string; refresh?: string }) => void;
   onError?: (message: string) => void;
@@ -100,7 +93,7 @@ export function useRefreshToken(options?: {
     mutationFn: (payload) =>
       api
         .post<{ access: string; refresh?: string }>(
-          API_ENDPOINTS.auth.refresh,
+          API_ENDPOINTS.StorefrontCustomerAuth.refreshToken,
           payload
         )
         .then((r) => r.data),
@@ -121,18 +114,22 @@ export function useRefreshToken(options?: {
   };
 }
 
-// ─── Logout ───────────────────────────────────────────────────────────────────
-
 export function useLogout(options?: {
   onSuccess?: () => void;
   onError?: (message: string) => void;
 }) {
   const mutation = useMutation<void, ApiError, { refresh: string }>({
-    mutationFn: (payload) =>
-      api.post(API_ENDPOINTS.auth.logout, payload).then(() => undefined),
+    mutationFn: async (payload) => {
+      try {
+        await api.post('/storefront/logout/', payload).then(() => undefined);
+      } catch {
+        // Silently ignore — tokens are cleared on the client anyway
+      }
+      return undefined;
+    },
 
     onSuccess() {
-      toast.success("Logged out successfully.");
+      toast.success('Logged out successfully.');
       options?.onSuccess?.();
     },
     onError(err) {
@@ -149,8 +146,6 @@ export function useLogout(options?: {
   };
 }
 
-// ─── Forgot Password ──────────────────────────────────────────────────────────
-
 export function useForgotPassword(options?: {
   onSuccess?: (data: { detail: string }) => void;
   onError?: (message: string) => void;
@@ -158,7 +153,7 @@ export function useForgotPassword(options?: {
   const mutation = useMutation<{ detail: string }, ApiError, ForgotPasswordPayload>({
     mutationFn: (payload) =>
       api
-        .post<{ detail: string }>(API_ENDPOINTS.auth.forgotPassword, payload)
+        .post<{ detail: string }>('/storefront/password/reset/', payload)
         .then((r) => r.data),
 
     onSuccess(data) {
@@ -179,8 +174,6 @@ export function useForgotPassword(options?: {
   };
 }
 
-// ─── Reset Password ───────────────────────────────────────────────────────────
-
 export function useResetPassword(options?: {
   onSuccess?: (data: { detail: string }) => void;
   onError?: (message: string) => void;
@@ -188,11 +181,11 @@ export function useResetPassword(options?: {
   const mutation = useMutation<{ detail: string }, ApiError, ResetPasswordPayload>({
     mutationFn: (payload) =>
       api
-        .post<{ detail: string }>(API_ENDPOINTS.auth.resetPassword, payload)
+        .post<{ detail: string }>('/storefront/password/reset/confirm/', payload)
         .then((r) => r.data),
 
     onSuccess(data) {
-      toast.success(data.detail ?? "Password reset successfully.");
+      toast.success(data.detail ?? 'Password reset successfully.');
       options?.onSuccess?.(data);
     },
     onError(err) {

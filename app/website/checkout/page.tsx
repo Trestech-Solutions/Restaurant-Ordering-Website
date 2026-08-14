@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect as reactUseEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -9,9 +9,19 @@ import {
   Gift, Bike, FileText, CheckCircle, Circle, Plus,
   User, Mail, Store, Clock, Printer, ArrowLeft,
 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useCart, type CartItem } from '@/lib/context/CartContext'
 import { UK_BRANCHES } from '@/components/website/OrderTypeModal'
 import { Navigation } from 'lucide-react'
+import {
+  useCheckoutGuest,
+  useCheckoutLoggedIn,
+  buildGuestPayload,
+  buildLoggedInPayload,
+} from '@/api/client/checkout'
+import { useGetOrder } from '@/api/client/checkout'
+import { setCartToken } from '@/api/utils'
+import type { Order } from '@/api/types'
 
 const TAX_RATE     = 0.18
 const DELIVERY_FEE = 200
@@ -26,8 +36,9 @@ interface OrderSnapshot {
   items: CartItem[]; subtotal: number; discount: number; fee: number; tax: number; grandTotal: number
 }
 
-function makeOrderNo() { return Math.random().toString(36).substring(2, 8).toUpperCase() }
-function fmtDateTime(d: Date) {
+function fmtDateTime(isoOrDate: string | Date) {
+  const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate
+  if (isNaN(d.getTime())) return String(isoOrDate)
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
     ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
@@ -38,7 +49,12 @@ const labelClass = 'mb-2 block text-sm font-semibold text-neutral-700'
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, orderType, user, addresses, addAddress, branch, location, subtotal, clearCart } = useCart()
+  const {
+    items, orderType, user, addresses, addAddress, branch, location, subtotal, clearCart, areaId,
+  } = useCart()
+
+  const numericBranch = branch ? Number(branch) : undefined
+  const numericArea = areaId ?? undefined
 
   // ─── Guest checkout form state ──────────────────────────────────────────────
   const [title, setTitle]                       = useState('Mr.')
@@ -62,19 +78,19 @@ export default function CheckoutPage() {
   const [voucher, setVoucher]                   = useState('')
   const [discount, setDiscount]                 = useState(0)
   const [isGift, setIsGift]                     = useState(false)
-  const [isPlacing, setIsPlacing]               = useState(false)
   const [order, setOrder]                       = useState<OrderSnapshot | null>(null)
-
-  useEffect(() => {
-    if (addresses.length > 0 && !selectedAddressId) setSelectedAddressId(addresses[0].id)
-  }, [addresses]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [placedOrderId, setPlacedOrderId]       = useState<number | null>(null)
+  const [errorMsg, setErrorMsg]                 = useState('')
 
   const tax        = Math.round(subtotal * TAX_RATE)
   const fee        = orderType === 'delivery' ? DELIVERY_FEE : 0
   const grandTotal = subtotal + tax + fee - discount
   const selectedAddr = addresses.find((a) => a.id === selectedAddressId)
 
-  // canPlace rules — different for guest vs logged in
+  reactUseEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) setSelectedAddressId(addresses[0].id)
+  }, [addresses]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const guestReady =
     guestFullName.trim() !== '' &&
     guestMobile.trim() !== '' &&
@@ -91,44 +107,122 @@ export default function CheckoutPage() {
     setNewAddrLine(''); setNewAddrCity('Karachi'); setShowAddrForm(false)
   }
 
+  // ─── Checkout mutations ─────────────────────────────────────────────────────
+
+  const checkoutGuest = useCheckoutGuest({
+    onSuccess(res) {
+      if (res?.order) {
+        setPlacedOrderId(res.order.id)
+        populateFromOrder(res.order)
+      }
+      clearCart()
+      setCartToken(null)
+    },
+    onError(msg) {
+      setErrorMsg(msg || 'Failed to place order')
+    },
+  })
+
+  const checkoutLoggedIn = useCheckoutLoggedIn({
+    onSuccess(res) {
+      if (res?.order) {
+        setPlacedOrderId(res.order.id)
+        populateFromOrder(res.order)
+      }
+      clearCart()
+      setCartToken(null)
+    },
+    onError(msg) {
+      setErrorMsg(msg || 'Failed to place order')
+    },
+  })
+
+  function populateFromOrder(o: Order) {
+    const cartItems: CartItem[] = (o.items ?? []).map((i) => ({
+      id: String(i.product),
+      productId: typeof i.product === 'number' ? i.product : null,
+      cartItemId: typeof i.id === 'number' ? i.id : null,
+      name: i.product_name,
+      price: Math.round(parseFloat(String(i.unit_price))),
+      image: i.product_image || '',
+      quantity: i.quantity,
+      selectedOption: i.variant_name || undefined,
+      variantId: i.variant ?? null,
+    }))
+    const snap: OrderSnapshot = {
+      orderNo: o.order_no,
+      placedAt: fmtDateTime(o.placed_at),
+      deliveryAt: o.estimated_delivery_at ? fmtDateTime(o.estimated_delivery_at) : '—',
+      customerName: o.customer_name || (user ? user.name : 'Guest'),
+      customerPhone: o.customer_phone || '—',
+      customerEmail: o.customer_email || '—',
+      deliveryAddress: o.delivery_address || '—',
+      branchName: o.branch_name || 'United King',
+      orderType: o.order_type === 'pickup' ? 'Pickup' : 'Delivery',
+      payment: o.payment_method,
+      items: cartItems.length > 0 ? cartItems : [...items],
+      subtotal: Math.round(parseFloat(String(o.subtotal))),
+      discount: Math.round(parseFloat(String(o.discount || 0))),
+      fee: Math.round(parseFloat(String(o.delivery_fee || 0))),
+      tax: Math.round(parseFloat(String(o.tax || 0))),
+      grandTotal: Math.round(parseFloat(String(o.total))),
+    }
+    setOrder(snap)
+  }
+
+  const isPlacing = checkoutGuest.isPending || checkoutLoggedIn.isPending
+
   const handlePlaceOrder = async () => {
     if (!canPlace) return
-    setIsPlacing(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    const now = new Date()
+    setErrorMsg('')
 
-    // Customer info: logged-in user OR guest entered values
-    let customerName  = 'Guest'
-    let customerPhone = '—'
-    let customerEmail = '—'
-    let deliveryAddr  = '—'
+    const common = {
+      order_type: orderType as 'delivery' | 'pickup',
+      payment_method: payment as 'cod' | 'card' | 'online' | 'wallet',
+      branch: numericBranch,
+      area: numericArea,
+      subtotal,
+      tax,
+      delivery_fee: fee,
+      discount,
+      total: grandTotal,
+      special_instructions: instructions || undefined,
+      voucher_code: voucher.trim() || undefined,
+      change_amount: changeAmount || undefined,
+      is_gift: isGift,
+    }
 
     if (user) {
-      customerName  = user.name
-      customerPhone = user.phone ? `+92${user.phone.replace(/^0/, '')}` : '—'
-      customerEmail = user.email ?? '—'
-      deliveryAddr  = selectedAddr ? `${selectedAddr.line1}, ${selectedAddr.city}` : '—'
+      const selAddressId = selectedAddressId ? Number(selectedAddressId) : undefined
+      const payload = buildLoggedInPayload({
+        ...common,
+        address_id: selAddressId,
+        address: selectedAddr ? `${selectedAddr.line1}, ${selectedAddr.city}` : undefined,
+        city: selectedAddr?.city,
+      })
+      checkoutLoggedIn.checkoutLoggedIn(payload)
     } else {
-      customerName  = `${title} ${guestFullName}`.trim()
-      customerPhone = guestMobile
-        ? guestMobile.startsWith('+') ? guestMobile : `+92${guestMobile.replace(/^0/, '')}`
-        : '—'
-      customerEmail = guestEmail || '—'
-      const landmark = guestLandmark.trim() ? ` (Near: ${guestLandmark.trim()})` : ''
-      deliveryAddr  = orderType === 'pickup' ? 'Pickup' : `${guestAddress}${landmark}`
+      const payload = buildGuestPayload({
+        ...common,
+        title,
+        first_name: guestFullName.trim().split(' ').slice(0, 1).join(' ') || 'Customer',
+        last_name: guestFullName.trim().split(' ').slice(1).join(' ') || undefined,
+        phone: guestMobile,
+        alt_phone: guestAltMobile || undefined,
+        email: guestEmail || undefined,
+        address: orderType === 'delivery' ? guestAddress : undefined,
+        landmark: guestLandmark || undefined,
+        city: orderType === 'delivery' ? (location?.split(', ').pop() || 'Karachi') : undefined,
+      })
+      checkoutGuest.checkoutGuest(payload)
     }
-
-    const snap: OrderSnapshot = {
-      orderNo: makeOrderNo(), placedAt: fmtDateTime(now),
-      deliveryAt: fmtDateTime(new Date(now.getTime() + 60 * 60 * 1000)),
-      customerName, customerPhone, customerEmail,
-      deliveryAddress: deliveryAddr,
-      branchName: branch ? `United King ${branch.charAt(0).toUpperCase() + branch.slice(1)}` : 'United King',
-      orderType, payment: payment === 'cod' ? 'Cash' : 'Online',
-      items: [...items], subtotal, discount, fee, tax, grandTotal,
-    }
-    clearCart(); setIsPlacing(false); setOrder(snap)
   }
+
+  // ─── After placing order, optionally fetch details ──────────────────────────
+
+  useGetOrder({
+    orderId: placedOrderId,
+  })
 
   if (order) return <OrderReceipt order={order} onPlaceAnother={() => router.push('/')} />
 
@@ -137,7 +231,6 @@ export default function CheckoutPage() {
     : 'NED University'
   const branchShort = branchLabel.length > 10 ? branchLabel.slice(0, 10) + '...' : branchLabel
 
-  // Find branch info for pickup details
   const currentBranch = UK_BRANCHES.find((b) => b.id === branch) ?? UK_BRANCHES[1] ?? {
     id: 'maskan',
     name: 'United King Maskan',
@@ -154,7 +247,6 @@ export default function CheckoutPage() {
 
           {/* LEFT */}
           <div className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm space-y-6">
-            {/* Hello greeting — LOGGED-IN users see this on BOTH pickup + delivery */}
             {user && (
               <p className="text-sm text-neutral-600">
                 Hello,{' '}
@@ -164,7 +256,6 @@ export default function CheckoutPage() {
               </p>
             )}
 
-            {/* Heading: Takeaway card for pickup / Delivery badge for delivery */}
             {orderType === 'pickup' ? (
               <div className="rounded-lg border border-neutral-200 bg-neutral-100 p-5 space-y-2">
                 <p className="text-sm text-neutral-700">
@@ -213,12 +304,17 @@ export default function CheckoutPage() {
 
             <hr className="border-neutral-100" />
 
+            {errorMsg && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMsg}
+              </div>
+            )}
+
             {!user ? (
               // ═══════════════════════════════════════════════════════════════════
               //  GUEST CHECKOUT FORM (without login)
               // ═══════════════════════════════════════════════════════════════════
               <>
-                {/* Title + Full Name */}
                 <div className="grid grid-cols-[110px_1fr] gap-4">
                   <div>
                     <label className={labelClass}>Title</label>
@@ -240,7 +336,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Mobile + Alt Mobile */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -265,7 +360,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Delivery Address + Nearest Landmark — only for delivery */}
                 {orderType === 'delivery' && (
                   <>
                     <div>
@@ -297,7 +391,6 @@ export default function CheckoutPage() {
                   </>
                 )}
 
-                {/* Email Address */}
                 <div>
                   <label className={labelClass}>Email Address</label>
                   <input
@@ -309,7 +402,6 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                {/* Delivery / Pickup Instructions */}
                 <div>
                   <label className={labelClass}>
                     {orderType === 'pickup' ? 'Pickup Notes' : 'Delivery Instructions'}
@@ -322,13 +414,14 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                {/* Payment */}
                 <PaymentSection
                   payment={payment}
                   setPayment={setPayment}
                   changeAmount={changeAmount}
                   setChangeAmount={setChangeAmount}
                   orderType={orderType}
+                  isGift={isGift}
+                  setIsGift={setIsGift}
                 />
               </>
             ) : (
@@ -336,7 +429,6 @@ export default function CheckoutPage() {
               //  LOGGED-IN USER CHECKOUT (with login)
               // ═══════════════════════════════════════════════════════════════════
               <>
-                {/* Address selection — only for delivery */}
                 {orderType === 'delivery' && (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-neutral-700">Please Select an address from the list shown</p>
@@ -373,7 +465,6 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* Delivery/Pickup Instructions */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-semibold text-neutral-700">
@@ -396,13 +487,14 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                {/* Payment */}
                 <PaymentSection
                   payment={payment}
                   setPayment={setPayment}
                   changeAmount={changeAmount}
                   setChangeAmount={setChangeAmount}
                   orderType={orderType}
+                  isGift={isGift}
+                  setIsGift={setIsGift}
                 />
               </>
             )}
@@ -450,7 +542,7 @@ export default function CheckoutPage() {
 
             <button onClick={handlePlaceOrder} disabled={!canPlace || isPlacing}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#c8102e] py-4 text-sm font-bold text-white shadow-md transition-all hover:bg-[#a80d26] disabled:cursor-not-allowed disabled:opacity-50">
-              {isPlacing ? <><Spinner />Placing Order...</> : <>Place Order</>}
+              {isPlacing ? <><Loader2 size={16} className="animate-spin" />Placing Order...</> : <>Place Order</>}
             </button>
 
             <Link href="/" className="flex items-center justify-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-semibold">
@@ -464,7 +556,7 @@ export default function CheckoutPage() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  Reusable: Payment section (COD / Online) + Change Request
+//  Reusable: Payment section (COD / Online) + Change Request + Gift checkbox
 // ═════════════════════════════════════════════════════════════════════════════
 interface PaymentSectionProps {
   payment: 'cod' | 'online'
@@ -472,9 +564,11 @@ interface PaymentSectionProps {
   changeAmount: string
   setChangeAmount: (v: string) => void
   orderType: string
+  isGift: boolean
+  setIsGift: (v: boolean) => void
 }
 
-function PaymentSection({ payment, setPayment, changeAmount, setChangeAmount, orderType }: PaymentSectionProps) {
+function PaymentSection({ payment, setPayment, changeAmount, setChangeAmount, orderType, isGift, setIsGift }: PaymentSectionProps) {
   const firstLabel = orderType === 'pickup' ? 'Pay at Pickup' : 'Cash on Delivery'
   const selClass = 'border-green-600 bg-white'
   const unselClass = 'border-neutral-200 bg-white'
@@ -496,6 +590,16 @@ function PaymentSection({ payment, setPayment, changeAmount, setChangeAmount, or
           <span className="text-xs font-semibold text-neutral-700">Online Payment</span>
         </button>
       </div>
+
+      {/* Gift checkbox */}
+      <div className="mt-4">
+        <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-neutral-700">
+          <input type="checkbox" checked={isGift} onChange={(e) => setIsGift(e.target.checked)} className="accent-[#c8102e] h-4 w-4" />
+          <Gift size={14} className="text-[#f7c948]" />
+          Mark as Gift
+        </label>
+      </div>
+
       {payment === 'cod' && (
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold text-neutral-700">Change Request</p>
@@ -567,7 +671,7 @@ function OrderReceipt({ order, onPlaceAnother }: { order: OrderSnapshot; onPlace
           </div>
         </ReceiptSection>
         <ReceiptSection icon={<ShoppingCart size={16} />} title="Payment Type"
-          badge={<span className="flex items-center gap-1 rounded-full bg-[#c8102e] px-3 py-1 text-xs font-bold text-white"><ShoppingCart size={11} />{order.payment}</span>}>
+          badge={<span className="flex items-center gap-1 rounded-full bg-[#c8102e] px-3 py-1 text-xs font-bold text-white"><FileText size={11} />{order.payment}</span>}>
           <div className="space-y-2 text-sm">
             <PriceRow label="Total"        value={`Rs. ${order.subtotal.toLocaleString()}`} />
             {order.discount > 0 && <PriceRow label="Discount" value={`Rs. ${order.discount.toLocaleString()}`} valueClass="text-[#f7c948] font-semibold" />}
@@ -629,14 +733,5 @@ function PriceRow({ label, value, valueClass }: { label: string; value: string; 
       <span className="text-neutral-600">{label}</span>
       <span className={valueClass ?? 'font-medium text-neutral-800'}>{value}</span>
     </div>
-  )
-}
-
-function Spinner() {
-  return (
-    <svg className="h-4 w-4 animate-spin mr-2" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
   )
 }

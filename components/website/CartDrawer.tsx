@@ -46,6 +46,7 @@ export function CartDrawer() {
   const handleAddPopular = (prod: typeof ALL_PRODUCTS[number]) => {
     addItem({
       id: prod.id,
+      productId: prod.productId ?? null,
       name: prod.name,
       price: parseInt(prod.price, 10),
       image: prod.image,
@@ -83,11 +84,11 @@ export function CartDrawer() {
             <div className="px-5 pb-2">
               {items.map((item) => (
                 <CartItemRow
-                  key={`${item.id}-${item.selectedOption}`}
+                  key={`${item.id}-${item.selectedOption ?? ''}`}
                   item={item}
-                  onRemove={() => removeItem(item.id)}
-                  onIncrease={() => updateQuantity(item.id, item.quantity + 1)}
-                  onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
+                  onRemove={() => removeItem(item)}
+                  onIncrease={() => updateQuantity(item, item.quantity + 1)}
+                  onDecrease={() => updateQuantity(item, item.quantity - 1)}
                 />
               ))}
             </div>

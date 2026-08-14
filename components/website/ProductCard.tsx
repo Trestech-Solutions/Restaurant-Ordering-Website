@@ -7,6 +7,7 @@ import { useCart } from '@/lib/context/CartContext'
 
 export interface ProductData {
   id: string
+  productId: number
   name: string
   description: string
   price: string
@@ -38,6 +39,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
     e.stopPropagation()
     addItem({
       id: product.id,
+      productId: product.productId,
       name: product.name,
       price: parseInt(product.price, 10),
       image: product.image,
@@ -49,14 +51,14 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
 
   const handleIncrease = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (cartItem) updateQuantity(cartItem.id, cartItem.quantity + 1)
+    if (cartItem) updateQuantity(cartItem, cartItem.quantity + 1)
   }
 
   const handleDecrease = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!cartItem) return
-    if (cartItem.quantity <= 1) removeItem(cartItem.id)
-    else updateQuantity(cartItem.id, cartItem.quantity - 1)
+    if (cartItem.quantity <= 1) removeItem(cartItem)
+    else updateQuantity(cartItem, cartItem.quantity - 1)
   }
 
   const handleOptionClick = (e: React.MouseEvent, opt: string) => {

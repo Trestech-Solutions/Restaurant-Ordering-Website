@@ -37,15 +37,16 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const total     = unitPrice * qty
 
   const handleAdd = () => {
-    for (let i = 0; i < qty; i++) {
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: unitPrice,
-        image: product.image,
-        selectedOption: selectedOption || undefined,
-      })
-    }
+    addItem({
+      id: product.id,
+      productId: product.productId,
+      name: product.name,
+      price: unitPrice,
+      image: product.image,
+      selectedOption: selectedOption || undefined,
+      specialInstructions: instructions || undefined,
+      quantity: qty,
+    })
     setAdded(true)
     setTimeout(() => { setAdded(false); onClose() }, 900)
   }

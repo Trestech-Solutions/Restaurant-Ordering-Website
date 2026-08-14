@@ -127,11 +127,15 @@ export const CATEGORIES: Category[] = [
 ]
 
 // ─── Products ─────────────────────────────────────────────────────────────────
+// NOTE: `productId` uses 1000+ range to avoid conflicts with live API numeric IDs
 
-export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: string; branchIds: BranchAvailability })[] = [
+type FallbackProduct = Omit<ProductData, 'productId'> & { productId?: number; categoryId: string; subCategoryId: string; branchIds: BranchAvailability }
+
+export const ALL_PRODUCTS: FallbackProduct[] = [
   // ── New Arrival / Ice Cream ────────────────────────────────────────────────
   {
     id: 'kulfi-falooda',
+    productId: 1001,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: '*',
@@ -147,6 +151,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'peshawari-ice-cream',
+    productId: 1002,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'clifton', 'bahadurabad', 'karimabad'],
@@ -159,6 +164,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'kulfi-assorted',
+    productId: 1003,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: '*',
@@ -171,6 +177,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'kulfi-malai-khoya',
+    productId: 1004,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: '*',
@@ -182,6 +189,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'kulfi-mango',
+    productId: 1005,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: ['gulshan-iqbal', 'maskan', 'north-karachi', 'bahadurabad', 'sharfabad', 'karimabad'],
@@ -193,6 +201,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'kulfi-pista',
+    productId: 1006,
     categoryId: 'new-arrival',
     subCategoryId: 'ice-cream',
     branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'garden-east'],
@@ -205,6 +214,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── New Arrival / Sweets ───────────────────────────────────────────────────
   {
     id: 'gulab-jamun',
+    productId: 1007,
     categoryId: 'new-arrival',
     subCategoryId: 'sweets',
     branchIds: '*',
@@ -218,6 +228,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Deals ─────────────────────────────────────────────────────────────────
   {
     id: 'deal-family-pack',
+    productId: 1008,
     categoryId: 'deals',
     subCategoryId: 'family',
     branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'clifton', 'bahadurabad', 'national-stadium'],
@@ -232,6 +243,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'deal-combo-1',
+    productId: 1009,
     categoryId: 'deals',
     subCategoryId: 'combo',
     branchIds: '*',
@@ -247,6 +259,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── MANGOVERSE ────────────────────────────────────────────────────────────
   {
     id: 'mango-kulfi',
+    productId: 1010,
     categoryId: 'mangoverse',
     subCategoryId: 'mango-ice-cream',
     branchIds: ['gulshan-iqbal', 'maskan', 'dha', 'bahadurabad', 'clifton', 'sharfabad'],
@@ -259,6 +272,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'mango-barfi',
+    productId: 1011,
     categoryId: 'mangoverse',
     subCategoryId: 'mango-sweets',
     branchIds: '*',
@@ -272,6 +286,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Savories ──────────────────────────────────────────────────────────────
   {
     id: 'samosa-6',
+    productId: 1012,
     categoryId: 'savories',
     subCategoryId: 'samosa',
     branchIds: '*',
@@ -283,6 +298,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'spring-rolls',
+    productId: 1013,
     categoryId: 'savories',
     subCategoryId: 'rolls',
     branchIds: ['gulshan-iqbal', 'dha', 'clifton', 'bahadurabad', 'north-nazimabad', 'maskan'],
@@ -295,6 +311,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Cakes ─────────────────────────────────────────────────────────────────
   {
     id: 'birthday-cake',
+    productId: 1014,
     categoryId: 'cakes',
     subCategoryId: 'birthday',
     branchIds: '*',
@@ -306,6 +323,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'premium-chocolate-cake',
+    productId: 1015,
     categoryId: 'cakes',
     subCategoryId: 'premium',
     branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'maskan', 'national-stadium'],
@@ -321,6 +339,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Sweets ────────────────────────────────────────────────────────────────
   {
     id: 'kaju-barfi',
+    productId: 1016,
     categoryId: 'sweets',
     subCategoryId: 'barfi',
     branchIds: '*',
@@ -332,6 +351,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'motichoor-ladoo',
+    productId: 1017,
     categoryId: 'sweets',
     subCategoryId: 'ladoo',
     branchIds: ['bahadurabad', 'karimabad', 'north-nazimabad', 'gulshan-iqbal', 'sharfabad'],
@@ -344,6 +364,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Desserts ──────────────────────────────────────────────────────────────
   {
     id: 'falooda-classic',
+    productId: 1018,
     categoryId: 'desserts',
     subCategoryId: 'falooda',
     branchIds: '*',
@@ -355,6 +376,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'kulfi-regular',
+    productId: 1019,
     categoryId: 'desserts',
     subCategoryId: 'kulfi',
     branchIds: '*',
@@ -367,6 +389,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Biscuits & Cookies ────────────────────────────────────────────────────
   {
     id: 'butter-cookies',
+    productId: 1020,
     categoryId: 'biscuits',
     subCategoryId: 'cookies',
     branchIds: '*',
@@ -378,6 +401,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'chocolate-biscuits',
+    productId: 1021,
     categoryId: 'biscuits',
     subCategoryId: 'biscuits',
     branchIds: ['gulshan-iqbal', 'dha', 'clifton', 'bahadurabad', 'maskan'],
@@ -390,6 +414,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   // ── Gift Essentials ───────────────────────────────────────────────────────
   {
     id: 'gift-box-premium',
+    productId: 1022,
     categoryId: 'gifts',
     subCategoryId: 'boxes',
     branchIds: ['dha', 'clifton', 'gulshan-iqbal', 'bahadurabad', 'national-stadium', 'maskan'],
@@ -402,6 +427,7 @@ export const ALL_PRODUCTS: (ProductData & { categoryId: string; subCategoryId: s
   },
   {
     id: 'gift-hamper',
+    productId: 1023,
     categoryId: 'gifts',
     subCategoryId: 'hampers',
     branchIds: '*',
