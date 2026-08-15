@@ -55,23 +55,27 @@ export function useGetBranches(options?: {
 
 export function useGetAreas(options?: {
   restaurantId?: string | number;
+  branchId?: string | number;
   onSuccess?: (data: Area[]) => void;
   onError?: (message: string) => void;
 }) {
   const restaurantId = options?.restaurantId ?? getRestaurantId();
 
   const query = useQuery<Area[], ApiError>({
-    queryKey: ['storefront-areas', restaurantId],
-    queryFn: () =>
-      api
+    queryKey: ['storefront-areas', restaurantId, options?.branchId],
+    queryFn: () => {
+      const params: Record<string, string | number> = { restaurant: restaurantId }
+      if (options?.branchId) params.branch = options.branchId
+      return api
         .get<{ results?: Area[] } | Area[]>(
           API_ENDPOINTS.StorefrontBrowse.getAreas,
-          { params: { branch: restaurantId } }
+          { params }
         )
         .then((r) => {
           const data = r.data as { results?: Area[] } | Area[];
           return Array.isArray(data) ? data : data.results ?? [];
-        }),
+        })
+    },
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   });

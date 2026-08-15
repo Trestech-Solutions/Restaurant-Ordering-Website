@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { X, Share2, Minus, Plus } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
-import type { ProductData } from './ProductCard'
+import { useCart } from '@/lib/hooks/useCart'
+import type { ProductData } from '../product/ProductCard'
 
 interface ProductDetailModalProps {
   product: ProductData

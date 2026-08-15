@@ -1,6 +1,6 @@
 'use client'
 
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 
 export function CartBar() {
   const { totalItems, subtotal, openCart } = useCart()

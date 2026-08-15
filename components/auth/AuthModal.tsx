@@ -3,7 +3,7 @@
 import { useState, useEffect as reactUseEffect } from 'react'
 import Image from 'next/image'
 import { X, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { useLogin, useRegister } from '@/api/client/customer'
 import { getRestaurantId } from '@/api/utils'
 import type { RegisterPayload, CustomerLoginResponse } from '@/api/types'

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Check, Minus, Plus } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 
 export interface ProductData {
   id: string

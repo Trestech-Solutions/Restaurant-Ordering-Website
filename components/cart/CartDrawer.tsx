@@ -5,7 +5,7 @@ import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as 
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { ALL_PRODUCTS } from '@/lib/data/website-products'
 
 const TAX_RATE     = 0.18

@@ -171,18 +171,25 @@ export type RestaurantsListParams = ListParams & {
 
 export type Branch = {
   id: number;
-  name: string;
-  address: string;
-  city: string;
-  phone: string;
+  name?: string;           // standard DRF field
+  branch_name?: string;    // actual API field name
+  address?: string;
+  location?: string;       // API may return location instead of address
+  city?: string;
+  phone?: string;
   latitude?: string | null;
   longitude?: string | null;
-  is_active: boolean;
+  map_location?: string | null;  // "lat,lng" string from API
+  is_active?: boolean;
+  status?: boolean;        // API uses status instead of is_active
   opening_time?: string | null;
   closing_time?: string | null;
-  restaurant: number;
-  created_at: string;
-  updated_at: string;
+  pickup_status?: boolean;
+  delivery_status?: boolean;
+  is_default?: boolean;
+  restaurant?: number;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Area = {

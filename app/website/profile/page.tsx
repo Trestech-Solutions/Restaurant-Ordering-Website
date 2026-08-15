@@ -2,7 +2,7 @@
 
 import { useState, useEffect as reactUseEffect } from 'react'
 import { Pencil, RefreshCw, Loader2 } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { ProfileLayout } from '@/components/website/ProfileLayout'
 import { useGetMyProfile, useUpdateMyProfile } from '@/api/client/customer'
 import type { UpdateCustomerPayload } from '@/api/types'

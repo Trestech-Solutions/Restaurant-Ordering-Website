@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { ProfileLayout } from '@/components/website/ProfileLayout'
 import { Loader2, Package, ChevronDown, ChevronUp, Clock, Bike, Store, Receipt } from 'lucide-react'
 import { useGetOrderHistory } from '@/api/client/customer'

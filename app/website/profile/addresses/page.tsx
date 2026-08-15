@@ -2,7 +2,7 @@
 
 import { useState, useEffect as reactUseEffect } from 'react'
 import { MapPin, Plus, X, Trash2, Loader2, Edit3 } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { ProfileLayout } from '@/components/website/ProfileLayout'
 import {
   useGetAddresses,

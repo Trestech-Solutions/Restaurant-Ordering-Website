@@ -8,8 +8,8 @@ import {
   MapPin, Phone, User, Menu, ShoppingCart,
   Search, ArrowUp, MessageCircle, Clock, ChevronLeft, ChevronRight, Calendar,
 } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
-import { AuthModal } from '@/components/website/AuthModal'
+import { useCart } from '@/lib/hooks/useCart'
+import { AuthModal } from '@/components/auth/AuthModal'
 import { CorporateOrderModal } from '@/components/website/CorporateOrderModal'
 import { MenuDrawer } from '@/components/website/MenuDrawer'
 import { UserDropdown } from '@/components/website/UserDropdown'

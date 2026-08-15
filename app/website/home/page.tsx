@@ -5,14 +5,14 @@ import Image from 'next/image'
 import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
-import { useCart, useRegisterProductId } from '@/lib/context/CartContext'
+import { useCart, useRegisterProductId } from '@/lib/hooks/useCart'
 import { CategoryNav } from '@/components/website/CategoryNav'
 import { SubCategoryNav } from '@/components/website/SubCategoryNav'
 import { SearchBar } from '@/components/website/SearchBar'
-import { ProductGrid } from '@/components/website/ProductGrid'
+import { ProductGrid } from '@/components/product/ProductGrid'
 import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
 import { useGetMenu } from '@/api/client/browse'
-import type { ProductData } from '@/components/website/ProductCard'
+import type { ProductData } from '@/components/product/ProductCard'
 import type { MenuResponse, Product as ApiProduct } from '@/api/types'
 
 const HERO_SLIDES = [

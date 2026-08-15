@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   MapPin, Phone, Menu, ShoppingCart,
 } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 import { UserDropdown } from '@/components/website/UserDropdown'
 
 interface WebsiteNavbarProps {

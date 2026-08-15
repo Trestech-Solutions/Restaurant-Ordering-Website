@@ -6,7 +6,6 @@ import {
   Star, Award, Users, Globe,
 } from 'lucide-react'
 
-// ─── Timeline milestones ────────────────────────────────────────────────────
 const MILESTONES = [
   {
     year: '1984',
@@ -34,7 +33,6 @@ const MILESTONES = [
   },
 ]
 
-// ─── Stats ───────────────────────────────────────────────────────────────────
 const STATS = [
   { icon: Star,   value: '250+', label: 'Menu Items' },
   { icon: Award,  value: '15+',  label: 'Countries Exported To' },
@@ -45,8 +43,6 @@ const STATS = [
 export default function AboutUsPage() {
   return (
     <div className="min-h-screen font-sans text-neutral-800">
-
-      {/* ── Hero Banner ─────────────────────────────────────────────────── */}
       <section className="relative h-64 overflow-hidden sm:h-80">
         <Image
           src="https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=1600&auto=format&fit=crop"
@@ -68,7 +64,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* ── Brand Story ─────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-[860px] px-4 py-14 md:px-8">
         <div className="space-y-5 text-[15px] leading-relaxed text-neutral-700">
           <p>
@@ -107,7 +102,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* ── Stats ───────────────────────────────────────────────────────── */}
       <section className="bg-[#c8102e] py-14">
         <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-8 px-4 text-center text-white sm:grid-cols-4 md:px-8">
           {STATS.map(({ icon: Icon, value, label }) => (
@@ -122,14 +116,12 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* ── Timeline ────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-[860px] px-4 py-14 md:px-8">
         <h2 className="mb-10 text-center text-3xl font-extrabold text-neutral-900">
           Our Journey
         </h2>
 
         <div className="relative">
-          {/* Vertical line */}
           <div className="absolute left-6 top-0 h-full w-0.5 bg-[#c8102e]/20 md:left-1/2 md:-translate-x-0.5" />
 
           <div className="space-y-10">
@@ -140,10 +132,8 @@ export default function AboutUsPage() {
                   i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
               >
-                {/* Dot */}
                 <div className="absolute left-4 top-4 z-10 h-5 w-5 rounded-full border-4 border-[#c8102e] bg-white md:left-1/2 md:-translate-x-2.5" />
 
-                {/* Content card */}
                 <div
                   className={`ml-14 flex-1 rounded-xl bg-white p-5 shadow-md md:ml-0 md:w-[calc(50%-2rem)] ${
                     i % 2 === 0 ? 'md:mr-auto md:pr-10' : 'md:ml-auto md:pl-10'
@@ -161,7 +151,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* ── CTA ─────────────────────────────────────────────────────────── */}
       <section className="bg-[#f7c948] py-14 text-center">
         <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">
           Taste the Legacy

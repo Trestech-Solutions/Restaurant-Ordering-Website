@@ -1,7 +1,7 @@
 'use client'
 
 import { X, LogIn, UserCircle } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 
 const MENU_ITEMS = [
   { label: 'About Us',         href: '/website/about' },

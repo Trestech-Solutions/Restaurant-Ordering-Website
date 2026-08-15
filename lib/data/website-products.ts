@@ -1,4 +1,4 @@
-import type { ProductData } from '@/components/website/ProductCard'
+import type { ProductData } from '@/components/product/ProductCard'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

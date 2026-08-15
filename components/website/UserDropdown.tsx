@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { UserCircle, ChevronDown, Package, MapPin, LogOut, User } from 'lucide-react'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 
 export function UserDropdown({ onLoginClick }: { onLoginClick: () => void }) {
   const { user, setUser } = useCart()

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { OrderTypeModal } from './OrderTypeModal'
-import { useCart } from '@/lib/context/CartContext'
+import { useCart } from '@/lib/hooks/useCart'
 
 /**
  * - Shows OrderTypeModal on first visit (when no location saved).
