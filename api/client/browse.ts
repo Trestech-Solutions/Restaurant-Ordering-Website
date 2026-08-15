@@ -51,8 +51,6 @@ export function useGetBranches(options?: {
   return query;
 }
 
-// ─── Get Areas ────────────────────────────────────────────────────────────────
-
 export function useGetAreas(options?: {
   restaurantId?: string | number;
   branchId?: string | number;
@@ -95,15 +93,12 @@ export function useGetAreas(options?: {
   return query;
 }
 
-// ─── Get Menu ─────────────────────────────────────────────────────────────────
-
 export function useGetMenu(params: {
   branchId: string | number | null;
   areaId?: string | number | null;
   onSuccess?: (data: MenuResponse) => void;
   onError?: (message: string) => void;
 }) {
-  // area is optional — only require branchId to load menu
   const enabled = params.branchId !== null && params.branchId !== undefined;
 
   const query = useQuery<MenuResponse, ApiError>({
@@ -117,7 +112,15 @@ export function useGetMenu(params: {
       }
       return api
         .get<MenuResponse>(API_ENDPOINTS.StorefrontBrowse.getMenu, { params: queryParams })
-        .then((r) => r.data)
+        .then((r) => {
+          const data = r.data
+          // Normalise: API returns `menu`, older versions return `categories`
+          if (!data.menu && (data as any).categories) {
+            data.menu = (data as any).categories
+          }
+          if (!data.menu) data.menu = []
+          return data
+        })
     },
     enabled,
     staleTime: 1000 * 60 * 10,

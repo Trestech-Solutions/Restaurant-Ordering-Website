@@ -116,14 +116,14 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 function apiItemsToLocal(items: ApiCartItem[]): CartItem[] {
   return items.map((it) => ({
     id: `api-${it.id}`,
-    productId: it.product,
+    productId: it.item,                           // backend uses `item` not `product`
     cartItemId: it.id,
-    name: it.product_name,
+    name: it.item_name,                           // backend uses `item_name`
     price: Math.round(parseFloat(String(it.unit_price ?? '0'))),
-    image: it.product_image || '',
+    image: '',                                    // backend doesn't return image in cart
     quantity: it.quantity,
-    selectedOption: it.variant_name || undefined,
-    variantId: it.variant ?? null,
+    selectedOption: it.size_detail?.name || undefined,
+    variantId: it.size ?? null,
   }))
 }
 
@@ -206,7 +206,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     [dispatch]
   )
-  const setBranch  = useCallback((b: string) => dispatch(reduxSetBranch(b)), [dispatch])
+  const setBranch  = useCallback((b: string | number) => dispatch(reduxSetBranch(b)), [dispatch])
   const setAreaId  = useCallback((id: number | null) => dispatch(reduxSetAreaId(id)), [dispatch])
 
   // ─── Cart operations ─────────────────────────────────────────────────────
@@ -227,12 +227,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (canUseApi) {
         addToCartMutation.addToCart({
-          product:               numericProductId,
-          quantity:              requestedQty,
-          variant:               item.variantId ?? undefined,
-          branch:                numericBranch,
-          area:                  areaId ?? undefined,
-          special_instructions:  item.specialInstructions,
+          item:     numericProductId,   // backend field name
+          branch:   numericBranch!,     // required by backend
+          quantity: requestedQty,
+          area:     areaId ?? undefined,
         })
         dispatch(reduxOpenCart())
         return

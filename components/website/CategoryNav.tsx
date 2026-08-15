@@ -19,7 +19,7 @@ export function CategoryNav({ categories, activeCategoryId, onSelect }: Category
             <button
               key={cat.id}
               onClick={() => onSelect(cat.id)}
-              className={`snap-start relative flex min-w-[90px] flex-1 flex-col items-center justify-center gap-1.5 px-2 py-3 text-xs font-bold transition-colors sm:min-w-[110px] sm:gap-2 sm:px-3 sm:py-4 sm:text-sm md:min-w-[130px] md:px-4 md:py-5 md:text-base ${
+              className={`snap-start relative flex min-w-[90px]  flex-col items-center justify-center gap-1.5 px-2 py-3 text-xs font-bold transition-colors sm:min-w-[110px] sm:gap-2 sm:px-3 sm:py-4 sm:text-sm md:min-w-[130px] md:px-4 md:py-5 md:text-base ${
                 isActive
                   ? 'bg-[#f7c948] text-neutral-900'
                   : 'text-white hover:bg-white/10'

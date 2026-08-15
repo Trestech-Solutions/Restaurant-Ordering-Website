@@ -171,17 +171,17 @@ export type RestaurantsListParams = ListParams & {
 
 export type Branch = {
   id: number;
-  name?: string;           // standard DRF field
-  branch_name?: string;    // actual API field name
+  name?: string;
+  branch_name?: string;
   address?: string;
-  location?: string;       // API may return location instead of address
+  location?: string;
   city?: string;
   phone?: string;
   latitude?: string | null;
   longitude?: string | null;
-  map_location?: string | null;  // "lat,lng" string from API
+  map_location?: string | null;
   is_active?: boolean;
-  status?: boolean;        // API uses status instead of is_active
+  status?: boolean;
   opening_time?: string | null;
   closing_time?: string | null;
   pickup_status?: boolean;
@@ -195,40 +195,111 @@ export type Branch = {
 export type Area = {
   id: number;
   name: string;
-  city: string;
+  city?: string;
+  status?: boolean;
   branch?: number | null;
   branch_name?: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+// ─── Menu types — matches actual API response ────────────────────────────────
+
+/**
+ * An Item object as returned by the menu endpoint (via ItemSerializer +
+ * price_at_branch injection). These are the records to pass as `item` to
+ * POST /storefront/cart/items/.
+ */
+export type MenuItem = {
+  id: number;
+  restaurant?: number;
+  item_sku?: string;
+  name: string;
+  description?: string | null;
+  status?: boolean;
+  feature_image?: string | null;  // product image
+  front_price?: string;           // base price
+  price_at_branch?: string;       // branch-overridden price (injected by MenuView)
+  item_discount?: string | null;
+  item_discount_type?: string | null;
+  show_discount_tag?: boolean;
+  branch_prices?: unknown[];
+  size_prices?: unknown[];
+  date_added?: string;
+  date_updated?: string;
+};
+
+/**
+ * A "Dish" — category grouping label linked via M2M. NOT the same as Item.
+ * These appear in dish_detail[] and are NOT valid cart item IDs.
+ */
+export type MenuDish = {
+  id: number;
+  restaurant?: number;
+  name: string;
+  description?: string | null;
+  status?: boolean;
+  // Legacy/compat fields — may be absent
+  base_price?: string | null;
+  original_price?: string | null;
+  image?: string | null;
+  tag?: string | null;
+  discount?: string | null;
+  slug?: string;
+  from_label?: boolean;
+  branch_ids?: (string | number)[] | '*';
+  options?: ProductOption[];
+  created_by?: number;
+  updated_by?: number;
+  date_added?: string;
+  date_updated?: string;
 };
 
 export type MenuCategory = {
   id: number;
+  restaurant?: number;
   name: string;
-  slug: string;
   description?: string | null;
+  banner?: string | null;
   icon?: string | null;
   badge?: string | null;
-  sort_order: number;
-  is_active: boolean;
-  sub_categories: MenuSubCategory[];
+  status?: boolean;
+  is_active?: boolean;
+  sort_order?: number;
+  // ── ACTUAL API FIELDS ──────────────────────────────────────────────────────
+  // items[] = Item objects (injected by MenuView) — use these IDs for cart
+  items?: MenuItem[];
+  // dish[] / dish_detail[] = Dish M2M (grouping labels, NOT cart-compatible)
+  dish?: number[];
+  dish_detail?: MenuDish[];
+  // ── Legacy sub-category shape ──────────────────────────────────────────────
+  sub_categories?: MenuSubCategory[];
+  // Display flags
+  hide_category?: boolean;
+  hide_category_from_navbar?: boolean;
+  hide_category_display_name_menu?: boolean;
+  layout?: string;
+  date_added?: string;
+  date_updated?: string;
 };
 
+/** Legacy sub-category shape — kept for backward compat */
 export type MenuSubCategory = {
   id: number;
   name: string;
-  slug: string;
+  slug?: string;
   description?: string | null;
-  sort_order: number;
-  is_active: boolean;
-  products: Product[];
+  sort_order?: number;
+  is_active?: boolean;
+  products?: Product[];
 };
 
+/** Legacy full product type (older API) */
 export type Product = {
   id: number;
   name: string;
-  slug: string;
+  slug?: string;
   description?: string | null;
   base_price: string;
   original_price?: string | null;
@@ -238,9 +309,9 @@ export type Product = {
   discount?: string | null;
   branch_ids?: (string | number)[] | '*';
   options: ProductOption[];
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type ProductOption = {
@@ -249,19 +320,35 @@ export type ProductOption = {
   price_adjustment?: string | number;
 };
 
+export type MenuSize = {
+  id: number;
+  restaurant: number;
+  name: string;
+  description?: string | null;
+  status?: boolean;
+};
+
+export type MenuAddonCategory = {
+  id: number;
+  restaurant: number;
+  name: string;
+  description?: string | null;
+  status?: boolean;
+  addons?: unknown[];
+};
+
 export type MenuResponse = {
-  // Backend returns the full storefront payload from GET /storefront/menu/
-  branch:           Record<string, unknown>;
-  area:             Record<string, unknown> | null;
+  branch:           Branch;
+  area:             Area | null;
   settings:         Record<string, unknown>;
   branch_settings:  Record<string, unknown>;
   business_hours:   unknown[];
-  sizes:            unknown[];
-  addon_categories: unknown[];
-  // The actual menu tree — categories each containing items directly
-  menu: MenuCategory[];
-  // Fallback: some versions expose a flat `categories` key instead of `menu`
-  categories?: MenuCategory[];
+  sizes:            MenuSize[];
+  addon_categories: MenuAddonCategory[];
+  // Actual API returns `menu` array of categories
+  menu:             MenuCategory[];
+  // Legacy fallback
+  categories?:      MenuCategory[];
 };
 
 // ─── Storefront Cart ─────────────────────────────────────────────────────────
@@ -269,43 +356,36 @@ export type MenuResponse = {
 export type CartItem = {
   id: number;
   cart: number;
-  product: number;
-  product_name: string;
-  product_image?: string | null;
-  variant?: number | null;
-  variant_name?: string | null;
+  item: number;              // backend field name (was `product`)
+  item_name: string;         // backend field name (was `product_name`)
+  size?: number | null;
+  size_detail?: { id: number; name: string } | null;
   quantity: number;
+  notes?: string;
   unit_price: string;
-  subtotal: string;
-  options?: Record<string, unknown> | null;
-  special_instructions?: string | null;
-  created_at: string;
-  updated_at: string;
+  line_total: string;
+  addons?: { id: number; addon: number; quantity: number }[];
 };
 
 export type Cart = {
+  id: number;
   token: string;
-  customer?: number | null;
-  branch?: number | null;
+  branch: number;
   area?: number | null;
   items: CartItem[];
   subtotal: string;
-  tax?: string;
-  discount?: string;
-  total: string;
-  total_items: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type AddCartItemPayload = {
-  product: number;
+  item: number;           // backend field name (was `product`)
+  branch: number;         // required by backend
   quantity: number;
-  variant?: number;
-  options?: Record<string, unknown>;
-  special_instructions?: string;
+  size?: number;          // optional size ID (was `variant`)
+  notes?: string;         // optional (was `special_instructions`)
+  addons?: { addon: number; quantity?: number }[];
   cart_token?: string;
-  branch?: number;
   area?: number;
 };
 
@@ -315,100 +395,64 @@ export type UpdateCartItemPayload = {
 
 // ─── Storefront Checkout ─────────────────────────────────────────────────────
 
-export type CheckoutPayloadBase = {
+export type CheckoutPayload = {
   cart_token: string;
-  branch?: number;
-  area?: number;
-  order_type: 'delivery' | 'pickup';
-  payment_method: 'cod' | 'card' | 'online' | 'wallet';
-  subtotal: number | string;
-  tax?: number | string;
-  delivery_fee?: number | string;
-  discount?: number | string;
-  total: number | string;
-  special_instructions?: string;
-  voucher_code?: string;
-  change_amount?: string | number;
-  is_gift?: boolean;
+  order_type: 'delivery' | 'pickup' | 'dinein';
+  customer_name: string;
+  customer_phone: string;
+  customer_city?: string;
+  customer_address?: string;
+  customer_landmark?: string;
+  customer_instructions?: string;
 };
 
-export type GuestCheckoutPayload = CheckoutPayloadBase & {
-  customer_type: 'guest';
-  title?: string;
-  first_name: string;
-  last_name?: string;
-  phone: string;
-  alt_phone?: string;
-  email?: string;
-  address?: string;
-  landmark?: string;
-  city?: string;
-};
-
-export type LoggedInCheckoutPayload = CheckoutPayloadBase & {
-  customer_type: 'logged_in';
-  address_id?: number;
-  address?: string;
-  city?: string;
-  customer_name?: string;
-  customer_phone?: string;
+export type OrderItemAddon = {
+  id: number;
+  addon: number;
+  addon_name: string;
+  unit_price: string;
+  quantity: number;
 };
 
 export type OrderItem = {
   id: number;
-  product: number;
-  product_name: string;
-  product_image?: string | null;
-  variant_name?: string | null;
-  quantity: number;
+  item: number;
+  item_name: string;
+  size?: number | null;
+  size_name?: string;
   unit_price: string;
-  subtotal: string;
+  quantity: number;
+  line_total: string;
+  notes?: string;
+  addons: OrderItemAddon[];
 };
 
 export type Order = {
   id: number;
-  order_no: string;
-  order_type: 'delivery' | 'pickup';
-  payment_method: string;
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
-  status:
-    | 'received'
-    | 'accepted'
-    | 'preparing'
-    | 'ready'
-    | 'out_for_delivery'
-    | 'delivered'
-    | 'cancelled';
+  restaurant: number;
   branch: number;
   branch_name?: string;
   area?: number | null;
-  area_name?: string | null;
   customer?: number | null;
-  customer_name?: string | null;
-  customer_phone?: string | null;
-  customer_email?: string | null;
-  delivery_address?: string | null;
+  order_type: 'delivery' | 'pickup' | 'dinein';
+  status: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_city?: string;
+  customer_address?: string;
+  customer_landmark?: string;
+  customer_instructions?: string;
   subtotal: string;
-  tax: string;
-  delivery_fee: string;
-  discount: string;
-  total: string;
-  special_instructions?: string | null;
-  voucher_code?: string | null;
+  delivery_charge: string;
+  packaging_charge: string;
+  discount_total: string;
+  grand_total: string;
   items: OrderItem[];
-  placed_at: string;
-  estimated_delivery_at?: string | null;
-  delivered_at?: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type CheckoutResponse = {
-  success: boolean;
-  order: Order;
-  message?: string;
-  redirect_url?: string | null;
-};
+export type CheckoutResponse = Order;
 
 // ─── Storefront Customer Auth & Profile ──────────────────────────────────────
 

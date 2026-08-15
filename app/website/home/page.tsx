@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useCart, useRegisterProductId } from '@/lib/hooks/useCart'
+import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import { CategoryNav } from '@/components/website/CategoryNav'
 import { SubCategoryNav } from '@/components/website/SubCategoryNav'
 import { SearchBar } from '@/components/website/SearchBar'
@@ -13,7 +14,7 @@ import { ProductGrid } from '@/components/product/ProductGrid'
 import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
 import { useGetMenu } from '@/api/client/browse'
 import type { ProductData } from '@/components/product/ProductCard'
-import type { MenuResponse, Product as ApiProduct } from '@/api/types'
+import type { MenuResponse, MenuItem } from '@/api/types'
 
 const HERO_SLIDES = [
   {
@@ -29,88 +30,160 @@ const HERO_SLIDES = [
 ]
 
 const DEFAULT_ICON = 'solar:cup-hot-bold-duotone'
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop'
 
-function transformMenu(
-  menu: MenuResponse | undefined,
-): {
+/**
+ * Convert an Item (from the menu API) into a ProductData for the UI.
+ * `item.id` is the ID to send as `item` when calling POST /storefront/cart/items/.
+ * `price_at_branch` is used when available (branch override), else `front_price`.
+ */
+function itemToProduct(
+  item: MenuItem,
+  categoryId: string,
+  idPairs: Array<{ clientId: string; numericId: number }>,
+  products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
+) {
+  const clientId   = String(item.id)
+  const rawPrice   = item.price_at_branch || item.front_price || '0'
+  const priceFloat = parseFloat(rawPrice)
+  const priceInt   = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
+
+  idPairs.push({ clientId, numericId: item.id })
+  products.push({
+    id:            clientId,
+    productId:     item.id,        // ← this is the `item` field for the cart API
+    categoryId,
+    subCategoryId: categoryId,
+    branchIds:     '*',            // availability is already filtered server-side
+    name:          item.name,
+    description:   '',
+    price:         String(priceInt),
+    originalPrice: item.front_price && item.price_at_branch && item.front_price !== item.price_at_branch
+      ? String(Math.round(parseFloat(item.front_price)))
+      : undefined,
+    fromLabel:     false,
+    options:       [],
+    tag:           undefined,
+    discount:      item.item_discount && item.item_discount !== '0.00' ? item.item_discount : undefined,
+    image:         item.feature_image || PLACEHOLDER_IMAGE,
+  })
+}
+
+function transformMenu(menu: MenuResponse | undefined): {
   categories: Category[]
   products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
   idPairs: Array<{ clientId: string; numericId: number }>
 } {
-  if (!menu?.categories || menu.categories.length === 0) {
-    const idPairs = FALLBACK_PRODS.map((p, idx) => ({
-      clientId: p.id,
-      numericId: p.productId ?? idx + 1,
-    }))
-    const productsWithId = FALLBACK_PRODS.map((p, idx) => ({
-      ...p,
-      productId: p.productId ?? idx + 1,
-    }))
+  const menuArr = menu?.menu ?? menu?.categories ?? []
+
+  if (menuArr.length === 0) {
+    const idPairs        = FALLBACK_PRODS.map((p, i) => ({ clientId: p.id, numericId: p.productId ?? i + 1 }))
+    const productsWithId = FALLBACK_PRODS.map((p, i) => ({ ...p, productId: p.productId ?? i + 1 }))
     return { categories: FALLBACK_CATS, products: productsWithId, idPairs }
   }
 
   const products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[] = []
   const idPairs: Array<{ clientId: string; numericId: number }> = []
 
-  const categories: Category[] = menu.categories.map((cat) => {
-    const catId = cat.slug || String(cat.id)
-    const subCats: Category['subCategories'] = (cat.sub_categories ?? []).map((sc) => {
-      const subId = sc.slug || String(sc.id)
+  const categories: Category[] = menuArr
+    .filter((cat) => cat.status !== false && cat.hide_category !== true)
+    .map((cat) => {
+      const catId = String(cat.id)
 
-      ;(sc.products ?? []).forEach((p: ApiProduct) => {
-        const options = (p.options ?? []).map((o) => o.name)
-        const priceFloat = parseFloat(p.base_price || '0')
-        const priceInt = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
-        const branchIds: string[] | '*' =
-          p.branch_ids === '*' || !p.branch_ids
-            ? '*'
-            : (p.branch_ids as (string | number)[]).map(String)
-        const clientId = p.slug || String(p.id)
-        idPairs.push({ clientId, numericId: p.id })
-        products.push({
-          id: clientId,
-          productId: p.id,
-          categoryId: catId,
-          subCategoryId: subId,
-          branchIds,
-          name: p.name,
-          description: p.description || '',
-          price: String(priceInt),
-          originalPrice: p.original_price ? String(Math.round(parseFloat(String(p.original_price)))) : undefined,
-          fromLabel: !!p.from_label,
-          options,
-          tag: p.tag || undefined,
-          discount: p.discount || undefined,
-          image: p.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop',
+      // ── PRIMARY: use `items[]` — Item records injected by MenuView ──────────
+      const itemRecords = cat.items ?? []
+      if (itemRecords.length > 0) {
+        itemRecords
+          .filter((it) => it.status !== false && it.status !== 0)
+          .forEach((it) => itemToProduct(it, catId, idPairs, products))
+
+        return {
+          id:            catId,
+          label:         cat.name,
+          icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+          badge:         cat.badge || undefined,
+          subCategories: [{ id: catId, label: 'All Items' }],
+        }
+      }
+
+      // ── FALLBACK A: dish_detail[] — show Dish names as placeholder cards ──
+      // These are display-only; they have no price so cannot be added to cart.
+      // They will be replaced once Item objects are linked to this category.
+      const dishes = cat.dish_detail ?? []
+      if (dishes.length > 0) {
+        dishes
+          .filter((d) => d.status !== false)
+          .forEach((d) => {
+            const clientId = String(d.id)
+            idPairs.push({ clientId, numericId: d.id })
+            products.push({
+              id:            clientId,
+              productId:     null as unknown as number, // no Item ID — not orderable
+              categoryId:    catId,
+              subCategoryId: catId,
+              branchIds:     '*' as const,
+              name:          d.name,
+              description:   d.description || '',
+              price:         '0',              // no price — display only
+              options:       [],
+              image:         PLACEHOLDER_IMAGE,
+            })
+          })
+
+        return {
+          id:            catId,
+          label:         cat.name,
+          icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+          badge:         cat.badge || undefined,
+          subCategories: [{ id: catId, label: 'All Items' }],
+        }
+      }
+
+      // ── FALLBACK: legacy sub_categories shape ─────────────────────────────
+      const subCats: Category['subCategories'] = (cat.sub_categories ?? []).map((sc) => {
+        const subId = sc.slug || String(sc.id)
+        ;(sc.products ?? []).forEach((p) => {
+          const clientId   = p.slug || String(p.id)
+          const priceFloat = parseFloat(p.base_price || '0')
+          const priceInt   = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
+          idPairs.push({ clientId, numericId: p.id })
+          products.push({
+            id: clientId, productId: p.id, categoryId: catId, subCategoryId: subId,
+            branchIds: p.branch_ids === '*' || !p.branch_ids ? '*' : (p.branch_ids as (string | number)[]).map(String),
+            name: p.name, description: p.description || '',
+            price: String(priceInt),
+            originalPrice: p.original_price ? String(Math.round(parseFloat(String(p.original_price)))) : undefined,
+            fromLabel: !!p.from_label,
+            options: (p.options ?? []).map((o) => o.name),
+            tag: p.tag || undefined, discount: p.discount || undefined,
+            image: p.image || PLACEHOLDER_IMAGE,
+          })
         })
+        return { id: subId, label: sc.name }
       })
 
-      return { id: subId, label: sc.name }
+      return {
+        id:            catId,
+        label:         cat.name,
+        icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+        badge:         cat.badge || undefined,
+        subCategories: subCats.length > 0 ? subCats : [{ id: `${catId}-all`, label: 'All Items' }],
+      }
     })
-
-    if (subCats.length === 0) subCats.push({ id: `${catId}-all`, label: 'All Items' })
-
-    return {
-      id: catId,
-      label: cat.name,
-      icon: cat.icon || DEFAULT_ICON,
-      badge: cat.badge || undefined,
-      subCategories: subCats,
-    }
-  })
 
   return { categories, products, idPairs }
 }
 
 export default function HomePage() {
-  const { branch, areaId } = useCart()
+  const { branch } = useCart()
+  const { branchId: reduxBranchId, areaId: reduxAreaId } = useStoreLocation()
   const registerProductId = useRegisterProductId()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const branchId = branch ? Number(branch) : NaN
-  const numericBranch = isNaN(branchId) ? null : branchId
-  const numericArea = areaId
+  // Use storeLocationSlice as canonical source for branchId/areaId
+  const numericBranch = reduxBranchId ?? (branch ? Number(branch) : null)
+  const numericArea   = reduxAreaId
 
   const { data: menu } = useGetMenu({
     branchId: numericBranch,
@@ -173,7 +246,7 @@ export default function HomePage() {
     return products.filter((p) => {
       const matchCat    = p.categoryId === activeCategoryId
       const matchSub    = p.subCategoryId === activeSubCategoryId
-      const matchBranch = !branch || p.branchIds === '*' || p.branchIds.includes(branch)
+      const matchBranch = !numericBranch || p.branchIds === '*' || p.branchIds.includes(String(numericBranch))
       const matchSearch =
         searchQuery === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -185,7 +258,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen font-sans text-neutral-800">
       {/* Hero carousel — responsive height */}
-      <section className="relative overflow-hidden h-[30vh] sm:h-[40vh] md:h-[55vh] lg:h-[70vh] xl:h-[80vh]">
+      <section className="relative overflow-hidden h-[20vh] sm:h-[40vh] md:h-[55vh] lg:h-[70vh] xl:h-[80vh]">
         {HERO_SLIDES.map((s, i) => (
           <div
             key={s.id}

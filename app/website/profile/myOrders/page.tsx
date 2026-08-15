@@ -278,7 +278,7 @@ function OrderDetail({ orderId }: { orderId: number }) {
         }
         <div className="border-t border-neutral-100 pt-2 flex items-center justify-between text-sm">
           <span className="font-bold text-neutral-800">Grand Total</span>
-          <span className="font-bold text-[#c8102e]">{fmtMoney((order as any).total ?? order.total)}</span>
+          <span className="font-bold text-[#c8102e]">{fmtMoney((order as any).grand_total ?? (order as any).total)}</span>
         </div>
       </div>
 

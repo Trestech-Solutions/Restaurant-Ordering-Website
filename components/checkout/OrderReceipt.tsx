@@ -1,6 +1,7 @@
 import { CheckCircle } from "lucide-react"
 import DetailRow from "./DetailRow"
 import PriceRow from "./price-row"
+import type { CartItem } from "@/lib/hooks/useCart"
 
 interface OrderSnapshot {
   orderNo: string
@@ -13,7 +14,7 @@ interface OrderSnapshot {
   branchName: string
   orderType: string
   payment: string
-  items: CartItems[]
+  items: CartItem[]
   subtotal: number
   discount: number
   fee: number
