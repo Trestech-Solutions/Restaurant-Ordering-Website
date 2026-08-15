@@ -24,8 +24,8 @@ import { PaymentSection } from '@/components/checkout/PaymentSection'
 import type { CheckoutFormValues } from '@/components/checkout/types'
 import type { Order } from '@/api/types'
 import { fmtDateTime } from '@/utils/general'
-import OrderReceipt from '@/components/website/OrderReceipt'
 import PriceRow from '@/components/checkout/price-row'
+import OrderReceipt from '@/components/checkout/OrderReceipt'
 
 const TAX_RATE     = 0.18
 const DELIVERY_FEE = 200
