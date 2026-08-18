@@ -19,6 +19,10 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const [instructions, setInstructions]     = useState('')
   const [sharing, setSharing] = useState(false)
   const [added, setAdded]     = useState(false)
+  console.log("mohid",product)
+
+  const isOrderable = product.id !== null && product.id !== undefined &&
+                      Number.isFinite(Number(product.id)) && Number(product.id) > 0
 
   const handleShare = async () => {
     if (sharing || !navigator.share) return
@@ -37,6 +41,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const total     = unitPrice * qty
 
   const handleAdd = () => {
+    if (!isOrderable) return
     addItem({
       id: product.id,
       productId: product.productId,
@@ -179,41 +184,49 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
           <div className="flex-1" />
 
           {/* Footer — qty + add to cart */}
-          <div className="sticky bottom-0 flex items-center gap-2 border-t border-neutral-100 bg-white px-5 py-3 sm:gap-3 sm:px-8 sm:py-4">
-            {/* Qty */}
-            <div className="flex items-center gap-1 rounded-full border border-neutral-300 px-1 py-1 sm:gap-2 sm:px-2 sm:py-1">
+          {isOrderable ? (
+            <div className="sticky bottom-0 flex items-center gap-2 border-t border-neutral-100 bg-white px-5 py-3 sm:gap-3 sm:px-8 sm:py-4">
+              {/* Qty */}
+              <div className="flex items-center gap-1 rounded-full border border-neutral-300 px-1 py-1 sm:gap-2 sm:px-2 sm:py-1">
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors sm:h-7 sm:w-7"
+                  aria-label="Decrease"
+                >
+                  <Minus size={12} className="sm:hidden" />
+                  <Minus size={14} className="hidden sm:block" />
+                </button>
+                <span className="w-5 text-center text-xs font-bold text-neutral-900 sm:w-6 sm:text-sm">{qty}</span>
+                <button
+                  onClick={() => setQty((q) => q + 1)}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors sm:h-7 sm:w-7"
+                  aria-label="Increase"
+                >
+                  <Plus size={12} className="sm:hidden" />
+                  <Plus size={14} className="hidden sm:block" />
+                </button>
+              </div>
+
+              {/* Add to cart */}
               <button
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors sm:h-7 sm:w-7"
-                aria-label="Decrease"
+                onClick={handleAdd}
+                className={`flex flex-1 items-center justify-between gap-1 rounded-full px-4 py-2 text-xs font-bold text-white transition-all sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
+                  added ? 'bg-green-600' : 'bg-[#c8102e] hover:bg-[#a80d26]'
+                }`}
               >
-                <Minus size={12} className="sm:hidden" />
-                <Minus size={14} className="hidden sm:block" />
-              </button>
-              <span className="w-5 text-center text-xs font-bold text-neutral-900 sm:w-6 sm:text-sm">{qty}</span>
-              <button
-                onClick={() => setQty((q) => q + 1)}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors sm:h-7 sm:w-7"
-                aria-label="Increase"
-              >
-                <Plus size={12} className="sm:hidden" />
-                <Plus size={14} className="hidden sm:block" />
+                <span>{added ? 'Added to Cart!' : 'Add to Cart'}</span>
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold sm:px-3 sm:py-0.5 sm:text-xs">
+                  Rs. {total.toLocaleString()}
+                </span>
               </button>
             </div>
-
-            {/* Add to cart */}
-            <button
-              onClick={handleAdd}
-              className={`flex flex-1 items-center justify-between gap-1 rounded-full px-4 py-2 text-xs font-bold text-white transition-all sm:gap-2 sm:px-6 sm:py-3 sm:text-sm ${
-                added ? 'bg-green-600' : 'bg-[#c8102e] hover:bg-[#a80d26]'
-              }`}
-            >
-              <span>{added ? 'Added to Cart!' : 'Add to Cart'}</span>
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold sm:px-3 sm:py-0.5 sm:text-xs">
-                Rs. {total.toLocaleString()}
-              </span>
-            </button>
-          </div>
+          ) : (
+            <div className="sticky bottom-0 border-t border-neutral-100 bg-white px-5 py-4 sm:px-8 sm:py-5">
+              <div className="rounded-xl bg-neutral-100 px-4 py-3 text-center text-xs font-semibold text-neutral-600 sm:text-sm">
+                Coming Soon — This item is not available for ordering yet.
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

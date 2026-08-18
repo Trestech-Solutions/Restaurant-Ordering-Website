@@ -1,14 +1,15 @@
 'use client'
 
 /**
- * CartContext — thin bridge over Redux.
+ * CartContext — now uses REAL APIs ONLY.
  *
- * All persistent state (user, cart items, order setup) now lives in Redux
- * (with redux-persist). This context keeps the same useCart() API so every
- * existing call-site works without change.
+ * Local Redux state management for cart operations (add/remove/update items)
+ * is commented out. All cart operations go through the backend API now.
  *
- * React-Query cart API calls (useGetCart, useAddToCart …) still live here
- * because they are async side-effects, not pure state.
+ * Redux is still used for:
+ *  - auth user (via authSlice)
+ *  - order setup (orderType, location, branch, area) via orderSlice
+ *  - UI state (isCartOpen flag) + cartToken storage via cartSlice
  */
 
 import {
@@ -19,22 +20,26 @@ import {
   useMemo,
   ReactNode,
 } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   useGetCart,
   useAddToCart,
   useUpdateCartQuantity,
   useRemoveCartItem,
+  CART_QUERY_KEY,
 } from '@/api/client/cart'
 import { getCartToken, setCartToken as persistToken } from '@/api/utils'
 import type { Cart as ApiCart, CartItem as ApiCartItem } from '@/api/types'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import {
-  addItem as reduxAddItem,
-  removeItem as reduxRemoveItem,
-  updateQuantity as reduxUpdateQuantity,
-  clearCart as reduxClearCart,
+  // ─── Commented out: Redux local cart item management ───
+  // addItem as reduxAddItem,
+  // removeItem as reduxRemoveItem,
+  // updateQuantity as reduxUpdateQuantity,
+  // clearCart as reduxClearCart,
   setCartToken as reduxSetCartToken,
-  setItems as reduxSetItems,
+  // setItems as reduxSetItems,
   openCart as reduxOpenCart,
   closeCart as reduxCloseCart,
   type CartItem,
@@ -54,7 +59,6 @@ import {
   type OrderType,
 } from '@/redux/slices/orderSlice'
 
-// ─── Re-exports so consumers can import types from here ───────────────────────
 export type { CartItem, AuthUser, OrderType }
 
 export interface SavedAddress {
@@ -62,8 +66,6 @@ export interface SavedAddress {
   line1: string
   city: string
 }
-
-// ─── Context interface — identical to the original ────────────────────────────
 
 interface CartContextType {
   user: AuthUser | null
@@ -111,30 +113,29 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
 function apiItemsToLocal(items: ApiCartItem[]): CartItem[] {
   return items.map((it) => ({
     id: `api-${it.id}`,
-    productId: it.item,                           // backend uses `item` not `product`
+    productId: it.item,
     cartItemId: it.id,
-    name: it.item_name,                           // backend uses `item_name`
+    name: it.item_name,
     price: Math.round(parseFloat(String(it.unit_price ?? '0'))),
-    image: '',                                    // backend doesn't return image in cart
+    image: '',
     quantity: it.quantity,
     selectedOption: it.size_detail?.name || undefined,
     variantId: it.size ?? null,
   }))
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   // ─── Redux selectors ──────────────────────────────────────────────────────
   const user             = useAppSelector((s) => s.auth.user)
+  /* ─── Commented out: Redux local cart items source ───
   const reduxItems       = useAppSelector((s) => s.cart.items)
+  */
   const isCartOpen       = useAppSelector((s) => s.cart.isCartOpen)
   const reduxCartToken   = useAppSelector((s) => s.cart.cartToken)
   const orderType        = useAppSelector((s) => s.order.orderType)
@@ -144,17 +145,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const areaId           = useAppSelector((s) => s.order.areaId)
   const locationModalOpen = useAppSelector((s) => s.order.locationModalOpen)
 
-  // Addresses still live in Redux cart slice (via a separate key if needed)
-  // For now we derive them from a local key — kept simple since they come from API
   const addresses: SavedAddress[] = []
 
   // ─── Cart API ─────────────────────────────────────────────────────────────
   const storedToken = reduxCartToken ?? getCartToken()
-  const { data: apiCart, isLoading: cartLoading } = useGetCart({
+  const { data: apiCart, isLoading: cartLoading, refetch: refetchCart } = useGetCart({
     cartToken: storedToken,
   })
 
-  // Sync API token back to Redux + localStorage
+  // Sync API token back to Redux + localStorage (storage only, not for state logic)
   useEffect(() => {
     if (apiCart?.token && apiCart.token !== storedToken) {
       dispatch(reduxSetCartToken(apiCart.token))
@@ -162,25 +161,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [apiCart?.token]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sync API cart items to Redux
+  /* ─── Commented out: Sync API cart items back to Redux local state ───
   useEffect(() => {
     if (apiCart?.items && apiCart.items.length > 0) {
       dispatch(reduxSetItems(apiItemsToLocal(apiCart.items)))
     }
   }, [apiCart?.items]) // eslint-disable-line react-hooks/exhaustive-deps
+  */
 
-  const addToCartMutation      = useAddToCart()
-  const updateQuantityMutation = useUpdateCartQuantity()
-  const removeItemMutation     = useRemoveCartItem()
+  const addToCartMutation      = useAddToCart({
+    onSuccess: () => {
+      refetchCart()
+    },
+  })
+  const updateQuantityMutation = useUpdateCartQuantity({
+    onSuccess: () => {
+      refetchCart()
+    },
+  })
+  const removeItemMutation     = useRemoveCartItem({
+    onSuccess: () => {
+      refetchCart()
+    },
+  })
 
   const numericBranch      = branchId ?? (branch ? Number(branch) : undefined)
   const numericBranchValid = numericBranch !== undefined && !isNaN(numericBranch)
 
-  // ─── Merge: prefer API items if available ────────────────────────────────
+  // ─── Items: ONLY from API response (Redux local items commented out) ───
   const items: CartItem[] = useMemo(() => {
+    return apiCart?.items ? apiItemsToLocal(apiCart.items) : []
+    /* ─── Commented out: Redux local items fallback ───
     const apiItems = apiCart?.items ? apiItemsToLocal(apiCart.items) : []
     return apiItems.length > 0 ? apiItems : reduxItems
-  }, [apiCart, reduxItems])
+    */
+  }, [apiCart])
 
   // ─── Auth ────────────────────────────────────────────────────────────────
   const setUser = useCallback(
@@ -199,17 +214,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const setLocation = useCallback(
     (loc: string) => {
       dispatch(reduxSetLocation(loc))
-      // Clear cart when location changes
+      /* ─── Commented out: Redux local clear ───
       dispatch(reduxSetItems([]))
+      */
       dispatch(reduxSetCartToken(null))
       persistToken(null)
+      queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY })
     },
-    [dispatch]
+    [dispatch, queryClient]
   )
   const setBranch  = useCallback((b: string | number) => dispatch(reduxSetBranch(b)), [dispatch])
   const setAreaId  = useCallback((id: number | null) => dispatch(reduxSetAreaId(id)), [dispatch])
 
-  // ─── Cart operations ─────────────────────────────────────────────────────
+  // ─── Cart operations — ONLY real APIs, Redux fallback commented out ───
   const addItem = useCallback(
     (
       item: Omit<CartItem, 'quantity' | 'cartItemId'> & {
@@ -218,66 +235,90 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity?: number
       }
     ) => {
-      const requestedQty    = item.quantity ?? 1
-      const numericProductId = item.productId ?? null
-      const canUseApi =
-        numericProductId !== null &&
-        !isNaN(numericProductId) &&
-        numericBranchValid
+      const requestedQty  = item.quantity ?? 1
+      const coercedId     = Number(item.id)
+      const numericProductId = Number.isFinite(coercedId) && coercedId > 0 ? coercedId : null
 
-      if (canUseApi) {
-        addToCartMutation.addToCart({
-          item:     numericProductId,   // backend field name
-          branch:   numericBranch!,     // required by backend
-          quantity: requestedQty,
-          area:     areaId ?? undefined,
-        })
-        dispatch(reduxOpenCart())
+      if (!numericBranchValid) {
+        toast.error('Please select a branch first')
+        dispatch(reduxOpenLocationModal())
         return
       }
 
-      // Local fallback
+      if (numericProductId === null) {
+        toast.error('This item is not available for ordering yet')
+        return
+      }
+
+      addToCartMutation.addToCart({
+        item:     numericProductId,
+        branch:   numericBranch!,
+        quantity: requestedQty,
+        area:     areaId ?? undefined,
+        size:     item.variantId !== null && item.variantId !== undefined
+          ? Number(item.variantId) || undefined
+          : undefined,
+        notes:    item.specialInstructions ?? undefined,
+      })
+
+      dispatch(reduxOpenCart())
+
+      /* ─── Commented out: Local Redux fallback ───
       dispatch(reduxAddItem({ ...item, quantity: requestedQty, cartItemId: null }))
       dispatch(reduxOpenCart())
+      */
     },
     [dispatch, addToCartMutation, numericBranchValid, numericBranch, areaId]
   )
 
   const removeItem = useCallback(
     (item: CartItem) => {
-      if (item.cartItemId !== null) {
-        removeItemMutation.removeItem({ cart_item_id: item.cartItemId })
+      if (item.cartItemId === null || item.cartItemId === undefined) {
+        toast.error('Cannot remove: item not synced with server')
         return
       }
+      removeItemMutation.removeItem({ cart_item_id: item.cartItemId })
+
+      /* ─── Commented out: Local Redux fallback ───
       dispatch(reduxRemoveItem({ id: item.id, selectedOption: item.selectedOption }))
+      */
     },
     [dispatch, removeItemMutation]
   )
 
   const updateQuantity = useCallback(
     (item: CartItem, quantity: number) => {
-      if (item.cartItemId !== null) {
-        if (quantity <= 0) {
-          removeItemMutation.removeItem({ cart_item_id: item.cartItemId })
-        } else {
-          updateQuantityMutation.updateQuantity({
-            cart_item_id: item.cartItemId,
-            payload: { quantity },
-          })
-        }
+      if (item.cartItemId === null || item.cartItemId === undefined) {
+        toast.error('Cannot update: item not synced with server')
         return
       }
+      if (quantity <= 0) {
+        removeItemMutation.removeItem({ cart_item_id: item.cartItemId })
+      } else {
+        updateQuantityMutation.updateQuantity({
+          cart_item_id: item.cartItemId,
+          payload: { quantity },
+        })
+      }
+
+      /* ─── Commented out: Local Redux fallback ───
       dispatch(
         reduxUpdateQuantity({ id: item.id, selectedOption: item.selectedOption, quantity })
       )
+      */
     },
     [dispatch, updateQuantityMutation, removeItemMutation]
   )
 
   const clearCart = useCallback(() => {
+    /* ─── Commented out: Redux local clear ───
     dispatch(reduxClearCart())
+    */
+    dispatch(reduxSetCartToken(null))
     persistToken(null)
-  }, [dispatch])
+    queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY })
+    void refetchCart()
+  }, [dispatch, queryClient, refetchCart])
 
   // ─── Computed ────────────────────────────────────────────────────────────
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
@@ -290,12 +331,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartToken = reduxCartToken ?? getCartToken()
 
-  // ─── Value ────────────────────────────────────────────────────────────────
   const value: CartContextType = {
     user,
     setUser,
     addresses,
-    addAddress:  () => {},   // managed via API (useAddAddress hook)
+    addAddress:  () => {},
     removeAddress: () => {},
     orderType,
     setOrderType,
@@ -332,9 +372,6 @@ export function useCart() {
   return ctx
 }
 
-// ─── Legacy ───────────────────────────────────────────────────────────────────
-
 export function useRegisterProductId() {
-  // No-op — product IDs now come directly from API menu data
   return (_clientId: string, _numericId: number) => {}
 }

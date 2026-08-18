@@ -29,13 +29,21 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    setItems(state, action: PayloadAction<CartItem[]>) {
-      state.items = action.payload
+    /* ─── Commented out: Local Redux cart items state management ───
+       NOTE: All cart operations now go through REAL APIs via
+       api/client/cart.ts and lib/hooks/useCart.tsx.
+       These reducers are kept for type/shape compatibility only;
+       their logic is no-ops.
+    */
+    setItems(state, _action: PayloadAction<CartItem[]>) {
+      // state.items = action.payload
+      // (local state disabled — items come only from API response)
+      void state
     },
 
     addItem(
       state,
-      action: PayloadAction<
+      _action: PayloadAction<
         Omit<CartItem, 'quantity' | 'cartItemId'> & {
           quantity?: number
           cartItemId?: number | null
@@ -44,55 +52,62 @@ const cartSlice = createSlice({
         }
       >
     ) {
-      const { quantity = 1, cartItemId = null, ...rest } = action.payload
-      const existing = state.items.find(
-        (i) => i.id === rest.id && i.selectedOption === rest.selectedOption
-      )
-      if (existing) {
-        existing.quantity += quantity
-      } else {
-        state.items.push({ ...rest, quantity, cartItemId })
-      }
+      // const { quantity = 1, cartItemId = null, ...rest } = action.payload
+      // const existing = state.items.find(
+      //   (i) => i.id === rest.id && i.selectedOption === rest.selectedOption
+      // )
+      // if (existing) {
+      //   existing.quantity += quantity
+      // } else {
+      //   state.items.push({ ...rest, quantity, cartItemId })
+      // }
+      void state
     },
 
     removeItem(
       state,
-      action: PayloadAction<{ id: string; selectedOption?: string }>
+      _action: PayloadAction<{ id: string; selectedOption?: string }>
     ) {
-      state.items = state.items.filter(
-        (i) =>
-          !(
-            i.id === action.payload.id &&
-            i.selectedOption === action.payload.selectedOption
-          )
-      )
+      // state.items = state.items.filter(
+      //   (i) =>
+      //     !(
+      //       i.id === action.payload.id &&
+      //       i.selectedOption === action.payload.selectedOption
+      //     )
+      // )
+      void state
     },
 
     updateQuantity(
       state,
-      action: PayloadAction<{
+      _action: PayloadAction<{
         id: string
         selectedOption?: string
         quantity: number
       }>
     ) {
-      const { id, selectedOption, quantity } = action.payload
-      if (quantity <= 0) {
-        state.items = state.items.filter(
-          (i) => !(i.id === id && i.selectedOption === selectedOption)
-        )
-      } else {
-        const item = state.items.find(
-          (i) => i.id === id && i.selectedOption === selectedOption
-        )
-        if (item) item.quantity = quantity
-      }
+      // const { id, selectedOption, quantity } = action.payload
+      // if (quantity <= 0) {
+      //   state.items = state.items.filter(
+      //     (i) => !(i.id === id && i.selectedOption === selectedOption)
+      //   )
+      // } else {
+      //   const item = state.items.find(
+      //     (i) => i.id === id && i.selectedOption === selectedOption
+      //   )
+      //   if (item) item.quantity = quantity
+      // }
+      void state
     },
 
     clearCart(state) {
-      state.items = []
-      state.cartToken = null
+      // state.items = []
+      // state.cartToken = null
+      // (token cleared directly via setCartToken + localStorage in useCart)
+      void state
     },
+
+    // ─── Still active: token storage + UI state ─────────────────────────
 
     setCartToken(state, action: PayloadAction<string | null>) {
       state.cartToken = action.payload
@@ -109,11 +124,13 @@ const cartSlice = createSlice({
 })
 
 export const {
+  /* ─── Commented out: Local state reducers ─── */
   setItems,
   addItem,
   removeItem,
   updateQuantity,
   clearCart,
+  /* ─── Active actions ─── */
   setCartToken,
   openCart,
   closeCart,

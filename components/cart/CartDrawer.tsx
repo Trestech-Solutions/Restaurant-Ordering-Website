@@ -3,13 +3,15 @@
 import { useRef } from 'react'
 import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as PlusIcon, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useCart } from '@/lib/hooks/useCart'
-import { ALL_PRODUCTS } from '@/lib/data/website-products'
+import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
+import { useGetMenu } from '@/api/client/browse'
 
 const TAX_RATE     = 0.18
 const DELIVERY_FEE = 200
+const PLACEHOLDER  = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=400&auto=format&fit=crop'
 
 function fmtDateTimeDelivery() {
   const d = new Date(Date.now() + 60 * 60 * 1000)
@@ -20,38 +22,27 @@ function fmtDateTimeDelivery() {
 
 export function CartDrawer() {
   const {
-    isCartOpen,
-    closeCart,
-    items,
-    removeItem,
-    updateQuantity,
-    subtotal,
-    orderType,
-    addItem,
+    isCartOpen, closeCart, items, removeItem, updateQuantity, addItem,
+    subtotal, orderType,
   } = useCart()
+  const { branchId, areaId } = useStoreLocation()
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const tax        = Math.round(subtotal * TAX_RATE)
+  const { data: menuData } = useGetMenu({ branchId, areaId })
+
+  const popularItems = (menuData?.menu ?? [])
+    .flatMap((cat) => cat.items ?? [])
+    .filter((it) => it.status !== false && it.status !== 0)
+    .slice(0, 8)
+
+  const scrollRef   = useRef<HTMLDivElement>(null)
+  const tax         = Math.round(subtotal * TAX_RATE)
   const deliveryFee = orderType === 'delivery' ? DELIVERY_FEE : 0
-  const grandTotal = subtotal + tax + deliveryFee
+  const grandTotal  = subtotal + tax + deliveryFee
   const { date, time } = fmtDateTimeDelivery()
-
-  const popularItems = ALL_PRODUCTS.slice(0, 8)
 
   const scrollPopular = (dir: 'left' | 'right') => {
     if (!scrollRef.current) return
     scrollRef.current.scrollBy({ left: dir === 'left' ? -220 : 220, behavior: 'smooth' })
-  }
-
-  const handleAddPopular = (prod: typeof ALL_PRODUCTS[number]) => {
-    addItem({
-      id: prod.id,
-      productId: prod.productId ?? null,
-      name: prod.name,
-      price: parseInt(prod.price, 10),
-      image: prod.image,
-      selectedOption: prod.options[0] || undefined,
-    })
   }
 
   return (
@@ -65,21 +56,15 @@ export function CartDrawer() {
           isCartOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-4">
           <h2 className="text-lg font-bold text-neutral-900">Your Cart</h2>
-          <button
-            onClick={closeCart}
-            aria-label="Close cart"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors shadow-sm"
-          >
+          <button onClick={closeCart} aria-label="Close cart"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors shadow-sm">
             <X size={18} strokeWidth={3} />
           </button>
         </div>
 
-        {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto">
-          {/* Cart items */}
           {items.length > 0 ? (
             <div className="px-5 pb-2">
               {items.map((item) => (
@@ -96,8 +81,7 @@ export function CartDrawer() {
             <EmptyCart />
           )}
 
-          {/* Popular with your order */}
-          {items.length > 0 && (
+          {items.length > 0 && popularItems.length > 0 && (
             <div className="px-5 pb-5">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div>
@@ -105,55 +89,59 @@ export function CartDrawer() {
                   <p className="text-xs text-neutral-500">Customers often buy these together</p>
                 </div>
                 <div className="flex gap-1.5 pt-0.5">
-                  <button
-                    onClick={() => scrollPopular('left')}
-                    aria-label="Scroll left"
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
-                  >
+                  <button onClick={() => scrollPopular('left')} aria-label="Scroll left"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors">
                     <ChevronLeft size={14} />
                   </button>
-                  <button
-                    onClick={() => scrollPopular('right')}
-                    aria-label="Scroll right"
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
-                  >
+                  <button onClick={() => scrollPopular('right')} aria-label="Scroll right"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors">
                     <ChevronRight size={14} />
                   </button>
                 </div>
               </div>
 
-              <div
-                ref={scrollRef}
-                className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2"
-              >
-                {popularItems.map((prod) => (
-                  <div key={prod.id} className="shrink-0 w-[110px]">
-                    <div className="relative w-[110px] h-[110px] rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50">
-                      <Image src={prod.image} alt={prod.name} fill className="object-cover" />
-                      <button
-                        onClick={() => handleAddPopular(prod)}
-                        aria-label={`Add ${prod.name}`}
-                        className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#c8102e] shadow-md hover:bg-[#c8102e] hover:text-white transition-colors border border-neutral-200"
-                      >
-                        <PlusIcon size={14} strokeWidth={3} />
-                      </button>
+              <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2">
+                {popularItems.map((prod) => {
+                  const price = Math.round(parseFloat(prod.price_at_branch || prod.front_price || '0'))
+                  return (
+                    <div key={prod.id} className="shrink-0 w-[110px]">
+                      <div className="relative w-[110px] h-[110px] rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50">
+                        <Image
+                          src={prod.feature_image || PLACEHOLDER}
+                          alt={prod.name}
+                          fill
+                          className="object-cover"
+                        />
+                        <button
+                          onClick={() => addItem({
+                            id:        String(prod.id),
+                            productId: prod.id,
+                            name:      prod.name,
+                            price,
+                            image:     prod.feature_image || PLACEHOLDER,
+                          })}
+                          aria-label={`Add ${prod.name}`}
+                          className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#c8102e] shadow-md hover:bg-[#c8102e] hover:text-white transition-colors border border-neutral-200"
+                        >
+                          <PlusIcon size={14} strokeWidth={3} />
+                        </button>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm font-semibold text-neutral-800">Rs. {price.toLocaleString()}</p>
+                        <p className="text-[11px] text-neutral-500 truncate">{prod.name}</p>
+                      </div>
                     </div>
-                    <div className="mt-2">
-                      <p className="text-sm font-semibold text-neutral-800">Rs. {prod.price}</p>
-                      <p className="text-[11px] text-neutral-500 truncate">{prod.name}</p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
 
-          {/* ── Price summary ── */}
           {items.length > 0 && (
             <div className="px-5 pb-4">
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-neutral-800">Total</span>
+                  <span className="font-semibold text-neutral-800">Subtotal</span>
                   <span className="font-semibold text-neutral-800">Rs. {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -177,7 +165,6 @@ export function CartDrawer() {
           )}
         </div>
 
-        {/* ── Bottom sticky section ── */}
         {items.length > 0 && (
           <div className="border-t border-neutral-100 bg-white px-5 pt-4 pb-6 space-y-3">
             <Link
@@ -205,8 +192,6 @@ export function CartDrawer() {
   )
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
 function EmptyCart() {
   const router = useRouter()
   const { closeCart } = useCart()
@@ -218,31 +203,22 @@ function EmptyCart() {
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center px-6 py-8">
-      <div className="flex h-36 w-36 items-center justify-center">
-        <ShoppingBag size={130} strokeWidth={1.5} className="text-[#c8102e]" />
-      </div>
-
+      <ShoppingBag size={100} strokeWidth={1.2} className="text-[#c8102e]" />
       <div className="space-y-2">
-        <h3 className="text-2xl font-bold text-[#c8102e]">
-          Your Cart is Empty
-        </h3>
+        <h3 className="text-2xl font-bold text-[#c8102e]">Your Cart is Empty</h3>
         <p className="mx-auto max-w-[260px] text-sm leading-relaxed text-neutral-500">
-          Looks like you haven&apos;t added anything to your cart yet. Start
-          exploring and shop your favorite items!
+          Looks like you haven&apos;t added anything yet. Browse the menu to get started!
         </p>
       </div>
-
       <button
         onClick={handleStart}
         className="mt-2 rounded-md bg-[#c8102e] px-6 py-2.5 text-sm font-semibold text-[#f7c948] hover:bg-[#a80d26] transition-colors shadow-sm"
       >
-        Browse Product
+        Browse Menu
       </button>
     </div>
   )
 }
-
-// ─── Single cart item row ─────────────────────────────────────────────────────
 
 interface CartItemRowProps {
   item: ReturnType<typeof useCart>['items'][number]
@@ -254,40 +230,36 @@ interface CartItemRowProps {
 function CartItemRow({ item, onRemove, onIncrease, onDecrease }: CartItemRowProps) {
   return (
     <div className="flex items-center gap-3 py-3 first:pt-2">
-      {/* Image */}
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-neutral-100 bg-neutral-50">
-        <Image src={item.image} alt={item.name} fill className="object-cover" />
+        {item.image ? (
+          <Image src={item.image} alt={item.name} fill className="object-cover" />
+        ) : (
+          <div className="h-full w-full bg-neutral-100 flex items-center justify-center text-neutral-300 text-xs">
+            No img
+          </div>
+        )}
       </div>
 
-      {/* Details */}
       <div className="flex flex-1 items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-neutral-900 leading-tight truncate">
-            {item.name}
-            {item.selectedOption ? ` (${item.selectedOption})` : ''}
+            {item.name}{item.selectedOption ? ` (${item.selectedOption})` : ''}
           </p>
           <p className="mt-1 text-sm font-bold text-neutral-900">
             Rs. {(item.price * item.quantity).toLocaleString()}
           </p>
         </div>
 
-        {/* Quantity stepper — red outlined with trash/minus/plus */}
         <div className="flex items-center shrink-0 rounded-md border border-[#c8102e] overflow-hidden">
-          <button
-            onClick={onDecrease}
-            aria-label="Decrease or remove"
-            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors"
-          >
+          <button onClick={onDecrease} aria-label="Decrease or remove"
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors">
             {item.quantity <= 1 ? <Trash2 size={13} /> : <Minus size={13} strokeWidth={3} />}
           </button>
           <span className="w-7 text-center text-sm font-semibold text-neutral-900 bg-white">
             {item.quantity}
           </span>
-          <button
-            onClick={onIncrease}
-            aria-label="Increase quantity"
-            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors"
-          >
+          <button onClick={onIncrease} aria-label="Increase quantity"
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors">
             <Plus size={13} strokeWidth={3} />
           </button>
         </div>
