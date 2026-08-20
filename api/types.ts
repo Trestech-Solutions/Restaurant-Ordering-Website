@@ -204,6 +204,15 @@ export type Area = {
   updated_at?: string;
 };
 
+export type LocateResponse = {
+  success: boolean;
+  city_id?: number;
+  city_name?: string;
+  branch_id?: number;
+  area_id?: number | null;
+  area_name?: string | null;
+};
+
 // ─── Menu types — matches actual API response ────────────────────────────────
 
 /**

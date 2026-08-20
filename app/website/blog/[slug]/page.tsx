@@ -45,7 +45,7 @@ export default function BlogDetailPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-xl font-bold text-neutral-700">Post not found.</p>
-          <Link href="/website/blog" className="mt-4 inline-block text-sm text-[#c8102e] hover:underline">
+          <Link href="/website/blog" className="mt-4 inline-block text-sm text-[#000000] hover:underline">
             ← Back to Blog
           </Link>
         </div>
@@ -57,9 +57,9 @@ export default function BlogDetailPage() {
     <div className="min-h-screen font-sans text-neutral-800">
 
       {/* ── Topbar ──────────────────────────────────────────────────────── */}
-      <header className="bg-[#c8102e] text-white relative relative">
+      <header className="bg-[#000000] text-white relative relative">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2.5 md:px-8">
-          <button onClick={handleLocationClick} className="flex items-center gap-2 rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900">
+          <button onClick={handleLocationClick} className="flex items-center gap-2 rounded bg-[#ffffff] px-3 py-1.5 text-xs font-semibold text-neutral-900">
               <MapPin size={16} />
               <span className="text-left leading-tight">
                 Change Location<br />
@@ -93,7 +93,7 @@ export default function BlogDetailPage() {
             <span className="text-white/50">|</span>
             <button
               onClick={() => setCorporateModalOpen(true)}
-              className="rounded bg-[#f7c948] px-3 py-1.5 text-xs font-semibold text-neutral-900"
+              className="rounded bg-[#ffffff] px-3 py-1.5 text-xs font-semibold text-neutral-900"
             >
               Corporate &amp; Special Event Orders
             </button>
@@ -102,7 +102,7 @@ export default function BlogDetailPage() {
           <button onClick={openCart} aria-label="Open cart" className="relative rounded-full p-2 hover:bg-white/10 transition-colors">
             <ShoppingCart size={22} />
             {totalItems > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#f7c948] text-[10px] font-bold text-neutral-900">
+              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#ffffff] text-[10px] font-bold text-neutral-900">
                 {totalItems}
               </span>
             )}
@@ -128,7 +128,7 @@ export default function BlogDetailPage() {
 
         {/* Title overlay */}
         <div className="absolute bottom-0 left-0 right-0 z-10 px-6 pb-8 md:px-12">
-          <span className="mb-2 inline-block text-xs font-bold tracking-widest text-[#f7c948]">
+          <span className="mb-2 inline-block text-xs font-bold tracking-widest text-[#ffffff]">
             {post.category}
           </span>
           <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-3xl md:text-4xl">
@@ -144,7 +144,7 @@ export default function BlogDetailPage() {
       {/* ── Article Body ────────────────────────────────────────────────── */}
       <article className="mx-auto max-w-[780px] px-4 py-12 md:px-8">
         {/* Back link */}
-        <Link href="/website/blog" className="mb-8 inline-flex items-center gap-1.5 text-sm text-[#c8102e] hover:underline">
+        <Link href="/website/blog" className="mb-8 inline-flex items-center gap-1.5 text-sm text-[#000000] hover:underline">
           <ChevronLeft size={16} />
           Back to Blog
         </Link>
@@ -186,7 +186,7 @@ export default function BlogDetailPage() {
                 onClick={prevRelated}
                 disabled={relatedStart === 0}
                 aria-label="Previous"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] disabled:opacity-30 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000] disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -194,7 +194,7 @@ export default function BlogDetailPage() {
                 onClick={nextRelated}
                 disabled={relatedStart + 3 >= related.length}
                 aria-label="Next"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] disabled:opacity-30 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000] disabled:opacity-30 transition-colors"
               >
                 <ChevronRight size={16} />
               </button>
@@ -217,8 +217,8 @@ export default function BlogDetailPage() {
                   />
                 </div>
                 <div className="flex flex-1 flex-col p-4">
-                  <p className="mb-1 text-[10px] font-bold tracking-widest text-[#c8102e]">{rp.category}</p>
-                  <h4 className="flex-1 text-sm font-bold leading-snug text-neutral-900 group-hover:text-[#c8102e] transition-colors">
+                  <p className="mb-1 text-[10px] font-bold tracking-widest text-[#000000]">{rp.category}</p>
+                  <h4 className="flex-1 text-sm font-bold leading-snug text-neutral-900 group-hover:text-[#000000] transition-colors">
                     {rp.title}
                   </h4>
                   <div className="mt-3 flex items-center gap-1.5 text-xs text-neutral-400">
@@ -233,13 +233,13 @@ export default function BlogDetailPage() {
       )}
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="relative overflow-visible bg-[#c8102e] pt-16 text-white rounded-tl-3xl rounded-tr-3xl">
+      <footer className="relative overflow-visible bg-[#000000] pt-16 text-white rounded-tl-3xl rounded-tr-3xl">
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-4 pb-10 md:grid-cols-4 md:px-8">
           <div>
-            <div className="mb-3 overflow-hidden rounded-full w-16 h-16 border-2 border-[#f7c948]">
+            <div className="mb-3 overflow-hidden rounded-full w-16 h-16 border-2 border-[#ffffff]">
               <Image src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg" alt="United King" width={64} height={64} className="object-contain" />
             </div>
-            <p className="text-xs italic text-[#f7c948]">the Food Kingdom</p>
+            <p className="text-xs italic text-[#ffffff]">the Food Kingdom</p>
           </div>
 
           <div>

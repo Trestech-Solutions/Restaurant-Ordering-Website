@@ -59,7 +59,7 @@ export function CartDrawer() {
         <div className="flex items-center justify-between px-5 py-4">
           <h2 className="text-lg font-bold text-neutral-900">Your Cart</h2>
           <button onClick={closeCart} aria-label="Close cart"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c8102e] text-white hover:bg-[#a80d26] transition-colors shadow-sm">
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#000000] text-white hover:bg-[#1f1f1f] transition-colors shadow-sm">
             <X size={18} strokeWidth={3} />
           </button>
         </div>
@@ -90,11 +90,11 @@ export function CartDrawer() {
                 </div>
                 <div className="flex gap-1.5 pt-0.5">
                   <button onClick={() => scrollPopular('left')} aria-label="Scroll left"
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors">
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#000000] hover:text-[#000000] transition-colors">
                     <ChevronLeft size={14} />
                   </button>
                   <button onClick={() => scrollPopular('right')} aria-label="Scroll right"
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors">
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 hover:border-[#000000] hover:text-[#000000] transition-colors">
                     <ChevronRight size={14} />
                   </button>
                 </div>
@@ -121,7 +121,7 @@ export function CartDrawer() {
                             image:     prod.feature_image || PLACEHOLDER,
                           })}
                           aria-label={`Add ${prod.name}`}
-                          className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#c8102e] shadow-md hover:bg-[#c8102e] hover:text-white transition-colors border border-neutral-200"
+                          className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#000000] shadow-md hover:bg-[#000000] hover:text-white transition-colors border border-neutral-200"
                         >
                           <PlusIcon size={14} strokeWidth={3} />
                         </button>
@@ -170,10 +170,10 @@ export function CartDrawer() {
             <Link
               href="/website/checkout"
               onClick={closeCart}
-              className="flex w-full items-center justify-between rounded-xl bg-[#c8102e] px-6 py-3.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors shadow-md"
+              className="flex w-full items-center justify-between rounded-xl bg-[#000000] px-6 py-3.5 text-sm font-bold text-white hover:bg-[#1f1f1f] transition-colors shadow-md"
             >
               <span className="pl-2">Checkout</span>
-              <ArrowRight size={18} className="text-[#f7c948]" />
+              <ArrowRight size={18} className="text-[#ffffff]" />
             </Link>
 
             {orderType === 'delivery' && (
@@ -203,16 +203,16 @@ function EmptyCart() {
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center px-6 py-8">
-      <ShoppingBag size={100} strokeWidth={1.2} className="text-[#c8102e]" />
+      <ShoppingBag size={100} strokeWidth={1.2} className="text-[#000000]" />
       <div className="space-y-2">
-        <h3 className="text-2xl font-bold text-[#c8102e]">Your Cart is Empty</h3>
+        <h3 className="text-2xl font-bold text-[#000000]">Your Cart is Empty</h3>
         <p className="mx-auto max-w-[260px] text-sm leading-relaxed text-neutral-500">
           Looks like you haven&apos;t added anything yet. Browse the menu to get started!
         </p>
       </div>
       <button
         onClick={handleStart}
-        className="mt-2 rounded-md bg-[#c8102e] px-6 py-2.5 text-sm font-semibold text-[#f7c948] hover:bg-[#a80d26] transition-colors shadow-sm"
+        className="mt-2 rounded-md bg-[#000000] px-6 py-2.5 text-sm font-semibold text-[#ffffff] hover:bg-[#1f1f1f] transition-colors shadow-sm"
       >
         Browse Menu
       </button>
@@ -250,16 +250,16 @@ function CartItemRow({ item, onRemove, onIncrease, onDecrease }: CartItemRowProp
           </p>
         </div>
 
-        <div className="flex items-center shrink-0 rounded-md border border-[#c8102e] overflow-hidden">
+        <div className="flex items-center shrink-0 rounded-md border border-[#000000] overflow-hidden">
           <button onClick={onDecrease} aria-label="Decrease or remove"
-            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors">
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#000000] hover:bg-[#000000] hover:text-white transition-colors">
             {item.quantity <= 1 ? <Trash2 size={13} /> : <Minus size={13} strokeWidth={3} />}
           </button>
           <span className="w-7 text-center text-sm font-semibold text-neutral-900 bg-white">
             {item.quantity}
           </span>
           <button onClick={onIncrease} aria-label="Increase quantity"
-            className="flex h-7 w-7 items-center justify-center bg-white text-[#c8102e] hover:bg-[#c8102e] hover:text-white transition-colors">
+            className="flex h-7 w-7 items-center justify-center bg-white text-[#000000] hover:bg-[#000000] hover:text-white transition-colors">
             <Plus size={13} strokeWidth={3} />
           </button>
         </div>

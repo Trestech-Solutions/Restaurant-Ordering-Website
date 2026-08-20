@@ -12,18 +12,18 @@ export function CartBar() {
       <div className="max-w-[380px] w-full pointer-events-auto">
         <button
           onClick={openCart}
-          className="flex w-full items-center justify-between rounded-xl bg-[#c8102e] px-4 py-3.5 text-white shadow-2xl hover:bg-[#a80d26] transition-colors"
+          className="flex w-full items-center justify-between rounded-xl bg-[#000000] px-4 py-3.5 text-white shadow-2xl hover:bg-[#1f1f1f] transition-colors"
         >
           {/* Left — count badge */}
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-[#c8102e]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-[#000000]">
               {totalItems}
             </span>
             <span className="text-sm font-bold">View Cart</span>
           </div>
 
           {/* Right — total */}
-          <span className="text-sm font-bold text-[#f7c948]">Rs. {subtotal.toLocaleString()}</span>
+          <span className="text-sm font-bold text-[#ffffff]">Rs. {subtotal.toLocaleString()}</span>
         </button>
       </div>
     </div>

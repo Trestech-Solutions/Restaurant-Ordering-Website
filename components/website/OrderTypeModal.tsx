@@ -245,7 +245,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
 
         {/* Logo */}
         <div className="flex flex-col items-center pt-6 pb-1 sm:pt-8 sm:pb-2">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden sm:h-20 sm:w-20">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#000000] bg-white shadow-md overflow-hidden sm:h-20 sm:w-20">
             <Image
               src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
               alt="United King"
@@ -270,7 +270,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                   onClick={() => { setOrderType(type); setGeoError('') }}
                   className={`rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all sm:px-6 sm:py-2 sm:text-xs ${
                     orderType === type
-                      ? 'bg-[#c8102e] text-white shadow-sm'
+                      ? 'bg-[#000000] text-white shadow-sm'
                       : 'text-neutral-500 hover:text-neutral-800'
                   }`}
                 >
@@ -295,7 +295,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                 <button
                   onClick={handleUseCurrentLocation}
                   disabled={geoLoading}
-                  className="flex items-center gap-1.5 rounded-full bg-[#c8102e] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
+                  className="flex items-center gap-1.5 rounded-full bg-[#000000] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
                 >
                   {geoLoading ? <Loader2 size={12} className="animate-spin" /> : <Navigation size={12} />}
                   {geoLoading ? 'Detecting...' : 'Use Current Location'}
@@ -306,13 +306,13 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               <div className="relative mb-2.5 sm:mb-3">
                 {loadingBranches ? (
                   <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#c8102e]" />
+                    <Loader2 size={16} className="animate-spin text-[#000000]" />
                   </div>
                 ) : (
                   <select
                     value={selectedBranchId}
                     onChange={(e) => setSelectedBranchId(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
                   >
                     {finalBranchList.map((b) => (
                       <option key={b.id} value={b.id}>{b.name}</option>
@@ -344,7 +344,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                     href={activeBranch.mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex shrink-0 items-center gap-1 rounded-full bg-[#c8102e] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700 transition-colors"
+                    className="flex shrink-0 items-center gap-1 rounded-full bg-[#000000] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700 transition-colors"
                   >
                     Directions <ExternalLink size={9} />
                   </a>
@@ -364,7 +364,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                 <button
                   onClick={handleUseCurrentLocation}
                   disabled={geoLoading}
-                  className="flex items-center gap-1.5 rounded-full bg-[#c8102e] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
+                  className="flex items-center gap-1.5 rounded-full bg-[#000000] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
                 >
                   {geoLoading ? <Loader2 size={12} className="animate-spin" /> : <Navigation size={12} />}
                   {geoLoading ? 'Detecting...' : 'Use Current Location'}
@@ -376,7 +376,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
                 <select
                   value={selectedCity}
                   onChange={(e) => { setSelectedCity(e.target.value); setSelectedArea('') }}
-                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
                 >
                   <option value="">Select City</option>
                   {DELIVERY_CITIES.map((c) => <option key={c}>{c}</option>)}
@@ -388,14 +388,14 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               <div className="relative mb-2.5 sm:mb-3">
                 {loadingAllAreas ? (
                   <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#c8102e]" />
+                    <Loader2 size={16} className="animate-spin text-[#000000]" />
                   </div>
                 ) : (
                   <select
                     value={selectedArea}
                     onChange={(e) => setSelectedArea(e.target.value)}
                     disabled={!selectedCity}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#c8102e] focus:outline-none focus:ring-1 focus:ring-[#c8102e] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
                   >
                     <option value="">Select your area</option>
                     {cityAreas.map((a: Area) => (
@@ -411,7 +411,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
           <button
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className="w-full rounded-xl bg-[#c8102e] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#a80d26] disabled:cursor-not-allowed disabled:opacity-40 sm:py-3 sm:text-sm"
+            className="w-full rounded-xl bg-[#000000] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-40 sm:py-3 sm:text-sm"
           >
             Confirm Location
           </button>

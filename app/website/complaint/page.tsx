@@ -59,8 +59,8 @@ function ToggleGroup<T extends string>({
           onClick={() => onChange(option)}
           className={`rounded px-6 py-2 text-sm font-semibold border transition-colors ${
             value === option
-              ? 'border-[#c8102e] text-[#c8102e] bg-white'
-              : 'border-neutral-300 text-neutral-700 bg-white hover:border-[#c8102e]'
+              ? 'border-[#000000] text-[#000000] bg-white'
+              : 'border-neutral-300 text-neutral-700 bg-white hover:border-[#000000]'
           }`}
         >
           {option}
@@ -80,7 +80,7 @@ function TextField({
       <label className="mb-1.5 block text-sm font-semibold text-neutral-800">{label}</label>
       <input
         {...inputProps}
-        className="w-full rounded border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+        className="w-full rounded border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
       />
       {hint && <p className="mt-1 text-xs text-neutral-400">{hint}</p>}
     </div>
@@ -174,7 +174,7 @@ export default function SubmitComplaintPage() {
                     <div className="flex gap-2">
                       <select
                         {...register('title')}
-                        className="rounded border border-neutral-300 px-2 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+                        className="rounded border border-neutral-300 px-2 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
                       >
                         {TITLES.map((t) => (
                           <option key={t}>{t}</option>
@@ -183,7 +183,7 @@ export default function SubmitComplaintPage() {
                       <input
                         {...register('name', { required: true })}
                         type="text"
-                        className="flex-1 rounded border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+                        className="flex-1 rounded border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
                       />
                     </div>
                   </div>
@@ -213,7 +213,7 @@ export default function SubmitComplaintPage() {
                 <div className="flex justify-end pt-2">
                   <button
                     type="submit"
-                    className="rounded bg-[#c8102e] px-10 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+                    className="rounded bg-[#000000] px-10 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
                   >
                     Submit
                   </button>
@@ -241,7 +241,7 @@ function HeroBanner() {
       />
       <div
         className="absolute inset-0 z-10"
-        style={{ background: 'linear-gradient(105deg, #f7c948 0%, #f7c948 52%, transparent 52%)' }}
+        style={{ background: 'linear-gradient(105deg, #ffffff 0%, #ffffff 52%, transparent 52%)' }}
       />
       <div className="absolute inset-0 z-20 flex items-center px-8 md:px-16">
         <h1 className="text-4xl font-extrabold uppercase leading-tight text-neutral-900 sm:text-5xl md:text-6xl">
@@ -263,7 +263,7 @@ function SuccessPanel({ onReset }: { onReset: () => void }) {
       </p>
       <button
         onClick={onReset}
-        className="mt-6 rounded-full bg-[#c8102e] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+        className="mt-6 rounded-full bg-[#000000] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
       >
         Submit Another
       </button>

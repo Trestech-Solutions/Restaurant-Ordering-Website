@@ -3,13 +3,7 @@ const API_ENDPOINTS = {
     getBranches: '/storefront/branches/',   // ?restaurant=<id>
     getAreas:    '/storefront/areas/',      // ?branch=<id> or ?restaurant=<id>
     getMenu:     '/storefront/menu/',       // ?branch=<id>&area=<id optional>
-  },
-
-  StorefrontCart: {
-    getCart:           '/storefront/cart/',               // GET ?cart_token=<uuid>
-    addCart:           '/storefront/cart/items/',         // POST
-    updateCartItem:    '/storefront/cart/items/{{pk}}/',  // PATCH ?cart_token=<uuid>
-    removeCartItem:    '/storefront/cart/items/{{pk}}/',  // DELETE ?cart_token=<uuid>
+    locate:      '/storefront/locate/',     // ?lat=<lat>&lng=<lng>&restaurant=<id optional>
   },
 
   StorefrontCheckout: {

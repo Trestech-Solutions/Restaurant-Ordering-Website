@@ -8,6 +8,7 @@ import type {
   Branch,
   Area,
   MenuResponse,
+  LocateResponse,
 } from '../types';
 import { useEffect as reactUseEffect } from 'react';
 
@@ -140,4 +141,16 @@ export function useGetMenu(params: {
   }, [query.error]);
 
   return query;
+}
+
+export async function locate(
+  lat: number,
+  lng: number,
+  options?: { restaurantId?: string | number }
+): Promise<LocateResponse> {
+  const restaurantId = options?.restaurantId ?? getRestaurantId();
+  const params: Record<string, string | number> = { lat, lng };
+  if (restaurantId) params.restaurant = restaurantId;
+  const r = await api.get<LocateResponse>(API_ENDPOINTS.StorefrontBrowse.locate, { params });
+  return r.data;
 }

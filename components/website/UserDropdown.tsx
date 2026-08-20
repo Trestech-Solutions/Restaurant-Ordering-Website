@@ -56,7 +56,7 @@ export function UserDropdown({ onLoginClick }: { onLoginClick: () => void }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-44 rounded-xl bg-white shadow-xl border border-neutral-100 z-[999] overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-44 rounded-xl bg-[#ffffff] shadow-xl border border-neutral-100 z-[999] overflow-hidden">
           <Link
             href="/website/profile"
             onClick={() => setOpen(false)}
@@ -84,7 +84,7 @@ export function UserDropdown({ onLoginClick }: { onLoginClick: () => void }) {
           <div className="border-t border-neutral-100" />
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-2.5 px-4 py-3 text-sm text-[#c8102e] hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-2.5 px-4 py-3 text-sm text-[#000000] hover:bg-red-50 transition-colors"
           >
             <LogOut size={16} />
             Sign out

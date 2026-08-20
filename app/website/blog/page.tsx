@@ -38,10 +38,10 @@ export default function BlogPage() {
 
               {/* Body */}
               <div className="flex flex-1 flex-col p-5">
-                <p className="mb-2 text-xs font-bold tracking-widest text-[#c8102e]">
+                <p className="mb-2 text-xs font-bold tracking-widest text-[#000000]">
                   {post.category}
                 </p>
-                <h2 className="mb-2 text-base font-bold leading-snug text-neutral-900 group-hover:text-[#c8102e] transition-colors">
+                <h2 className="mb-2 text-base font-bold leading-snug text-neutral-900 group-hover:text-[#000000] transition-colors">
                   {post.title}
                 </h2>
                 <p className="flex-1 text-sm leading-relaxed text-neutral-500 line-clamp-3">

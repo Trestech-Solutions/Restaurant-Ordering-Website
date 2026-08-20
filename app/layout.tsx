@@ -6,9 +6,9 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "United King - Premier Bakery in Karachi",
+  title: "Angeethi - Pakistani & BBQ Restaurant",
   description:
-    "United King is Karachi's premier bakery, offering a wide selection of cakes, sweets, mithai, frozen food and fast food.",
+    "Angeethi is a Pakistani and BBQ restaurant serving delicious traditional dishes, BBQ, and flavorful meals for dine-in and takeaway.",
 };
 
 export const viewport: Viewport = {

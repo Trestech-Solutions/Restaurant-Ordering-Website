@@ -1,96 +1,125 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Search, ArrowUp } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 export function WebsiteFooter() {
+  const [expanded, setExpanded] = useState(false)
+
   return (
-    <footer className="relative overflow-visible bg-[#c8102e] pt-10 text-white rounded-tl-3xl rounded-tr-3xl sm:pt-12 md:pt-16">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 px-4 pb-8 sm:grid-cols-2 sm:gap-8 sm:px-5 sm:pb-10 md:grid-cols-4 md:gap-10 md:px-8">
-        {/* Brand */}
-        <div className="text-center sm:text-left">
-          <div className="mb-3 mx-auto overflow-hidden rounded-full w-12 h-12 sm:mx-0 sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 border-[#f7c948]">
-            <Image
-              src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
-              alt="United King"
-              width={64}
-              height={64}
-              className="h-full w-full object-contain"
-            />
+    <footer className="bg-white pt-8 sm:pt-10">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-5 md:px-8">
+
+        {/* SEO content block */}
+        <div className="rounded-2xl bg-neutral-50 p-5 sm:p-7 md:p-10">
+          <h2 className="text-xl font-bold text-neutral-800 sm:text-2xl md:text-3xl">
+            Discover Authentic BBQ, Karahi &amp; Matka Biryani in Karachi – Angeethi PK
+          </h2>
+          <h3 className="mt-3 text-lg font-bold text-neutral-800 sm:mt-4 sm:text-xl md:text-2xl">
+            Flavor-Packed Kabab &amp; Tikka Rice in Karachi
+          </h3>
+
+          <div
+            className={`relative mt-3 overflow-hidden text-sm leading-relaxed text-neutral-600 transition-all duration-300 sm:mt-4 sm:text-base ${
+              expanded ? 'max-h-[2000px]' : 'max-h-[3.2rem] sm:max-h-[3.6rem]'
+            }`}
+          >
+            <p>
+              If you crave flavorful and traditional BBQ, Angeethi PK proudly stands as one of
+              the top spots in the city. Famous for serving Kabab Rice in Karachi, the menu
+              offers perfectly grilled kababs paired with aromatic rice. Food lovers admire the
+              Spicy Kabab Rice Karachi option, seasoned to elevate every bite. Alongside this,
+              juicy Tikka Rice in Karachi brings tender chicken tikka on a bed of fluffy rice,
+              ideal for a hearty meal any time of day.
+            </p>
           </div>
-          <p className="text-[11px] italic text-[#f7c948] sm:text-xs">the Food Kingdom</p>
+
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="mt-3 flex items-center gap-1 text-sm font-semibold text-neutral-800 hover:text-black sm:mt-4"
+          >
+            {expanded ? 'Show Less' : 'Show More'}
+            <ChevronDown
+              size={16}
+              className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+            />
+          </button>
         </div>
 
-        {/* Information */}
-        <div className="text-center sm:text-left">
-          <h4 className="mb-2.5 text-sm font-bold md:mb-3 md:text-base">Information</h4>
-          <p className="mb-2.5 text-sm md:mb-3">021-111-022-022</p>
-          <ul className="space-y-1.5 text-sm text-white/90 md:space-y-2">
-            <li><Link href="/website/about" className="hover:underline">About Us</Link></li>
-            <li><Link href="/website/complaint" className="hover:underline">Submit Complaint</Link></li>
-            <li><Link href="/website/contact" className="hover:underline">Contact Us</Link></li>
-          </ul>
-        </div>
-
-        {/* App preview — visible but compact on mobile; taller on tablet+ */}
-        <div className="relative flex justify-center md:justify-start order-last sm:order-none sm:col-span-2 md:col-span-1 pt-4 sm:pt-0">
-          <div className="absolute -top-10 w-20 sm:-top-12 sm:w-24 md:-top-16 md:w-28 lg:w-36">
+        {/* Brand / contact / social row */}
+        <div className="flex flex-col items-center gap-8 border-b border-neutral-200 py-10 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          {/* Logo */}
+          <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full sm:h-36 sm:w-36">
             <Image
-              src="https://unitedkingonline.com/_next/image?url=%2Fassets%2Fimages%2Funitedking%2Fmobile-mockup.png&w=2048&q=75"
-              alt="App preview"
+              src="/web/logo.webp"
+              alt="Angeethi"
               width={144}
-              height={280}
-              className="w-full object-contain drop-shadow-2xl"
+              height={144}
+              className="h-full w-full object-cover"
             />
           </div>
-          <div className="h-28 w-20 sm:h-32 sm:w-24 md:h-44 md:w-28 lg:w-36" />
-        </div>
 
-        {/* Get The App */}
-        <div className="text-center sm:text-left">
-          <h4 className="mb-2.5 text-base font-bold md:mb-3 md:text-lg">Get The App!</h4>
-          <p className="mb-3 text-sm text-white/90 md:mb-4">Easy, Fast and Convenient.</p>
-          <div className="mx-auto flex max-w-[220px] flex-col gap-2 sm:mx-0">
-            <a
-              href="https://apps.apple.com/us/app/united-king/id1616868468"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md bg-black px-3 py-2 text-left text-[11px] text-white hover:bg-neutral-800 transition-colors sm:px-4 sm:text-xs"
-            >
-              Download on App Store
-            </a>
-            <a
-              href="https://play.google.com/store/apps/details?id=com.indolj.unitedking"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md bg-black px-3 py-2 text-left text-[11px] text-white hover:bg-neutral-800 transition-colors sm:px-4 sm:text-xs"
-            >
-              GET IT ON Google Play
-            </a>
+          {/* Contact info */}
+          <div className="text-center sm:text-left">
+            <h4 className="text-2xl font-bold text-neutral-900">Angeethi</h4>
+            <p className="mt-2 text-sm text-neutral-700 sm:text-base">
+              <span className="font-semibold">Phone:</span> 03092772497
+            </p>
+            <p className="mt-1 text-sm text-neutral-700 sm:text-base">
+              <span className="font-semibold">Email:</span> angeethiofficial@gmail.com
+            </p>
+            <p className="mt-1 text-sm text-neutral-700 sm:text-base">
+              <span className="font-semibold">Address:</span> Roshan Tower, Shop no 6 &amp; 7,
+              Tipu Sultan Rd, Karachi, 75350
+            </p>
+          </div>
+
+          {/* Follow us + links */}
+          <div className="text-center sm:text-right">
+            <h4 className="text-lg font-bold text-neutral-900">Follow Us:</h4>
+            <div className="mt-3 flex justify-center gap-3 sm:justify-end">
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-50 text-pink-500 hover:bg-pink-100 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+              </a>
+            </div>
+            <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-neutral-600 sm:justify-end">
+              <Link href="/website/privacy" className="underline hover:text-black">Privacy Policy</Link>
+              <Link href="/website/faqs" className="underline hover:text-black">Faqs</Link>
+              <Link href="/website/blogs" className="underline hover:text-black">Blogs</Link>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom row */}
-      <div className="flex flex-col items-center gap-3 border-t border-white/20 px-3 py-3 text-[11px] text-white/80 sm:px-4 sm:py-4 md:flex-row md:justify-between md:px-8 md:text-xs sm:flex-row sm:justify-between">
-        <button aria-label="Search" className="rounded-full bg-white/10 p-1.5 sm:p-2 order-2 sm:order-1">
-          <Search size={14} className="sm:hidden" />
-          <Search size={16} className="hidden sm:block" />
-        </button>
-        <p className="text-center order-1 sm:order-2 px-2">
-          Powered by Trestech &nbsp;|&nbsp;
-          <a href="#" className="hover:underline">Privacy</a> &nbsp;
-          <a href="#" className="hover:underline">Faqs</a>
-        </p>
-        <button
-          aria-label="Back to top"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="rounded-full bg-white/10 p-1.5 sm:p-2 order-3"
-        >
-          <ArrowUp size={14} className="sm:hidden" />
-          <ArrowUp size={16} className="hidden sm:block" />
-        </button>
+        {/* Bottom copyright */}
+        <div className="flex items-center justify-center gap-2 py-6 text-sm text-neutral-500">
+          <span>© {new Date().getFullYear()} Powered by</span>
+          <Image
+            src="https://assets.indolj.io/upload/indolj-logo.png"
+            alt="Indolj"
+            width={80}
+            height={20}
+            className="h-4 w-auto object-contain sm:h-5"
+          />
+        </div>
       </div>
     </footer>
   )

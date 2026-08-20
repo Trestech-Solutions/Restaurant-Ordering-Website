@@ -77,7 +77,7 @@ export default function MyOrdersPage() {
               onClick={() => setTab(t)}
               className={`py-4 text-sm font-semibold capitalize transition-colors relative ${
                 tab === t
-                  ? 'bg-[#c8102e] text-white'
+                  ? 'bg-[#000000] text-white'
                   : 'bg-white text-neutral-500 hover:bg-neutral-50'
               }`}
             >
@@ -95,10 +95,10 @@ export default function MyOrdersPage() {
       <div className="flex items-center justify-end mb-2">
         <button
           onClick={() => refetch()}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-[#c8102e]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-[#000000]"
           type="button"
         >
-          <Loader2 size={12} className={isLoading ? 'animate-spin text-[#c8102e]' : ''} />
+          <Loader2 size={12} className={isLoading ? 'animate-spin text-[#000000]' : ''} />
           Refresh
         </button>
       </div>
@@ -106,7 +106,7 @@ export default function MyOrdersPage() {
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center gap-2 py-16 rounded-xl border border-neutral-200 bg-white shadow-sm text-sm text-neutral-500">
-          <Loader2 size={14} className="animate-spin text-[#c8102e]" /> Loading orders…
+          <Loader2 size={14} className="animate-spin text-[#000000]" /> Loading orders…
         </div>
       )}
 
@@ -118,7 +118,7 @@ export default function MyOrdersPage() {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100">
                 <Package size={24} className="text-neutral-400" />
               </div>
-              <p className="text-sm text-[#c8102e] font-semibold">{tab === 'active' ? 'No active orders' : 'No past orders'}!</p>
+              <p className="text-sm text-[#000000] font-semibold">{tab === 'active' ? 'No active orders' : 'No past orders'}!</p>
               <p className="text-xs text-neutral-400 max-w-xs mx-auto">
                 {tab === 'active'
                   ? 'Your active orders will appear here once you place them.'
@@ -161,7 +161,7 @@ function OrderRow({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Receipt size={14} className="text-[#c8102e]" />
+              <Receipt size={14} className="text-[#000000]" />
               <p className="text-base font-bold text-neutral-900">Order #{order.order_no}</p>
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${cls.pill}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${cls.dot}`} />
@@ -219,7 +219,7 @@ function OrderDetail({ orderId }: { orderId: number }) {
   if (isLoading) {
     return (
       <div className="px-6 pb-5 flex items-center gap-2 text-xs text-neutral-500">
-        <Loader2 size={12} className="animate-spin text-[#c8102e]" /> Loading details…
+        <Loader2 size={12} className="animate-spin text-[#000000]" /> Loading details…
       </div>
     )
   }
@@ -278,7 +278,7 @@ function OrderDetail({ orderId }: { orderId: number }) {
         }
         <div className="border-t border-neutral-100 pt-2 flex items-center justify-between text-sm">
           <span className="font-bold text-neutral-800">Grand Total</span>
-          <span className="font-bold text-[#c8102e]">{fmtMoney((order as any).grand_total ?? (order as any).total)}</span>
+          <span className="font-bold text-[#000000]">{fmtMoney((order as any).grand_total ?? (order as any).total)}</span>
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import type { Control, UseFormRegister } from 'react-hook-form'
 import type { CheckoutFormValues } from '@/components/checkout/types'
 
 const inputClass =
-  'w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] placeholder:text-neutral-400'
+  'w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] placeholder:text-neutral-400'
 const labelClass = 'mb-2 block text-sm font-semibold text-neutral-700'
 
 interface PaymentSectionProps {
@@ -33,7 +33,7 @@ export function PaymentSection({ control, register, orderType }: PaymentSectionP
                 onClick={() => field.onChange(p)}
                 className={`flex-1 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${
                   field.value === p
-                    ? 'border-[#c8102e] bg-[#c8102e]/5 text-[#c8102e]'
+                    ? 'border-[#000000] bg-[#000000]/5 text-[#000000]'
                     : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                 }`}
               >
@@ -67,7 +67,7 @@ export function PaymentSection({ control, register, orderType }: PaymentSectionP
             onClick={() => field.onChange(!field.value)}
             className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors ${
               field.value
-                ? 'border-[#f7c948] bg-[#f7c948]/10 text-neutral-800'
+                ? 'border-[#ffffff] bg-[#ffffff]/10 text-neutral-800'
                 : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
             }`}
           >

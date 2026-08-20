@@ -92,7 +92,7 @@ function Header({ search, onSearchChange }: { search: string; onSearchChange: (v
         </h1>
         <a
           href="tel:021111022022"
-          className="text-xl font-extrabold text-neutral-900 hover:text-[#c8102e] transition-colors sm:text-2xl"
+          className="text-xl font-extrabold text-neutral-900 hover:text-[#000000] transition-colors sm:text-2xl"
         >
           UAN: 021-111-022-022
         </a>
@@ -105,7 +105,7 @@ function Header({ search, onSearchChange }: { search: string; onSearchChange: (v
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search branch or area…"
-          className="w-full rounded border border-neutral-300 py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition"
+          className="w-full rounded border border-neutral-300 py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] transition"
         />
       </div>
     </section>
@@ -115,7 +115,7 @@ function Header({ search, onSearchChange }: { search: string; onSearchChange: (v
 function LoadingState() {
   return (
     <div className="flex items-center justify-center gap-2 py-20 text-neutral-500">
-      <Loader2 size={20} className="animate-spin text-[#c8102e]" />
+      <Loader2 size={20} className="animate-spin text-[#000000]" />
       <span className="text-sm">Loading branches…</span>
     </div>
   )
@@ -127,7 +127,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
       <p className="text-sm text-neutral-500">Failed to load branches.</p>
       <button
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#c8102e] px-5 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-full bg-[#000000] px-5 py-2 text-xs font-bold text-white hover:bg-red-700 transition-colors"
       >
         <RefreshCw size={13} /> Retry
       </button>
@@ -170,7 +170,7 @@ function BranchCard({ branch }: { branch: Branch }) {
           href={mapsUrlFor(branch)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-[#000000] hover:text-[#000000] transition-colors"
         >
           <MapPin size={11} />
           View on Map

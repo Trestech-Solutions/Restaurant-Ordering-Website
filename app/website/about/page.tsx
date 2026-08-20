@@ -52,7 +52,7 @@ export default function AboutUsPage() {
           className="object-cover object-center brightness-50"
         />
         <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white px-4">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#f7c948] mb-2">
+          <p className="text-sm font-semibold uppercase tracking-widest text-[#ffffff] mb-2">
             Est. 1984 · Karachi
           </p>
           <h1 className="text-4xl font-extrabold sm:text-5xl drop-shadow-lg">
@@ -102,11 +102,11 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <section className="bg-[#c8102e] py-14">
+      <section className="bg-[#000000] py-14">
         <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-8 px-4 text-center text-white sm:grid-cols-4 md:px-8">
           {STATS.map(({ icon: Icon, value, label }) => (
             <div key={label} className="flex flex-col items-center gap-2">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f7c948] text-neutral-900">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#ffffff] text-neutral-900">
                 <Icon size={26} />
               </div>
               <p className="text-3xl font-extrabold">{value}</p>
@@ -122,7 +122,7 @@ export default function AboutUsPage() {
         </h2>
 
         <div className="relative">
-          <div className="absolute left-6 top-0 h-full w-0.5 bg-[#c8102e]/20 md:left-1/2 md:-translate-x-0.5" />
+          <div className="absolute left-6 top-0 h-full w-0.5 bg-[#000000]/20 md:left-1/2 md:-translate-x-0.5" />
 
           <div className="space-y-10">
             {MILESTONES.map((m, i) => (
@@ -132,14 +132,14 @@ export default function AboutUsPage() {
                   i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
               >
-                <div className="absolute left-4 top-4 z-10 h-5 w-5 rounded-full border-4 border-[#c8102e] bg-white md:left-1/2 md:-translate-x-2.5" />
+                <div className="absolute left-4 top-4 z-10 h-5 w-5 rounded-full border-4 border-[#000000] bg-white md:left-1/2 md:-translate-x-2.5" />
 
                 <div
                   className={`ml-14 flex-1 rounded-xl bg-white p-5 shadow-md md:ml-0 md:w-[calc(50%-2rem)] ${
                     i % 2 === 0 ? 'md:mr-auto md:pr-10' : 'md:ml-auto md:pl-10'
                   }`}
                 >
-                  <span className="inline-block rounded-full bg-[#f7c948] px-3 py-0.5 text-xs font-bold text-neutral-900 mb-2">
+                  <span className="inline-block rounded-full bg-[#ffffff] px-3 py-0.5 text-xs font-bold text-neutral-900 mb-2">
                     {m.year}
                   </span>
                   <h3 className="text-base font-bold text-neutral-900">{m.title}</h3>
@@ -151,7 +151,7 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <section className="bg-[#f7c948] py-14 text-center">
+      <section className="bg-[#ffffff] py-14 text-center">
         <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">
           Taste the Legacy
         </h2>
@@ -159,7 +159,7 @@ export default function AboutUsPage() {
           Over 250 delicious items crafted with 40+ years of passion.
         </p>
         <Link href="/">
-          <button className="mt-6 rounded-full bg-[#c8102e] px-8 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors">
+          <button className="mt-6 rounded-full bg-[#000000] px-8 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors">
             Order Now
           </button>
         </Link>

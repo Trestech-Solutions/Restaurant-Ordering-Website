@@ -65,7 +65,7 @@ export function CorporateOrderModal({ onClose }: CorporateOrderModalProps) {
             </p>
             <button
               onClick={onClose}
-              className="mt-8 rounded-xl bg-[#c8102e] px-8 py-3 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors"
+              className="mt-8 rounded-xl bg-[#000000] px-8 py-3 text-sm font-bold text-white hover:bg-[#1f1f1f] transition-colors"
             >
               Done
             </button>
@@ -142,7 +142,7 @@ export function CorporateOrderModal({ onClose }: CorporateOrderModalProps) {
               <button
                 type="submit"
                 disabled={!isValid || isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c8102e] py-3.5 text-sm font-bold text-white hover:bg-[#a80d26] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#000000] py-3.5 text-sm font-bold text-white hover:bg-[#1f1f1f] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -162,7 +162,7 @@ export function CorporateOrderModal({ onClose }: CorporateOrderModalProps) {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-[#c8102e] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#c8102e] transition-colors'
+  'w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-[#000000] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#000000] transition-colors'
 
 function Spinner() {
   return (

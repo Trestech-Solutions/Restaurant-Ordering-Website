@@ -93,7 +93,7 @@ export default function AddressesPage() {
       {/* Header row */}
       <div className="mb-5 flex items-center justify-between">
         <h1 className="flex items-center gap-2 text-xl font-bold text-neutral-900">
-          <MapPin size={20} className="text-[#c8102e]" />
+          <MapPin size={20} className="text-[#000000]" />
           Addresses
         </h1>
         <div className="flex items-center gap-2">
@@ -103,11 +103,11 @@ export default function AddressesPage() {
             aria-label="Refresh"
             type="button"
           >
-            <Loader2 size={14} className={loadingAddresses ? 'animate-spin text-[#c8102e]' : ''} />
+            <Loader2 size={14} className={loadingAddresses ? 'animate-spin text-[#000000]' : ''} />
           </button>
           <button
             onClick={() => { if (showForm) resetForm(); else setShowForm(true) }}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#c8102e] hover:text-[#c8102e] transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000] transition-colors"
             aria-label={showForm ? 'Cancel' : 'Add address'}
           >
             {showForm ? <X size={15} /> : <Plus size={15} />}
@@ -117,27 +117,27 @@ export default function AddressesPage() {
 
       {/* Add/Edit form */}
       {showForm && (
-        <div className="mb-5 rounded-xl border border-[#c8102e]/30 bg-white p-5 shadow-sm space-y-3">
-          <p className="text-xs font-semibold text-[#c8102e]">
+        <div className="mb-5 rounded-xl border border-[#000000]/30 bg-white p-5 shadow-sm space-y-3">
+          <p className="text-xs font-semibold text-[#000000]">
             {editingId ? 'EDIT ADDRESS' : 'NEW ADDRESS'}
           </p>
           <input
             value={line1}
             onChange={(e) => setLine1(e.target.value)}
             placeholder="Street address, area, landmark *"
-            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
           />
           <input
             value={line2}
             onChange={(e) => setLine2(e.target.value)}
             placeholder="Apartment, suite, unit, building, floor (optional)"
-            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+              className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
             >
               {CITIES.map((c) => <option key={c}>{c}</option>)}
             </select>
@@ -145,14 +145,14 @@ export default function AddressesPage() {
               value={postal}
               onChange={(e) => setPostal(e.target.value)}
               placeholder="Postal / ZIP code"
-              className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+              className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
             />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[140px_1fr_1fr]">
             <select
               value={label}
               onChange={(e) => setLabel(e.target.value as any)}
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
             >
               <option value="home">🏠 Home</option>
               <option value="office">💼 Office</option>
@@ -162,20 +162,20 @@ export default function AddressesPage() {
               value={lat}
               onChange={(e) => setLat(e.target.value)}
               placeholder="Latitude (optional)"
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
             />
             <input
               value={lng}
               onChange={(e) => setLng(e.target.value)}
               placeholder="Longitude (optional)"
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]"
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={!line1.trim() || saving}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-[#c8102e] py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-[#000000] py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 size={14} className="animate-spin" />}
               {editingId ? 'Update Address' : 'Save Address'}
@@ -194,7 +194,7 @@ export default function AddressesPage() {
       {/* Loading */}
       {loadingAddresses && (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-neutral-500">
-          <Loader2 size={14} className="animate-spin text-[#c8102e]" /> Loading addresses…
+          <Loader2 size={14} className="animate-spin text-[#000000]" /> Loading addresses…
         </div>
       )}
 
@@ -232,7 +232,7 @@ export default function AddressesPage() {
                     onClick={() => startEdit(addr)}
                     aria-label="Edit address"
                     type="button"
-                    className="flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-[#c8102e] transition-colors"
+                    className="flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-[#000000] transition-colors"
                   >
                     <Edit3 size={13} /> Edit
                   </button>
@@ -240,7 +240,7 @@ export default function AddressesPage() {
                     onClick={() => { if (confirm('Delete this address?')) addrDeleter.deleteAddress({ customer_address_id: id }) }}
                     aria-label="Delete address"
                     type="button"
-                    className="flex items-center gap-1 text-xs font-semibold text-[#c8102e] hover:text-red-700 transition-colors"
+                    className="flex items-center gap-1 text-xs font-semibold text-[#000000] hover:text-red-700 transition-colors"
                   >
                     <Trash2 size={13} /> Delete
                   </button>

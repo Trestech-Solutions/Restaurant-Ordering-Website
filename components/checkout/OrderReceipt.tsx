@@ -101,7 +101,7 @@ export default function OrderReceipt({
 
         <button
           onClick={onPlaceAnother}
-          className="w-full rounded-xl bg-[#c8102e] py-4 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+          className="w-full rounded-xl bg-[#000000] py-4 text-sm font-bold text-white hover:bg-red-700 transition-colors"
         >
           Place Another Order
         </button>

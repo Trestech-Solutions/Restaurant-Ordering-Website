@@ -8,7 +8,6 @@ import {
 import { useCart, useRegisterProductId } from '@/lib/hooks/useCart'
 import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import { CategoryNav } from '@/components/website/CategoryNav'
-import { SubCategoryNav } from '@/components/website/SubCategoryNav'
 import { SearchBar } from '@/components/website/SearchBar'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
@@ -19,18 +18,59 @@ import type { MenuResponse, MenuItem } from '@/api/types'
 const HERO_SLIDES = [
   {
     id: 'slide-1',
-    image: 'https://assets.indolj.io/upload/1780653167-Mango---Webslider-jpg.jpeg?ver=10',
+    image: '/web/b1.webp',
     title: "mango"
   },
   {
     id: 'slide-2',
-    image: 'https://assets.indolj.io/upload/1780130149-Sweet2-jpg.jpeg?ver=10',
+    image: '/web/b2.webp',
+    title: "mango"
+  },
+    {
+    id: 'slide-3',
+    image: '/web/b3.webp',
     title: "mango"
   },
 ]
 
 const DEFAULT_ICON = 'solar:cup-hot-bold-duotone'
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop'
+const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
+
+/** Resolves a relative /media/... path to a full URL. Pass-through for absolute URLs. */
+function resolveMediaUrl(path?: string | null): string | undefined {
+  if (!path || path.trim() === '') return undefined
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/')) {
+    const base = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
+    if (!base) {
+      console.warn('[resolveMediaUrl] NEXT_PUBLIC_MEDIA_BASE_URL is not set — cannot resolve path:', path)
+      return undefined
+    }
+    const origin = base.replace(/\/+$/, '').replace(/\/api$/i, '')
+    const resolved = `${origin}${path}`
+    console.log('[resolveMediaUrl]', { input: path, base, origin, resolved })
+    return resolved
+  }
+  return path
+}
+
+type CategoryIcon = { type: 'image'; value: string } | { type: 'iconify'; value: string }
+
+function resolveIcon(icon: unknown): CategoryIcon {
+  console.log('[resolveIcon] raw icon value:', icon)
+  if (typeof icon === 'string' && icon.trim() !== '') {
+    const url = resolveMediaUrl(icon)
+    if (url) {
+      console.log('[resolveIcon] resolved as image ->', url)
+      return { type: 'image', value: url }
+    }
+  }
+  console.log('[resolveIcon] falling back to default iconify icon ->', DEFAULT_ICON)
+  return { type: 'iconify', value: DEFAULT_ICON }
+}
+
+type ResolvedCategory = Omit<Category, 'icon'> & { icon: CategoryIcon; banner?: string }
 
 /**
  * Convert an Item (from the menu API) into a ProductData for the UI.
@@ -38,7 +78,13 @@ const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877d
  * `price_at_branch` is used when available (branch override), else `front_price`.
  */
 function itemToProduct(
-  item: MenuItem,
+  item: MenuItem & {
+    description?: string | null
+    _from_dish?: boolean
+    _dish_tag?: string | null
+    _dish_discount?: string | null
+    _from_label?: boolean
+  },
   categoryId: string,
   idPairs: Array<{ clientId: string; numericId: number }>,
   products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
@@ -48,51 +94,68 @@ function itemToProduct(
   const priceFloat = parseFloat(rawPrice)
   const priceInt   = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
 
+  const frontPriceNum = item.front_price ? parseFloat(item.front_price) : NaN
+  const hasPriceDiff  = !isNaN(frontPriceNum) && item.price_at_branch != null && item.price_at_branch !== item.front_price
+
+  const itemDiscountStr = String(item.item_discount ?? '')
+  const hasDiscount     = itemDiscountStr !== '' && itemDiscountStr !== '0' && itemDiscountStr !== '0.00' && item.show_discount_tag
+
+  const resolvedImage = resolveMediaUrl(item.feature_image) || PLACEHOLDER_IMAGE
+
   idPairs.push({ clientId, numericId: item.id })
   products.push({
     id:            clientId,
-    productId:     item.id,        // ← this is the `item` field for the cart API
+    productId:     item.id,
     categoryId,
     subCategoryId: categoryId,
-    branchIds:     '*',            // availability is already filtered server-side
+    branchIds:     '*',
     name:          item.name,
-    description:   '',
+    description:   item.description || '',
     price:         String(priceInt),
-    originalPrice: item.front_price && item.price_at_branch && item.front_price !== item.price_at_branch
-      ? String(Math.round(parseFloat(item.front_price)))
-      : undefined,
-    fromLabel:     false,
+    originalPrice: hasPriceDiff ? String(Math.round(frontPriceNum)) : undefined,
+    fromLabel:     Boolean(item._from_label),
     options:       [],
-    tag:           undefined,
-    discount:      item.item_discount && item.item_discount !== '0.00' ? item.item_discount : undefined,
-    image:         item.feature_image || PLACEHOLDER_IMAGE,
+    tag:           item._dish_tag || undefined,
+    discount:      hasDiscount ? itemDiscountStr : (item._dish_discount || undefined),
+    image:         resolvedImage,
   })
 }
 
 function transformMenu(menu: MenuResponse | undefined): {
-  categories: Category[]
+  categories: ResolvedCategory[]
   products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
   idPairs: Array<{ clientId: string; numericId: number }>
 } {
+  console.log('[transformMenu] raw menu response:', menu)
+
   const menuArr = menu?.menu ?? menu?.categories ?? []
+  console.log('[transformMenu] resolved menuArr length:', menuArr.length, menuArr)
 
   if (menuArr.length === 0) {
+    console.log('[transformMenu] menuArr empty — using FALLBACK_CATS/FALLBACK_PRODS')
     const idPairs        = FALLBACK_PRODS.map((p, i) => ({ clientId: p.id, numericId: p.productId ?? i + 1 }))
     const productsWithId = FALLBACK_PRODS.map((p, i) => ({ ...p, productId: p.productId ?? i + 1 }))
-    return { categories: FALLBACK_CATS, products: productsWithId, idPairs }
+    const categories: ResolvedCategory[] = FALLBACK_CATS.map((c) => ({ ...c, icon: resolveIcon(c.icon) }))
+    return { categories, products: productsWithId, idPairs }
   }
 
   const products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[] = []
   const idPairs: Array<{ clientId: string; numericId: number }> = []
 
-  const categories: Category[] = menuArr
+  const categories: ResolvedCategory[] = menuArr
     .filter((cat) => cat.status !== false && cat.hide_category !== true)
     .map((cat) => {
-      const catId = String(cat.id)
+      const catId  = String(cat.id)
+      console.log(`[transformMenu] category "${cat.name}" (id=${catId}) — raw icon:`, cat.icon, 'raw banner:', cat.banner)
+
+      const icon   = resolveIcon(cat.icon)
+      const banner = resolveMediaUrl(cat.banner)
+      console.log(`[transformMenu] category "${cat.name}" (id=${catId}) — resolved icon:`, icon, 'resolved banner:', banner)
 
       // ── PRIMARY: use `items[]` — Item records injected by MenuView ──────────
       const itemRecords = cat.items ?? []
       if (itemRecords.length > 0) {
+        console.log(`[transformMenu] category "${cat.name}" using PRIMARY items[] path, count:`, itemRecords.length)
         itemRecords
           .filter((it) => it.status !== false && it.status !== 0)
           .forEach((it) => itemToProduct(it, catId, idPairs, products))
@@ -100,46 +163,63 @@ function transformMenu(menu: MenuResponse | undefined): {
         return {
           id:            catId,
           label:         cat.name,
-          icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+          icon,
+          banner,
           badge:         cat.badge || undefined,
           subCategories: [{ id: catId, label: 'All Items' }],
         }
       }
 
-      // ── FALLBACK A: dish_detail[] — show Dish names as placeholder cards ──
-      // These are display-only; they have no price so cannot be added to cart.
-      // They will be replaced once Item objects are linked to this category.
+      // ── FALLBACK A: dish_detail[] — show Dish cards using Dish fields ──
+      // If Dish records have base_price they become orderable (productId = d.id).
+      // Otherwise they fall back to display-only (Coming Soon overlay).
       const dishes = cat.dish_detail ?? []
       if (dishes.length > 0) {
+        console.log(`[transformMenu] category "${cat.name}" using FALLBACK dish_detail[] path, count:`, dishes.length)
         dishes
           .filter((d) => d.status !== false)
           .forEach((d) => {
             const clientId = String(d.id)
+            const basePriceFloat = parseFloat(String(d.base_price ?? '0'))
+            const basePriceInt   = isNaN(basePriceFloat) ? 0 : Math.round(basePriceFloat)
+            const hasRealPrice   = basePriceInt > 0
+            const origPriceFloat = d.original_price ? parseFloat(String(d.original_price)) : NaN
+            const hasOrigPrice   = !isNaN(origPriceFloat) && Math.round(origPriceFloat) > basePriceInt && basePriceInt > 0
+
+            const dishImage = resolveMediaUrl((d as unknown as { image?: string | null }).image)
+            const hasImage  = !!dishImage
+
             idPairs.push({ clientId, numericId: d.id })
             products.push({
               id:            clientId,
-              productId:     null as unknown as number, // no Item ID — not orderable
+              productId:     hasRealPrice ? d.id : (null as unknown as number),
               categoryId:    catId,
               subCategoryId: catId,
               branchIds:     '*' as const,
               name:          d.name,
               description:   d.description || '',
-              price:         '0',              // no price — display only
-              options:       [],
-              image:         PLACEHOLDER_IMAGE,
+              price:         String(basePriceInt),
+              originalPrice: hasOrigPrice ? String(Math.round(origPriceFloat)) : undefined,
+              fromLabel:     Boolean(d.from_label),
+              options:       (d.options ?? []).map((o) => o.name),
+              tag:           d.tag || undefined,
+              discount:      d.discount || undefined,
+              image:         hasImage ? dishImage! : PLACEHOLDER_IMAGE,
             })
           })
 
         return {
           id:            catId,
           label:         cat.name,
-          icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+          icon,
+          banner,
           badge:         cat.badge || undefined,
           subCategories: [{ id: catId, label: 'All Items' }],
         }
       }
 
       // ── FALLBACK: legacy sub_categories shape ─────────────────────────────
+      console.log(`[transformMenu] category "${cat.name}" using LEGACY sub_categories path`)
       const subCats: Category['subCategories'] = (cat.sub_categories ?? []).map((sc) => {
         const subId = sc.slug || String(sc.id)
         ;(sc.products ?? []).forEach((p) => {
@@ -156,7 +236,7 @@ function transformMenu(menu: MenuResponse | undefined): {
             fromLabel: !!p.from_label,
             options: (p.options ?? []).map((o) => o.name),
             tag: p.tag || undefined, discount: p.discount || undefined,
-            image: p.image || PLACEHOLDER_IMAGE,
+            image: resolveMediaUrl(p.image) || PLACEHOLDER_IMAGE,
           })
         })
         return { id: subId, label: sc.name }
@@ -165,13 +245,89 @@ function transformMenu(menu: MenuResponse | undefined): {
       return {
         id:            catId,
         label:         cat.name,
-        icon:          typeof cat.icon === 'string' ? cat.icon : DEFAULT_ICON,
+        icon,
+        banner,
         badge:         cat.badge || undefined,
         subCategories: subCats.length > 0 ? subCats : [{ id: `${catId}-all`, label: 'All Items' }],
       }
     })
 
+  console.log('[transformMenu] FINAL categories:', categories)
+  console.log('[transformMenu] FINAL products count:', products.length, products)
+
   return { categories, products, idPairs }
+}
+
+/** Skeleton for the hero carousel while the menu (and branch/area context) is loading. */
+function HeroSkeleton() {
+  return (
+    <section className="bg-black px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
+      <div className="relative mx-auto h-[20vh] w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 sm:h-[40vh] sm:rounded-3xl md:h-[55vh] lg:h-[70vh] xl:h-[75vh]">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-6 px-6">
+          {/* title bar */}
+          <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
+          {/* subtitle / description bar */}
+          <div className="h-10 w-full max-w-md animate-pulse rounded-md bg-white/10 sm:h-12" />
+          {/* circular logo/image placeholder */}
+          <div className="h-40 w-40 animate-pulse rounded-full bg-white/10 sm:h-52 sm:w-52" />
+          {/* bottom label bar */}
+          <div className="h-3 w-72 max-w-[80%] animate-pulse rounded bg-white/10" />
+        </div>
+
+        {/* pagination dots */}
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 sm:bottom-6 sm:gap-2">
+          <span className="h-1.5 w-6 rounded-full bg-white/40 sm:w-8" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+        </div>
+
+        {/* prev/next arrow placeholders */}
+        <button
+          disabled
+          aria-hidden
+          className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white/40 sm:left-6 sm:h-11 sm:w-11 md:h-12 md:w-12"
+        >
+          <ChevronLeft size={18} className="sm:hidden" />
+          <ChevronLeft size={20} className="hidden sm:block md:hidden" />
+          <ChevronLeft size={24} className="hidden md:block" />
+        </button>
+        <button
+          disabled
+          aria-hidden
+          className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white/40 sm:right-6 sm:h-11 sm:w-11 md:h-12 md:w-12"
+        >
+          <ChevronRight size={18} className="sm:hidden" />
+          <ChevronRight size={20} className="hidden sm:block md:hidden" />
+          <ChevronRight size={24} className="hidden md:block" />
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/** Skeleton for nav rows + product grid area while the menu is loading. */
+function ContentSkeleton() {
+  return (
+    <div className="mx-auto max-w-[1400px] px-4 py-8 md:px-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <div className="h-5 w-40 animate-pulse rounded bg-neutral-200" />
+          <div className="mt-2 h-3 w-24 animate-pulse rounded bg-neutral-100" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="overflow-hidden rounded-lg border border-neutral-100">
+            <div className="h-32 w-full animate-pulse bg-neutral-100 sm:h-40" />
+            <div className="space-y-2 p-3">
+              <div className="h-3 w-3/4 animate-pulse rounded bg-neutral-200" />
+              <div className="h-3 w-1/2 animate-pulse rounded bg-neutral-100" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function HomePage() {
@@ -185,10 +341,13 @@ export default function HomePage() {
   const numericBranch = reduxBranchId ?? (branch ? Number(branch) : null)
   const numericArea   = reduxAreaId
 
-  const { data: menu } = useGetMenu({
+  const { data: menu, isLoading } = useGetMenu({
     branchId: numericBranch,
     areaId: numericArea,
   })
+
+  console.log('[HomePage] MEDIA_BASE env value:', MEDIA_BASE)
+  console.log('[HomePage] useGetMenu raw data:', menu, 'isLoading:', isLoading)
 
   const { categories, products, idPairs } = useMemo(() => transformMenu(menu), [menu])
 
@@ -200,20 +359,14 @@ export default function HomePage() {
   const [activeCategoryId, setActiveCategoryId] = useState<string>(() =>
     categories[0]?.id ?? FALLBACK_CATS[0].id
   )
-  const [activeSubCategoryId, setActiveSubCategoryId] = useState<string>(() =>
-    categories[0]?.subCategories?.[0]?.id ?? FALLBACK_CATS[0].subCategories[0].id
-  )
 
   reactUseEffect(() => {
     if (categories.length === 0) return
     const c = categories.find((cc) => cc.id === activeCategoryId)
     if (!c) {
       setActiveCategoryId(categories[0].id)
-      setActiveSubCategoryId(categories[0].subCategories[0].id)
-    } else if (!c.subCategories.some((sc) => sc.id === activeSubCategoryId)) {
-      setActiveSubCategoryId(c.subCategories[0].id)
     }
-  }, [categories, activeCategoryId, activeSubCategoryId])
+  }, [categories, activeCategoryId])
 
   const goToSlide = useCallback((index: number) => {
     setCurrentSlide((index + HERO_SLIDES.length) % HERO_SLIDES.length)
@@ -228,13 +381,13 @@ export default function HomePage() {
     const cat = categories.find((c) => c.id === catId)
     if (!cat) return
     setActiveCategoryId(catId)
-    setActiveSubCategoryId(cat.subCategories[0].id)
     setSearchQuery('')
-  }
-
-  const handleSubCategoryChange = (subId: string) => {
-    setActiveSubCategoryId(subId)
-    setSearchQuery('')
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById(`category-${catId}`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
   }
 
   const activeCategory = useMemo(
@@ -242,60 +395,87 @@ export default function HomePage() {
     [categories, activeCategoryId]
   )
 
+  console.log('[HomePage] activeCategory:', activeCategory)
+
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchCat    = p.categoryId === activeCategoryId
-      const matchSub    = p.subCategoryId === activeSubCategoryId
       const matchBranch = !numericBranch || p.branchIds === '*' || p.branchIds.includes(String(numericBranch))
       const matchSearch =
         searchQuery === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase())
-      return matchCat && matchSub && matchBranch && matchSearch
+      return matchBranch && matchSearch
     })
-  }, [activeCategoryId, activeSubCategoryId, searchQuery, branch, products])
+  }, [searchQuery, branch, products])
+
+  // ── Loading state: show skeleton instead of fallback data ────────────────
+  // IMPORTANT: this check happens AFTER all hooks above, so hook order never changes.
+  if (isLoading) {
+    return (
+      <div className="min-h-screen font-sans text-neutral-800">
+        <HeroSkeleton />
+        <ContentSkeleton />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen font-sans text-neutral-800">
-      {/* Hero carousel — responsive height */}
-      <section className="relative overflow-hidden h-[20vh] sm:h-[40vh] md:h-[55vh] lg:h-[70vh] xl:h-[80vh]">
-        {HERO_SLIDES.map((s, i) => (
-          <div
-            key={s.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              i === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
+      {/* Hero carousel — black inset card, rounded, with floating arrows + pill pagination */}
+      <section className="bg-white px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
+        <div className="relative mx-auto h-[20vh] w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 sm:h-[40vh] sm:rounded-3xl md:h-[55vh] lg:h-[70vh] xl:h-[75vh]">
+          {HERO_SLIDES.map((s, i) => (
+            <div
+              key={s.id}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                i === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            >
+              <Image src={s.image} alt={s.title} fill priority={i === 0} className="object-cover object-center" />
+            </div>
+          ))}
+
+          {/* Prev / Next arrows — floating circular, inset from the card edges */}
+          <button
+            onClick={() => goToSlide(currentSlide - 1)}
+            aria-label="Previous"
+            className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 sm:left-6 sm:h-11 sm:w-11 md:h-12 md:w-12"
           >
-            <Image src={s.image} alt={s.title} fill priority={i === 0} className="object-cover object-center" />
+            <ChevronLeft size={18} className="sm:hidden" />
+            <ChevronLeft size={20} className="hidden sm:block md:hidden" />
+            <ChevronLeft size={24} className="hidden md:block" />
+          </button>
+          <button
+            onClick={() => goToSlide(currentSlide + 1)}
+            aria-label="Next"
+            className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition-colors hover:bg-black/60 sm:right-6 sm:h-11 sm:w-11 md:h-12 md:w-12"
+          >
+            <ChevronRight size={18} className="sm:hidden" />
+            <ChevronRight size={20} className="hidden sm:block md:hidden" />
+            <ChevronRight size={24} className="hidden md:block" />
+          </button>
+
+          {/* Pagination dots — centered pill style at bottom */}
+          <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 sm:bottom-6 sm:gap-2">
+            {HERO_SLIDES.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => goToSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentSlide ? 'w-6 bg-white sm:w-8' : 'w-1.5 bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
           </div>
-        ))}
 
-        {/* Prev / Next arrows — responsive sizing */}
-        <button
-          onClick={() => goToSlide(currentSlide - 1)}
-          aria-label="Previous"
-          className="absolute left-0 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
-        >
-          <ChevronLeft size={18} className="sm:hidden" />
-          <ChevronLeft size={20} className="hidden sm:block md:hidden" />
-          <ChevronLeft size={24} className="hidden md:block" />
-        </button>
-        <button
-          onClick={() => goToSlide(currentSlide + 1)}
-          aria-label="Next"
-          className="absolute right-0 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 -translate-y-1/2 items-center justify-center bg-[#f7c948] text-neutral-900 shadow hover:bg-yellow-400 transition-colors"
-        >
-          <ChevronRight size={18} className="sm:hidden" />
-          <ChevronRight size={20} className="hidden sm:block md:hidden" />
-          <ChevronRight size={24} className="hidden md:block" />
-        </button>
-
-        {/* Secure payments badge — hide on xs, show sm+ */}
-        <div className="absolute bottom-2 right-2 z-20 hidden rounded-md bg-white/95 px-2 py-1 shadow-md sm:bottom-6 sm:right-6 sm:flex sm:flex-col sm:gap-1 sm:px-4 sm:py-2">
-          <span className="text-[8px] font-bold tracking-wide text-neutral-700 sm:text-[10px]">SECURE PAYMENTS</span>
-          <div className="flex gap-1 sm:gap-2">
-            <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-blue-700 sm:px-2 sm:text-[10px]">VISA</span>
-            <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-orange-600 sm:px-2 sm:text-[10px]">MasterCard</span>
+          {/* Secure payments badge — hide on xs, show sm+ */}
+          <div className="absolute bottom-4 right-3 z-20 hidden rounded-md bg-white/95 px-2 py-1 shadow-md sm:bottom-6 sm:right-6 sm:flex sm:flex-col sm:gap-1 sm:px-4 sm:py-2">
+            <span className="text-[8px] font-bold tracking-wide text-neutral-700 sm:text-[10px]">SECURE PAYMENTS</span>
+            <div className="flex gap-1 sm:gap-2">
+              <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-blue-700 sm:px-2 sm:text-[10px]">VISA</span>
+              <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-orange-600 sm:px-2 sm:text-[10px]">MasterCard</span>
+            </div>
           </div>
         </div>
       </section>
@@ -307,30 +487,104 @@ export default function HomePage() {
         onSelect={handleCategoryChange}
       />
 
-      <SubCategoryNav
-        subCategories={activeCategory?.subCategories ?? []}
-        activeSubCategoryId={activeSubCategoryId}
-        onSelect={handleSubCategoryChange}
-      />
-
       <SearchBar
         value={searchQuery}
         onChange={setSearchQuery}
-        placeholder={`Search in ${activeCategory?.label ?? ''}...`}
+        placeholder={searchQuery === '' ? 'Search dishes, sweets, bakery items...' : ''}
       />
 
-      <section className="mx-auto max-w-[1400px] px-4 py-8 md:px-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-neutral-900">{activeCategory?.label ?? ''}</h2>
-            <p className="text-sm text-neutral-500">
-              {filteredProducts.length} item{filteredProducts.length !== 1 ? 's' : ''} found
-            </p>
+      {searchQuery ? (
+        // ── Search mode: show matching products from all categories ─────────
+        <section className="mx-auto max-w-[1400px] px-4 py-8 md:px-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-neutral-900">
+                Search results &ldquo;{searchQuery}&rdquo;
+              </h2>
+              <p className="text-sm text-neutral-500">
+                {filteredProducts.length} item{filteredProducts.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
           </div>
-        </div>
+          <ProductGrid products={filteredProducts} searchQuery={searchQuery} />
+        </section>
+      ) : (
+        // ── Browse mode: show each category section with banner → products → repeat ──
+        <div>
+          {categories.map((cat) => {
+            const catProducts = filteredProducts.filter((p) => p.categoryId === cat.id)
+            if (catProducts.length === 0) return null
 
-        <ProductGrid products={filteredProducts} searchQuery={searchQuery} />
-      </section>
+            return (
+              <section
+                key={cat.id}
+                id={`category-${cat.id}`}
+                className="mx-auto max-w-[1400px] px-4 py-8 md:px-8 scroll-mt-28"
+              >
+                {/* Category Banner */}
+                <div className="mb-6">
+                  {cat.banner ? (
+                    <div className="relative overflow-hidden rounded-2xl shadow-md">
+                      <div className="relative h-32 w-full sm:h-44 md:h-52 lg:h-60 xl:h-64">
+                        <Image
+                          src={cat.banner}
+                          alt={cat.label}
+                          fill
+                          priority={false}
+                          className="object-cover object-center"
+                          sizes="(max-width: 768px) 100vw, 1400px"
+                        />
+                        {/* Gradient overlay + text */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                        <div className="absolute bottom-0 left-0 w-full p-4 sm:p-6 md:p-8">
+                          <h2 className="text-xl font-bold text-white drop-shadow-sm sm:text-2xl md:text-3xl lg:text-4xl">
+                            {cat.label}
+                          </h2>
+                          <p className="mt-1 text-xs text-white/90 drop-shadow sm:text-sm md:text-base">
+                            {catProducts.length} item{catProducts.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-6 flex items-center justify-between rounded-2xl bg-gradient-to-r from-neutral-900 to-neutral-700 px-5 py-4 sm:px-8 sm:py-5 shadow-md">
+                      <div>
+                        <h2 className="text-lg font-bold text-white sm:text-xl md:text-2xl">
+                          {cat.label}
+                        </h2>
+                        <p className="mt-1 text-xs text-white/90 sm:text-sm">
+                          {catProducts.length} item{catProducts.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm sm:h-16 sm:w-16">
+                        {cat.icon.type === 'image' ? (
+                          <Image
+                            src={cat.icon.value}
+                            alt={cat.label}
+                            width={48}
+                            height={48}
+                            className="h-10 w-10 rounded-full object-cover sm:h-12 sm:w-12"
+                          />
+                        ) : (
+                          <span
+                            className="h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center text-3xl text-white sm:text-4xl"
+                            style={{ fontFamily: 'sans-serif' }}
+                          >
+                            🍽️
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Products */}
+                <ProductGrid products={catProducts} searchQuery="" />
+              </section>
+            )
+          })}
+        </div>
+      )}
 
       <section className="mx-auto max-w-[1400px] px-4 py-10 md:px-8">
         <h3 className="font-serif text-2xl font-bold text-neutral-900 sm:text-3xl">

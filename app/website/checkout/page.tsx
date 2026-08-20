@@ -9,19 +9,16 @@ import { useCart, type CartItem } from '@/lib/hooks/useCart'
 import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import { UK_BRANCHES } from '@/components/website/OrderTypeModal'
 import { useCheckout, buildCheckoutPayload } from '@/api/client/checkout'
-import { useAddToCart } from '@/api/client/cart'
 import { useGetAddresses, useAddAddress } from '@/api/client/customer'
-import { setCartToken } from '@/api/utils'
 import { PaymentSection } from '@/components/checkout/PaymentSection'
 import type { CheckoutFormValues } from '@/components/checkout/types'
-import type { Order } from '@/api/types'
 
 const TAX_RATE     = 0.18
 const DELIVERY_FEE = 200
 const UK_PHONE     = '021-111-022-022'
 
 const inputClass =
-  'w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] placeholder:text-neutral-400'
+  'w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] placeholder:text-neutral-400'
 const labelClass = 'mb-2 block text-sm font-semibold text-neutral-700'
 
 const TITLE_OPTIONS = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.']
@@ -46,12 +43,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const {
     items, orderType, user, addAddress: addLocalAddress,
-    branch, location, subtotal, clearCart, areaId, cartToken: liveCartToken,
+    branch, location, subtotal, clearCart, cartToken: liveCartToken,
   } = useCart()
-  const { branchId: reduxBranchId, areaId: reduxAreaId } = useStoreLocation()
-
-  const numericBranch = reduxBranchId ?? (branch ? Number(branch) : undefined)
-  const numericArea   = reduxAreaId ?? areaId ?? undefined
 
   // ─── form ──────────────────────────────────────────────────────────────────
   const { register, control, handleSubmit, watch, setValue, getValues } =
@@ -127,9 +120,7 @@ export default function CheckoutPage() {
     }
   }
 
-  // ─── cart sync + checkout ─────────────────────────────────────────────────
-  const addToCartMutation = useAddToCart()
-
+  // ─── checkout ──────────────────────────────────────────────────────────────
   const checkoutMutation = useCheckout({
     onSuccess(res) {
       setOrder({
@@ -146,47 +137,17 @@ export default function CheckoutPage() {
         items:         [...items],
       })
       clearCart()
-      setCartToken(null)
     },
     onError(msg) { setErrorMsg(msg || 'Failed to place order') },
   })
 
-  const isPlacing = checkoutMutation.isPending || addToCartMutation.isPending
-
-  async function ensureCartToken(): Promise<string> {
-    if (liveCartToken) return liveCartToken
-    if (!numericBranch) return ''
-
-    const syncable = items.filter(
-      (i) => i.productId !== null && !isNaN(Number(i.productId))
-    )
-    if (syncable.length === 0) return ''
-
-    let resolvedToken = ''
-    for (const item of syncable) {
-      try {
-        const res = await addToCartMutation.addToCartAsync({
-          item:       item.productId as number,
-          branch:     numericBranch,
-          quantity:   item.quantity,
-          area:       numericArea,
-          cart_token: resolvedToken || undefined,
-        })
-        const token = (res as any)?.token || ''
-        if (token && !resolvedToken) {
-          resolvedToken = token
-          setCartToken(resolvedToken)
-        }
-      } catch { break }
-    }
-    return resolvedToken
-  }
+  const isPlacing = checkoutMutation.isPending
 
   const onSubmit = async (values: CheckoutFormValues) => {
     if (!canPlace) return
     setErrorMsg('')
 
-    const resolvedToken = await ensureCartToken()
+    const resolvedToken = liveCartToken
     if (!resolvedToken) {
       setErrorMsg('Unable to create cart. Please make sure a branch is selected and try again.')
       return
@@ -238,7 +199,7 @@ export default function CheckoutPage() {
 
             {user && (
               <p className="text-sm text-neutral-600">
-                Hello, <span className="font-bold text-[#c8102e] uppercase">{user.name}</span>
+                Hello, <span className="font-bold text-[#000000] uppercase">{user.name}</span>
               </p>
             )}
 
@@ -291,7 +252,7 @@ export default function CheckoutPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm font-semibold text-neutral-700">Full Name</label>
-                      <span className="text-xs font-bold text-[#c8102e]">*Required</span>
+                      <span className="text-xs font-bold text-[#000000]">*Required</span>
                     </div>
                     <input {...register('guestFullName')} placeholder="Full Name" className={inputClass} />
                   </div>
@@ -301,7 +262,7 @@ export default function CheckoutPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm font-semibold text-neutral-700">Mobile</label>
-                      <span className="text-xs font-bold text-[#c8102e]">*Required</span>
+                      <span className="text-xs font-bold text-[#000000]">*Required</span>
                     </div>
                     <input {...register('guestMobile')} placeholder="03xx-xxxxxxx" className={inputClass} />
                   </div>
@@ -316,7 +277,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-semibold text-neutral-700">Delivery Address</label>
-                        <span className="text-xs font-bold text-[#c8102e]">*Required</span>
+                        <span className="text-xs font-bold text-[#000000]">*Required</span>
                       </div>
                       <input {...register('guestAddress')} placeholder="Enter your complete address" className={inputClass} />
                     </div>
@@ -348,7 +309,7 @@ export default function CheckoutPage() {
                       <p className="text-sm font-semibold text-neutral-700">Select Delivery Address</p>
                       {!showAddrForm && (
                         <button type="button" onClick={() => setShowAddrForm(true)}
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-[#c8102e] hover:text-red-700">
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-[#000000] hover:text-red-700">
                           <Plus size={14} /> Add New
                         </button>
                       )}
@@ -356,7 +317,7 @@ export default function CheckoutPage() {
 
                     {loadingAddresses && (
                       <div className="flex items-center gap-2 text-sm text-neutral-500">
-                        <Loader2 size={13} className="animate-spin text-[#c8102e]" /> Loading addresses…
+                        <Loader2 size={13} className="animate-spin text-[#000000]" /> Loading addresses…
                       </div>
                     )}
 
@@ -388,16 +349,16 @@ export default function CheckoutPage() {
                     {showAddrForm && (
                       <div className="space-y-2 rounded-lg border border-dashed border-neutral-300 p-4">
                         <input {...register('newAddrLine')} placeholder="Street address, area, landmark"
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]" />
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]" />
                         <select {...register('newAddrCity')}
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e]">
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]">
                           {['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad'].map((c) => (
                             <option key={c}>{c}</option>
                           ))}
                         </select>
                         <div className="flex gap-2">
                           <button type="button" onClick={handleAddAddress} disabled={apiAddrAdder.isPending}
-                            className="flex-1 rounded-lg bg-[#c8102e] py-2 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50">
+                            className="flex-1 rounded-lg bg-black py-2 text-xs font-bold text-[#ffffff] hover:bg-red-700 disabled:opacity-50">
                             {apiAddrAdder.isPending ? 'Saving…' : 'Save Address'}
                           </button>
                           <button type="button" onClick={() => setShowAddrForm(false)}
@@ -456,7 +417,7 @@ export default function CheckoutPage() {
             </div>
 
             <button type="submit" disabled={!canPlace || isPlacing}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#c8102e] py-4 text-sm font-bold text-white shadow-md transition-all hover:bg-[#a80d26] disabled:cursor-not-allowed disabled:opacity-50">
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#000000] py-4 text-sm font-bold text-[#ffffff] shadow-md transition-all hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-50">
               {isPlacing
                 ? <><Loader2 size={16} className="animate-spin" />Placing Order…</>
                 : 'Place Order'}
@@ -532,7 +493,7 @@ function OrderReceipt({ order, onPlaceAnother }: {
         </div>
 
         <button onClick={onPlaceAnother}
-          className="w-full rounded-xl bg-[#c8102e] py-4 text-sm font-bold text-white hover:bg-red-700 transition-colors">
+          className="w-full rounded-xl bg-black py-4 text-sm font-bold text-[#ffffff] hover:bg-red-700 transition-colors">
           Place Another Order
         </button>
       </div>

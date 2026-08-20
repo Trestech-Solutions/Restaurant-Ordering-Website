@@ -162,7 +162,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
               onClick={() => { setStep(s); setError('') }}
               className={`py-4 text-sm font-bold uppercase tracking-wide transition-colors ${
                 step === s
-                  ? 'bg-white text-[#c8102e] border-b-2 border-[#c8102e]'
+                  ? 'bg-white text-[#000000] border-b-2 border-[#000000]'
                   : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-100'
               }`}
             >
@@ -174,7 +174,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
         <div className="px-5 py-6 sm:px-8 sm:py-8">
           {/* Brand header */}
           <div className="flex flex-col items-center mb-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#c8102e] bg-white shadow-md overflow-hidden sm:h-16 sm:w-16 mb-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#000000] bg-white shadow-md overflow-hidden sm:h-16 sm:w-16 mb-3">
               <Image
                 src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
                 alt="United King"
@@ -207,7 +207,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                 <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
                   Mobile Number
                 </label>
-                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#000000] focus-within:ring-1 focus-within:ring-[#000000] transition-all">
                   <select
                     value={countryCode}
                     onChange={(e) => setCC(e.target.value)}
@@ -232,7 +232,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                 <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
                   Password
                 </label>
-                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#000000] focus-within:ring-1 focus-within:ring-[#000000] transition-all">
                   <input
                     type={showLoginPass ? 'text' : 'password'}
                     placeholder="Enter your password"
@@ -255,7 +255,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
               <button
                 onClick={handleLogin}
                 disabled={sending}
-                className="w-full rounded-lg bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
+                className="w-full rounded-lg bg-[#000000] py-2.5 text-xs font-bold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
               >
                 {sending ? 'Logging in...' : 'Login'}
               </button>
@@ -268,13 +268,13 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
               {/* Full Name */}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
-                  Full Name <span className="text-[#c8102e]">*</span>
+                  Full Name <span className="text-[#000000]">*</span>
                 </label>
                 <input
                   value={regName}
                   onChange={(e) => { setRegName(e.target.value); setError('') }}
                   placeholder="e.g. John Doe"
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
                 />
               </div>
 
@@ -282,7 +282,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                 <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
                   Mobile Number
                 </label>
-                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#000000] focus-within:ring-1 focus-within:ring-[#000000] transition-all">
                   <select
                     value={countryCode}
                     onChange={(e) => setCC(e.target.value)}
@@ -311,7 +311,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="john@example.com"
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
                 />
               </div>
 
@@ -319,7 +319,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                 <label className="mb-1.5 block text-xs font-semibold text-neutral-700 sm:text-sm">
                   Password
                 </label>
-                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#c8102e] focus-within:ring-1 focus-within:ring-[#c8102e] transition-all">
+                <div className="flex overflow-hidden rounded-lg border border-neutral-300 focus-within:border-[#000000] focus-within:ring-1 focus-within:ring-[#000000] transition-all">
                   <input
                     type={showRegPass ? 'text' : 'password'}
                     value={regPass}
@@ -347,14 +347,14 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
                   value={regPass2}
                   onChange={(e) => { setRegPass2(e.target.value); setError('') }}
                   placeholder="Re-enter password"
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] sm:px-4 sm:py-3 sm:text-sm"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-xs text-neutral-800 outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
                 />
               </div>
 
               <button
                 onClick={handleRegister}
                 disabled={sending}
-                className="w-full rounded-lg bg-[#c8102e] py-2.5 text-xs font-bold text-white hover:bg-[#a80d26] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
+                className="w-full rounded-lg bg-[#000000] py-2.5 text-xs font-bold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:py-3.5 sm:text-sm"
               >
                 {sending ? 'Creating Account...' : 'Create Account'}
               </button>
@@ -371,7 +371,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
 
               <button
                 onClick={onGuestContinue}
-                className="w-full rounded-lg border-2 border-[#f7c948] bg-[#f7c948]/10 py-2.5 text-xs font-bold text-[#b8860b] hover:bg-[#f7c948]/20 transition-colors sm:py-3.5 sm:text-sm"
+                className="w-full rounded-lg border-2 border-[#ffffff] bg-[#ffffff]/10 py-2.5 text-xs font-bold text-[#b8860b] hover:bg-[#ffffff]/20 transition-colors sm:py-3.5 sm:text-sm"
               >
                 Order as Guest
               </button>
@@ -383,7 +383,7 @@ export function AuthModal({ onClose, onGuestContinue }: AuthModalProps) {
               onClick={() => { setStep('login'); setError('') }}
               className="mt-4 w-full text-center text-[11px] text-neutral-500 hover:text-neutral-700 sm:text-xs"
             >
-              Already have an account? <span className="text-[#c8102e] font-semibold">Login →</span>
+              Already have an account? <span className="text-[#000000] font-semibold">Login →</span>
             </button>
           )}
         </div>

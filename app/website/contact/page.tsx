@@ -37,7 +37,7 @@ export default function ContactUsPage() {
             </p>
             <button
               onClick={() => { setSubmitted(false); setForm({ name: '', email: '', phone: '', message: '' }) }}
-              className="mt-6 rounded-full bg-[#c8102e] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+              className="mt-6 rounded-full bg-[#000000] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
             >
               Send Another Message
             </button>
@@ -53,7 +53,7 @@ export default function ContactUsPage() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Full Name *"
-                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition"
+                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] transition"
               />
               <input
                 required
@@ -62,7 +62,7 @@ export default function ContactUsPage() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Email *"
-                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition"
+                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] transition"
               />
               <input
                 required
@@ -71,7 +71,7 @@ export default function ContactUsPage() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="Phone *"
-                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition"
+                className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] transition"
               />
             </div>
 
@@ -83,14 +83,14 @@ export default function ContactUsPage() {
               onChange={handleChange}
               placeholder="Message"
               rows={5}
-              className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#c8102e] focus:ring-1 focus:ring-[#c8102e] transition resize-y"
+              className="w-full rounded border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] transition resize-y"
             />
 
             {/* Submit */}
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="rounded bg-[#c8102e] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
+                className="rounded bg-[#000000] px-8 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors"
               >
                 Submit
               </button>
