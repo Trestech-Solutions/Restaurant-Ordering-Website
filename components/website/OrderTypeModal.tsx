@@ -247,7 +247,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
         <div className="flex flex-col items-center pt-6 pb-1 sm:pt-8 sm:pb-2">
           <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#000000] bg-white shadow-md overflow-hidden sm:h-20 sm:w-20">
             <Image
-              src="https://assets.indolj.io/upload/1776252259-1652698752-uk-1.jpg"
+              src="/web/logo.webp"
               alt="United King"
               width={80}
               height={80}
