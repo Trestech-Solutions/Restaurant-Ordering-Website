@@ -13,6 +13,21 @@ const TAX_RATE     = 0.18
 const DELIVERY_FEE = 200
 const PLACEHOLDER  = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=400&auto=format&fit=crop'
 
+/** Resolves a relative /media/... path (as returned by the menu API) to a full
+ *  URL. Absolute URLs pass through unchanged. Falls back to PLACEHOLDER when
+ *  there's nothing to resolve or the base URL env var isn't configured. */
+function resolveMediaUrl(path?: string | null): string {
+  if (!path || path.trim() === '') return PLACEHOLDER
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/')) {
+    const base = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
+    if (!base) return PLACEHOLDER
+    const origin = base.replace(/\/+$/, '').replace(/\/api$/i, '')
+    return `${origin}${path}`
+  }
+  return path
+}
+
 function fmtDateTimeDelivery() {
   const d = new Date(Date.now() + 60 * 60 * 1000)
   const date = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -85,7 +100,7 @@ export function CartDrawer() {
             <div className="px-5 pb-5">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div>
-                  <p className="text-sm font-bold text-neutral-800">Popular with your order</p>
+                  <p className="text-sm font-bold text-neutral-800">Frequently Bought Together</p>
                   <p className="text-xs text-neutral-500">Customers often buy these together</p>
                 </div>
                 <div className="flex gap-1.5 pt-0.5">
@@ -103,11 +118,12 @@ export function CartDrawer() {
               <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2">
                 {popularItems.map((prod) => {
                   const price = Math.round(parseFloat(prod.price_at_branch || prod.front_price || '0'))
+                  const imageUrl = resolveMediaUrl(prod.feature_image)
                   return (
                     <div key={prod.id} className="shrink-0 w-[110px]">
                       <div className="relative w-[110px] h-[110px] rounded-lg overflow-hidden border border-neutral-100 bg-neutral-50">
                         <Image
-                          src={prod.feature_image || PLACEHOLDER}
+                          src={imageUrl}
                           alt={prod.name}
                           fill
                           className="object-cover"
@@ -118,7 +134,7 @@ export function CartDrawer() {
                             productId: prod.id,
                             name:      prod.name,
                             price,
-                            image:     prod.feature_image || PLACEHOLDER,
+                            image:     imageUrl,
                           })}
                           aria-label={`Add ${prod.name}`}
                           className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#000000] shadow-md hover:bg-[#000000] hover:text-white transition-colors border border-neutral-200"

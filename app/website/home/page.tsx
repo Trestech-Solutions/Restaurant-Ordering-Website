@@ -43,14 +43,9 @@ function resolveMediaUrl(path?: string | null): string | undefined {
   if (path.startsWith('http')) return path
   if (path.startsWith('/')) {
     const base = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
-    if (!base) {
-      console.warn('[resolveMediaUrl] NEXT_PUBLIC_MEDIA_BASE_URL is not set — cannot resolve path:', path)
-      return undefined
-    }
+    if (!base) return undefined
     const origin = base.replace(/\/+$/, '').replace(/\/api$/i, '')
-    const resolved = `${origin}${path}`
-    console.log('[resolveMediaUrl]', { input: path, base, origin, resolved })
-    return resolved
+    return `${origin}${path}`
   }
   return path
 }
@@ -58,19 +53,26 @@ function resolveMediaUrl(path?: string | null): string | undefined {
 type CategoryIcon = { type: 'image'; value: string } | { type: 'iconify'; value: string }
 
 function resolveIcon(icon: unknown): CategoryIcon {
-  console.log('[resolveIcon] raw icon value:', icon)
   if (typeof icon === 'string' && icon.trim() !== '') {
     const url = resolveMediaUrl(icon)
-    if (url) {
-      console.log('[resolveIcon] resolved as image ->', url)
-      return { type: 'image', value: url }
-    }
+    if (url) return { type: 'image', value: url }
   }
-  console.log('[resolveIcon] falling back to default iconify icon ->', DEFAULT_ICON)
   return { type: 'iconify', value: DEFAULT_ICON }
 }
 
 type ResolvedCategory = Omit<Category, 'icon'> & { icon: CategoryIcon; banner?: string }
+
+/**
+ * Normalizes a discount_type string from the API into a fixed set of buckets.
+ * The API sends "percentage" (not "percent"), and may also send "fixed"/"flat" —
+ * this handles all known variants instead of doing an exact string match.
+ */
+function normalizeDiscountType(raw: unknown): 'percent' | 'fixed' | 'unknown' {
+  const t = String(raw ?? '').toLowerCase().trim()
+  if (t.startsWith('percent')) return 'percent'   // matches "percent" AND "percentage"
+  if (t === 'fixed' || t === 'flat' || t === 'amount') return 'fixed'
+  return 'unknown'
+}
 
 /**
  * Convert an Item (from the menu API) into a ProductData for the UI.
@@ -100,15 +102,15 @@ function itemToProduct(
     const priceNum      = Math.round(parseFloat(sp.price || '0') || 0)
     const discountVal   = parseFloat(String(sp.discount ?? ''))
     const hasDiscount   = !isNaN(discountVal) && discountVal > 0
-    const dType         = String(sp.discount_type ?? '').toLowerCase()
+    const dType         = normalizeDiscountType(sp.discount_type)
 
     let originalPrice: number | undefined
     let discountLabel: string | undefined
     let hasDiscountTag  = false
 
     if (hasDiscount) {
-      // fixed → size_prices.discount holds the *original price* (e.g. 120 when price=100)
       if (dType === 'fixed') {
+        // fixed → size_prices.discount holds the *original price* (e.g. 120 when price=100)
         const orig = Math.round(discountVal)
         if (orig > priceNum && priceNum > 0) {
           originalPrice  = orig
@@ -118,7 +120,7 @@ function itemToProduct(
           hasDiscountTag = true
         }
       } else if (dType === 'percent') {
-        // percent → discount = percentage off (e.g. 20 means 20% off price)
+        // percent/percentage → discount = percentage off (e.g. 20 means 20% off price)
         const pct        = discountVal
         const origNum    = priceNum / Math.max(0.0001, 1 - pct / 100)
         originalPrice    = Math.round(origNum)
@@ -166,11 +168,11 @@ function itemToProduct(
 
   // ── Item-level discount (item_discount + item_discount_type) ───────────────
   // Only applied when NO size-level data exists; size-level discount takes priority.
-  const itemDiscountStr = String(item.item_discount ?? '')
-  const itemDiscountVal = parseFloat(itemDiscountStr)
-  const itemDiscountRaw = !isNaN(itemDiscountVal) && itemDiscountVal > 0
-  const itemDiscountType = String(item.item_discount_type ?? '').toLowerCase()
-  const showTag = Boolean(item.show_discount_tag)
+  const itemDiscountStr  = String(item.item_discount ?? '')
+  const itemDiscountVal  = parseFloat(itemDiscountStr)
+  const itemDiscountRaw  = !isNaN(itemDiscountVal) && itemDiscountVal > 0
+  const itemDiscountType = normalizeDiscountType(item.item_discount_type)
+  const showTag          = Boolean(item.show_discount_tag)
 
   let itemOriginalPrice: string | undefined
   let itemDiscountLabel: string | undefined
@@ -189,6 +191,13 @@ function itemToProduct(
       const origNum = priceInt / Math.max(0.0001, 1 - pct / 100)
       itemOriginalPrice = String(Math.round(origNum))
       itemDiscountLabel = `${Math.round(pct)}% OFF`
+    } else {
+      // Unknown type — best-effort fallback, same rule as size-level
+      const orig = Math.round(itemDiscountVal)
+      if (orig > priceInt && priceInt > 0) {
+        itemOriginalPrice = String(orig)
+        itemDiscountLabel = `Rs.${orig - priceInt} OFF`
+      }
     }
   }
 
@@ -222,19 +231,14 @@ function itemToProduct(
   })
 }
 
-
 function transformMenu(menu: MenuResponse | undefined): {
   categories: ResolvedCategory[]
   products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
   idPairs: Array<{ clientId: string; numericId: number }>
 } {
-  console.log('[transformMenu] raw menu response:', menu)
-
   const menuArr = menu?.menu ?? menu?.categories ?? []
-  console.log('[transformMenu] resolved menuArr length:', menuArr.length, menuArr)
 
   if (menuArr.length === 0) {
-    console.log('[transformMenu] menuArr empty — using FALLBACK_CATS/FALLBACK_PRODS')
     const idPairs        = FALLBACK_PRODS.map((p, i) => ({ clientId: p.id, numericId: p.productId ?? i + 1 }))
     const productsWithId = FALLBACK_PRODS.map((p, i) => ({ ...p, productId: p.productId ?? i + 1 }))
     const categories: ResolvedCategory[] = FALLBACK_CATS.map((c) => ({ ...c, icon: resolveIcon(c.icon) }))
@@ -248,16 +252,12 @@ function transformMenu(menu: MenuResponse | undefined): {
     .filter((cat) => cat.status !== false && cat.hide_category !== true)
     .map((cat) => {
       const catId  = String(cat.id)
-      console.log(`[transformMenu] category "${cat.name}" (id=${catId}) — raw icon:`, cat.icon, 'raw banner:', cat.banner)
-
       const icon   = resolveIcon(cat.icon)
       const banner = resolveMediaUrl(cat.banner)
-      console.log(`[transformMenu] category "${cat.name}" (id=${catId}) — resolved icon:`, icon, 'resolved banner:', banner)
 
       // ── PRIMARY: use `items[]` — Item records injected by MenuView ──────────
       const itemRecords = cat.items ?? []
       if (itemRecords.length > 0) {
-        console.log(`[transformMenu] category "${cat.name}" using PRIMARY items[] path, count:`, itemRecords.length)
         itemRecords
           .filter((it) => it.status !== false && it.status !== 0)
           .forEach((it) => itemToProduct(it, catId, idPairs, products))
@@ -277,7 +277,6 @@ function transformMenu(menu: MenuResponse | undefined): {
       // Otherwise they fall back to display-only (Coming Soon overlay).
       const dishes = cat.dish_detail ?? []
       if (dishes.length > 0) {
-        console.log(`[transformMenu] category "${cat.name}" using FALLBACK dish_detail[] path, count:`, dishes.length)
         dishes
           .filter((d) => d.status !== false)
           .forEach((d) => {
@@ -319,10 +318,8 @@ function transformMenu(menu: MenuResponse | undefined): {
           subCategories: [{ id: catId, label: 'All Items' }],
         }
       }
-console.log("kashuf",products)
 
       // ── FALLBACK: legacy sub_categories shape ─────────────────────────────
-      console.log(`[transformMenu] category "${cat.name}" using LEGACY sub_categories path`)
       const subCats: Category['subCategories'] = (cat.sub_categories ?? []).map((sc) => {
         const subId = sc.slug || String(sc.id)
         ;(sc.products ?? []).forEach((p) => {
@@ -355,9 +352,6 @@ console.log("kashuf",products)
       }
     })
 
-  console.log('[transformMenu] FINAL categories:', categories)
-  console.log('[transformMenu] FINAL products count:', products.length, products)
-
   return { categories, products, idPairs }
 }
 
@@ -367,24 +361,18 @@ function HeroSkeleton() {
     <section className="bg-black px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
       <div className="relative mx-auto h-[20vh] w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 sm:h-[40vh] sm:rounded-3xl md:h-[55vh] lg:h-[70vh] xl:h-[75vh]">
         <div className="flex h-full w-full flex-col items-center justify-center gap-6 px-6">
-          {/* title bar */}
           <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
-          {/* subtitle / description bar */}
           <div className="h-10 w-full max-w-md animate-pulse rounded-md bg-white/10 sm:h-12" />
-          {/* circular logo/image placeholder */}
           <div className="h-40 w-40 animate-pulse rounded-full bg-white/10 sm:h-52 sm:w-52" />
-          {/* bottom label bar */}
           <div className="h-3 w-72 max-w-[80%] animate-pulse rounded bg-white/10" />
         </div>
 
-        {/* pagination dots */}
         <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 sm:bottom-6 sm:gap-2">
           <span className="h-1.5 w-6 rounded-full bg-white/40 sm:w-8" />
           <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
           <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
         </div>
 
-        {/* prev/next arrow placeholders */}
         <button
           disabled
           aria-hidden
@@ -449,9 +437,6 @@ export default function HomePage() {
     areaId: numericArea,
   })
 
-  console.log('[HomePage] MEDIA_BASE env value:', MEDIA_BASE)
-  console.log('[HomePage] useGetMenu raw data:', menu, 'isLoading:', isLoading)
-
   const { categories, products, idPairs } = useMemo(() => transformMenu(menu), [menu])
 
   // Register product IDs after render — never during render
@@ -497,8 +482,6 @@ export default function HomePage() {
     () => categories.find((c) => c.id === activeCategoryId) ?? categories[0] ?? FALLBACK_CATS[0],
     [categories, activeCategoryId]
   )
-
-  console.log('[HomePage] activeCategory:', activeCategory)
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {

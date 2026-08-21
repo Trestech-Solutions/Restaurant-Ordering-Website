@@ -28,7 +28,9 @@ export interface ProductData {
   tag?: string
   discount?: string          // item-level discount label (or default size discount)
   image: string
-  // Size-level metadata — populated when menu API returns size_prices[] on an Item
+  // Size-level metadata — populated when menu API returns size_prices[] on an Item.
+  // NOTE: size selection UI lives only in ProductDetailModal — the card always
+  // shows the default (first) size's price and never lets the user switch here.
   sizes?: SizeMeta[]
 }
 
@@ -36,38 +38,33 @@ interface ProductCardProps {
   product: ProductData
   onOpen?: (product: ProductData) => void
 }
-export function ProductCard({ product, onOpen }: ProductCardProps) {
-  console.log("mojd",product)
 
+export function ProductCard({ product, onOpen }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem } = useCart()
-  const [selectedOption, setSelectedOption] = useState<string>(product.options[0] ?? '')
   const [added, setAdded] = useState(false)
 
-  // ── Size meta lookup — for items that have size_prices[] mapped to sizes ──
+  // Default size is always the first one — no in-card size switching.
   const hasSizes = !!product.sizes && product.sizes.length > 0
-  const selectedSize = hasSizes
-    ? product.sizes!.find((s) => s.sizeName === selectedOption) ?? product.sizes![0]!
-    : undefined
+  const defaultSize = hasSizes ? product.sizes![0]! : undefined
+  const defaultOption = product.options[0] ?? ''
 
-  // Effective price + display values: prefer selected size over product-level fallback
-  const displayPriceNum = selectedSize
-    ? selectedSize.price
+  const displayPriceNum = defaultSize
+    ? defaultSize.price
     : (parseInt(product.price, 10) || 0)
   const displayPriceStr = String(displayPriceNum)
-  const displayOriginal = selectedSize
-    ? (selectedSize.originalPrice != null ? String(selectedSize.originalPrice) : undefined)
+  const displayOriginal = defaultSize
+    ? (defaultSize.originalPrice != null ? String(defaultSize.originalPrice) : undefined)
     : product.originalPrice
-  const displayDiscount = selectedSize
-    ? (selectedSize.hasDiscountTag ? selectedSize.discountLabel : undefined)
+  const displayDiscount = defaultSize
+    ? (defaultSize.hasDiscountTag ? defaultSize.discountLabel : undefined)
     : product.discount
 
-  const hasPrice    = displayPriceStr !== '' && displayPriceStr !== undefined && displayPriceStr !== null && displayPriceNum > 0
-  const isOrderable = hasPrice &&
-                       product.productId !== null && product.productId !== undefined
+  const hasPrice    = displayPriceStr !== '' && displayPriceNum > 0
+  const isOrderable = hasPrice && product.productId !== null && product.productId !== undefined
   const price       = displayPriceNum
 
   const cartItem = items.find(
-    (i) => i.id === product.id && (i.selectedOption ?? '') === (selectedOption ?? '')
+    (i) => i.id === product.id && (i.selectedOption ?? '') === (defaultOption ?? '')
   )
   const cartQty = cartItem?.quantity ?? 0
 
@@ -80,8 +77,8 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
       name:           product.name,
       price,
       image:          product.image,
-      selectedOption: selectedOption || undefined,
-      variantId:      selectedSize ? selectedSize.sizeId : undefined,
+      selectedOption: defaultOption || undefined,
+      variantId:      defaultSize ? defaultSize.sizeId : undefined,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
@@ -99,15 +96,10 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
     else updateQuantity(cartItem, cartItem.quantity - 1)
   }
 
-  const handleOptionClick = (e: React.MouseEvent, opt: string) => {
-    e.stopPropagation()
-    setSelectedOption(opt)
-  }
-
   return (
     <div
       onClick={() => onOpen?.(product)}
-      className={`group relative flex items-stretch gap-3 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${onOpen ? 'cursor-pointer' : ''}`}
+      className={`group relative flex items-stretch gap-2 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${onOpen ? 'cursor-pointer' : ''}`}
     >
       {/* Left: text content */}
       <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
@@ -115,34 +107,12 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           <h3 className="text-base font-bold text-neutral-900 leading-snug sm:text-lg">
             {product.name}
           </h3>
-          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-neutral-400 sm:mt-2 sm:text-sm">
-            {product.description}
-          </p>
+          {product.description && (
+            <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-neutral-400 sm:mt-2 sm:text-sm">
+              {product.description}
+            </p>
+          )}
         </div>
-
-        {/* Options / Sizes */}
-        {product.options.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
-            {product.options.map((opt) => {
-              // Attach individual size prices as labels if sizes exist
-              const sizeMeta = product.sizes?.find((s) => s.sizeName === opt)
-              const priceBadge = sizeMeta ? ` · Rs.${sizeMeta.price.toLocaleString()}` : ''
-              return (
-                <button
-                  key={opt}
-                  onClick={(e) => handleOptionClick(e, opt)}
-                  className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors sm:px-3.5 sm:py-1 sm:text-xs ${
-                    selectedOption === opt
-                      ? 'border-[#000000] bg-[#000000] text-white'
-                      : 'border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000]'
-                  }`}
-                >
-                  {opt}{priceBadge}
-                </button>
-              )
-            })}
-          </div>
-        )}
 
         {/* Price */}
         {isOrderable && (
