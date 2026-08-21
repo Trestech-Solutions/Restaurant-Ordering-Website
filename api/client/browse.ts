@@ -7,6 +7,7 @@ import type {
   ApiError,
   Branch,
   Area,
+  City,
   MenuResponse,
   LocateResponse,
 } from '../types';
@@ -86,6 +87,44 @@ export function useGetAreas(options?: {
   reactUseEffect(() => {
     if (query.error) {
       const msg = (query.error as ApiError)?.detail || 'Failed to load delivery areas';
+      toast.error(msg);
+      options?.onError?.(msg);
+    }
+  }, [query.error]);
+
+  return query;
+}
+
+export function useGetCities(options?: {
+  restaurantId?: string | number;
+  onSuccess?: (data: City[]) => void;
+  onError?: (message: string) => void;
+}) {
+  const restaurantId = options?.restaurantId ?? getRestaurantId();
+
+  const query = useQuery<City[], ApiError>({
+    queryKey: ['storefront-cities', restaurantId],
+    queryFn: () =>
+      api
+        .get<{ results?: City[] } | City[]>(
+          API_ENDPOINTS.StorefrontBrowse.getCities,
+          { params: { restaurant: restaurantId } }
+        )
+        .then((r) => {
+          const data = r.data as { results?: City[] } | City[];
+          return Array.isArray(data) ? data : data.results ?? [];
+        }),
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
+
+  reactUseEffect(() => {
+    if (query.data && options?.onSuccess) options.onSuccess(query.data);
+  }, [query.data]);
+
+  reactUseEffect(() => {
+    if (query.error) {
+      const msg = (query.error as ApiError)?.detail || 'Failed to load cities';
       toast.error(msg);
       options?.onError?.(msg);
     }

@@ -192,6 +192,17 @@ export type Branch = {
   updated_at?: string;
 };
 
+export type City = {
+  id: number;
+  name: string;
+  status?: boolean;
+  branch: number;
+  branch_name?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  radius_km?: string | null;
+};
+
 export type Area = {
   id: number;
   name: string;
