@@ -89,20 +89,120 @@ function itemToProduct(
   idPairs: Array<{ clientId: string; numericId: number }>,
   products: (ProductData & { categoryId: string; subCategoryId: string; branchIds: string[] | '*' })[]
 ) {
-  const clientId   = String(item.id)
-  const rawPrice   = item.price_at_branch || item.front_price || '0'
-  const priceFloat = parseFloat(rawPrice)
-  const priceInt   = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
+  const clientId = String(item.id)
+  idPairs.push({ clientId, numericId: item.id })
+
+  // ── Size-level (size_prices) handling ─────────────────────────────────────
+  const rawSizes = (item.size_prices ?? []).filter(
+    (sp) => sp && typeof sp.size_name === 'string' && sp.size_name.length > 0
+  )
+  const sizes: ProductData['sizes'] = rawSizes.map((sp) => {
+    const priceNum      = Math.round(parseFloat(sp.price || '0') || 0)
+    const discountVal   = parseFloat(String(sp.discount ?? ''))
+    const hasDiscount   = !isNaN(discountVal) && discountVal > 0
+    const dType         = String(sp.discount_type ?? '').toLowerCase()
+
+    let originalPrice: number | undefined
+    let discountLabel: string | undefined
+    let hasDiscountTag  = false
+
+    if (hasDiscount) {
+      // fixed → size_prices.discount holds the *original price* (e.g. 120 when price=100)
+      if (dType === 'fixed') {
+        const orig = Math.round(discountVal)
+        if (orig > priceNum && priceNum > 0) {
+          originalPrice  = orig
+          const saveAmt  = orig - priceNum
+          const savePct  = Math.round((saveAmt / orig) * 100)
+          discountLabel  = savePct > 0 ? `${savePct}% OFF` : `Rs.${saveAmt} OFF`
+          hasDiscountTag = true
+        }
+      } else if (dType === 'percent') {
+        // percent → discount = percentage off (e.g. 20 means 20% off price)
+        const pct        = discountVal
+        const origNum    = priceNum / Math.max(0.0001, 1 - pct / 100)
+        originalPrice    = Math.round(origNum)
+        discountLabel    = `${Math.round(pct)}% OFF`
+        hasDiscountTag   = true
+      } else {
+        // Unknown/legacy discount type — treat discount as original price if bigger
+        const orig = Math.round(discountVal)
+        if (orig > priceNum && priceNum > 0) {
+          originalPrice = orig
+          discountLabel = `Rs.${orig - priceNum} OFF`
+          hasDiscountTag = true
+        }
+      }
+    }
+
+    return {
+      sizeId: Number(sp.id),
+      sizeFk: Number(sp.size),
+      sizeName: sp.size_name,
+      price: priceNum,
+      originalPrice,
+      discountLabel,
+      hasDiscountTag,
+    }
+  })
+  const hasSizes = sizes.length > 0
+
+  // ── Item-level price resolution ────────────────────────────────────────────
+  // Base: prefer size[0] price if sizes exist, else price_at_branch, else front_price
+  let priceInt: number
+  if (hasSizes) {
+    priceInt = sizes[0]!.price
+  } else {
+    const rawPrice   = item.price_at_branch || item.front_price || '0'
+    const priceFloat = parseFloat(rawPrice)
+    priceInt         = isNaN(priceFloat) ? 0 : Math.round(priceFloat)
+  }
 
   const frontPriceNum = item.front_price ? parseFloat(item.front_price) : NaN
-  const hasPriceDiff  = !isNaN(frontPriceNum) && item.price_at_branch != null && item.price_at_branch !== item.front_price
+  const hasPriceDiff  = !hasSizes &&
+                        !isNaN(frontPriceNum) &&
+                        item.price_at_branch != null &&
+                        item.price_at_branch !== item.front_price
 
+  // ── Item-level discount (item_discount + item_discount_type) ───────────────
+  // Only applied when NO size-level data exists; size-level discount takes priority.
   const itemDiscountStr = String(item.item_discount ?? '')
-  const hasDiscount     = itemDiscountStr !== '' && itemDiscountStr !== '0' && itemDiscountStr !== '0.00' && item.show_discount_tag
+  const itemDiscountVal = parseFloat(itemDiscountStr)
+  const itemDiscountRaw = !isNaN(itemDiscountVal) && itemDiscountVal > 0
+  const itemDiscountType = String(item.item_discount_type ?? '').toLowerCase()
+  const showTag = Boolean(item.show_discount_tag)
+
+  let itemOriginalPrice: string | undefined
+  let itemDiscountLabel: string | undefined
+  if (itemDiscountRaw && showTag && !hasSizes) {
+    if (itemDiscountType === 'fixed') {
+      // item_discount = original price
+      const orig = Math.round(itemDiscountVal)
+      if (orig > priceInt && priceInt > 0) {
+        const saveAmt = orig - priceInt
+        const savePct = Math.round((saveAmt / orig) * 100)
+        itemOriginalPrice = String(orig)
+        itemDiscountLabel = savePct > 0 ? `${savePct}% OFF` : `Rs.${saveAmt} OFF`
+      }
+    } else if (itemDiscountType === 'percent') {
+      const pct     = itemDiscountVal
+      const origNum = priceInt / Math.max(0.0001, 1 - pct / 100)
+      itemOriginalPrice = String(Math.round(origNum))
+      itemDiscountLabel = `${Math.round(pct)}% OFF`
+    }
+  }
+
+  // Combined originalPrice + discount label: size (if available) > item-level
+  const combinedOriginal = hasSizes
+    ? (sizes[0]!.originalPrice != null ? String(sizes[0]!.originalPrice) : undefined)
+    : (hasPriceDiff ? String(Math.round(frontPriceNum)) : (itemOriginalPrice ?? undefined))
+
+  const combinedDiscount = hasSizes
+    ? (sizes[0]!.discountLabel)
+    : (itemDiscountLabel ?? (item._dish_discount || undefined))
 
   const resolvedImage = resolveMediaUrl(item.feature_image) || PLACEHOLDER_IMAGE
 
-  idPairs.push({ clientId, numericId: item.id })
   products.push({
     id:            clientId,
     productId:     item.id,
@@ -112,14 +212,16 @@ function itemToProduct(
     name:          item.name,
     description:   item.description || '',
     price:         String(priceInt),
-    originalPrice: hasPriceDiff ? String(Math.round(frontPriceNum)) : undefined,
+    originalPrice: combinedOriginal,
     fromLabel:     Boolean(item._from_label),
-    options:       [],
+    options:       hasSizes ? sizes.map((s) => s.sizeName) : [],
     tag:           item._dish_tag || undefined,
-    discount:      hasDiscount ? itemDiscountStr : (item._dish_discount || undefined),
+    discount:      combinedDiscount,
     image:         resolvedImage,
+    sizes:         hasSizes ? sizes : undefined,
   })
 }
+
 
 function transformMenu(menu: MenuResponse | undefined): {
   categories: ResolvedCategory[]
@@ -217,6 +319,7 @@ function transformMenu(menu: MenuResponse | undefined): {
           subCategories: [{ id: catId, label: 'All Items' }],
         }
       }
+console.log("kashuf",products)
 
       // ── FALLBACK: legacy sub_categories shape ─────────────────────────────
       console.log(`[transformMenu] category "${cat.name}" using LEGACY sub_categories path`)

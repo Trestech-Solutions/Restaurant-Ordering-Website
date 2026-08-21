@@ -20,7 +20,21 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const [sharing, setSharing] = useState(false)
   const [added, setAdded]     = useState(false)
 
-  const hasPrice    = product.price !== '' && product.price !== undefined && product.price !== null
+  // ── Size-level price/discount resolution ──────────────────────────────────
+  const hasSizes = !!product.sizes && product.sizes.length > 0
+  const selectedSize = hasSizes
+    ? product.sizes!.find((s) => s.sizeName === selectedOption) ?? product.sizes![0]!
+    : undefined
+
+  const unitPrice = selectedSize ? selectedSize.price : (parseInt(product.price, 10) || 0)
+  const displayOriginal = selectedSize
+    ? (selectedSize.originalPrice != null ? selectedSize.originalPrice : undefined)
+    : (product.originalPrice ? parseInt(product.originalPrice, 10) : undefined)
+  const displayDiscount = selectedSize
+    ? (selectedSize.hasDiscountTag ? selectedSize.discountLabel : undefined)
+    : product.discount
+
+  const hasPrice    = Number.isFinite(unitPrice) && unitPrice > 0
   const isOrderable = hasPrice &&
                       product.productId !== null && product.productId !== undefined &&
                       Number.isFinite(Number(product.productId)) && Number(product.productId) > 0
@@ -37,8 +51,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
     }
   }
 
-  const unitPrice = (parseInt(product.price, 10) || 0)
-  const total     = unitPrice * qty
+  const total = unitPrice * qty
 
   const handleAdd = () => {
     if (!isOrderable) return
@@ -49,6 +62,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
       price: unitPrice,
       image: product.image,
       selectedOption: selectedOption || undefined,
+      variantId: selectedSize ? selectedSize.sizeId : undefined,
       specialInstructions: instructions || undefined,
       quantity: qty,
     })
@@ -78,9 +92,9 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
               {product.tag}
             </span>
           )}
-          {product.discount && (
+          {displayDiscount && (
             <span className="absolute right-3 top-3 rounded bg-[#f2c14e] px-2.5 py-1 text-[11px] font-bold text-neutral-900">
-              {product.discount}
+              {displayDiscount}
             </span>
           )}
 
@@ -103,9 +117,9 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
                 <span className="text-2xl font-extrabold text-neutral-900 sm:text-3xl">
                   Rs. {unitPrice.toLocaleString()}
                 </span>
-                {product.originalPrice && (
+                {displayOriginal != null && displayOriginal > unitPrice && (
                   <span className="text-sm text-neutral-400 line-through sm:text-lg">
-                    Rs. {parseInt(product.originalPrice, 10).toLocaleString()}
+                    Rs. {displayOriginal.toLocaleString()}
                   </span>
                 )}
               </div>
@@ -137,24 +151,28 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             </p>
           )}
 
-          {/* Options */}
+          {/* Options / Sizes */}
           {product.options.length > 0 && (
             <div className="px-5 pb-4 sm:px-8 sm:pb-5">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-500 sm:text-xs">Select Size</p>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {product.options.map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => setSelectedOption(opt)}
-                    className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors sm:px-4 sm:py-1.5 sm:text-xs ${
-                      selectedOption === opt
-                        ? 'border-[#000000] bg-[#000000] text-white'
-                        : 'border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000]'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
+                {product.options.map((opt) => {
+                  const sizeMeta = product.sizes?.find((s) => s.sizeName === opt)
+                  const priceBadge = sizeMeta ? ` · Rs.${sizeMeta.price.toLocaleString()}` : ''
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => setSelectedOption(opt)}
+                      className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors sm:px-4 sm:py-1.5 sm:text-xs ${
+                        selectedOption === opt
+                          ? 'border-[#000000] bg-[#000000] text-white'
+                          : 'border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000]'
+                      }`}
+                    >
+                      {opt}{priceBadge}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}

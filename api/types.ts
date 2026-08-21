@@ -216,6 +216,20 @@ export type LocateResponse = {
 // ─── Menu types — matches actual API response ────────────────────────────────
 
 /**
+ * A size-level price record as returned by ItemSerializer.size_prices[].
+ * Each item may have multiple sizes (Regular/Large etc.) each with its own
+ * price, discount value and discount type.
+ */
+export type SizePrice = {
+  id: number;                    // PK of ItemSizePrice — send as `variant` to cart
+  size: number;                  // FK to Size (id)
+  size_name: string;             // Human readable size (e.g. "Large")
+  price: string;                 // Current / effective price for this size (after discount)
+  discount: string | null;       // Discount value — semantics depend on discount_type
+  discount_type: 'fixed' | 'percent' | string | null;
+};
+
+/**
  * An Item object as returned by the menu endpoint (via ItemSerializer +
  * price_at_branch injection). These are the records to pass as `item` to
  * POST /storefront/cart/items/.
@@ -234,7 +248,7 @@ export type MenuItem = {
   item_discount_type?: string | null;
   show_discount_tag?: boolean;
   branch_prices?: unknown[];
-  size_prices?: unknown[];
+  size_prices?: SizePrice[];
   date_added?: string;
   date_updated?: string;
 };

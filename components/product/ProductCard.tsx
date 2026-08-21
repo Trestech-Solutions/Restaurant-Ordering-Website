@@ -5,34 +5,66 @@ import Image from 'next/image'
 import { Check, Minus, Plus } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 
+export interface SizeMeta {
+  sizeId: number                  // size_prices.id — cart variantId PK
+  sizeFk: number                  // size_prices.size — Size table FK
+  sizeName: string                // size_prices.size_name e.g. "Large"
+  price: number                   // size_prices.price (after discount)
+  originalPrice?: number          // derived from size_prices.discount
+  discountLabel?: string          // e.g. "20% OFF" or "Save 20"
+  hasDiscountTag?: boolean        // whether to render a discount badge for this size
+}
+
 export interface ProductData {
   id: string
   productId: number | null   // null = display-only (Dish), not orderable
   name: string
   description: string
   price: string              // price_at_branch or front_price — '' means "no price set"
+                             // When size_prices exist this is the *default/first* size price.
   originalPrice?: string
   fromLabel?: boolean
-  options: string[]
+  options: string[]          // size names (size_prices.size_name) OR legacy option names
   tag?: string
-  discount?: string
+  discount?: string          // item-level discount label (or default size discount)
   image: string
+  // Size-level metadata — populated when menu API returns size_prices[] on an Item
+  sizes?: SizeMeta[]
 }
 
 interface ProductCardProps {
   product: ProductData
   onOpen?: (product: ProductData) => void
 }
-
 export function ProductCard({ product, onOpen }: ProductCardProps) {
+  console.log("mojd",product)
+
   const { addItem, items, updateQuantity, removeItem } = useCart()
   const [selectedOption, setSelectedOption] = useState<string>(product.options[0] ?? '')
   const [added, setAdded] = useState(false)
 
-  const hasPrice    = product.price !== '' && product.price !== undefined && product.price !== null
+  // ── Size meta lookup — for items that have size_prices[] mapped to sizes ──
+  const hasSizes = !!product.sizes && product.sizes.length > 0
+  const selectedSize = hasSizes
+    ? product.sizes!.find((s) => s.sizeName === selectedOption) ?? product.sizes![0]!
+    : undefined
+
+  // Effective price + display values: prefer selected size over product-level fallback
+  const displayPriceNum = selectedSize
+    ? selectedSize.price
+    : (parseInt(product.price, 10) || 0)
+  const displayPriceStr = String(displayPriceNum)
+  const displayOriginal = selectedSize
+    ? (selectedSize.originalPrice != null ? String(selectedSize.originalPrice) : undefined)
+    : product.originalPrice
+  const displayDiscount = selectedSize
+    ? (selectedSize.hasDiscountTag ? selectedSize.discountLabel : undefined)
+    : product.discount
+
+  const hasPrice    = displayPriceStr !== '' && displayPriceStr !== undefined && displayPriceStr !== null && displayPriceNum > 0
   const isOrderable = hasPrice &&
                        product.productId !== null && product.productId !== undefined
-  const price       = hasPrice ? (parseInt(product.price, 10) || 0) : 0
+  const price       = displayPriceNum
 
   const cartItem = items.find(
     (i) => i.id === product.id && (i.selectedOption ?? '') === (selectedOption ?? '')
@@ -49,6 +81,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
       price,
       image:          product.image,
       selectedOption: selectedOption || undefined,
+      variantId:      selectedSize ? selectedSize.sizeId : undefined,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
@@ -87,22 +120,27 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           </p>
         </div>
 
-        {/* Options */}
+        {/* Options / Sizes */}
         {product.options.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
-            {product.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={(e) => handleOptionClick(e, opt)}
-                className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors sm:px-3.5 sm:py-1 sm:text-xs ${
-                  selectedOption === opt
-                    ? 'border-[#000000] bg-[#000000] text-white'
-                    : 'border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000]'
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
+            {product.options.map((opt) => {
+              // Attach individual size prices as labels if sizes exist
+              const sizeMeta = product.sizes?.find((s) => s.sizeName === opt)
+              const priceBadge = sizeMeta ? ` · Rs.${sizeMeta.price.toLocaleString()}` : ''
+              return (
+                <button
+                  key={opt}
+                  onClick={(e) => handleOptionClick(e, opt)}
+                  className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors sm:px-3.5 sm:py-1 sm:text-xs ${
+                    selectedOption === opt
+                      ? 'border-[#000000] bg-[#000000] text-white'
+                      : 'border-neutral-300 text-neutral-600 hover:border-[#000000] hover:text-[#000000]'
+                  }`}
+                >
+                  {opt}{priceBadge}
+                </button>
+              )
+            })}
           </div>
         )}
 
@@ -112,9 +150,9 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             {product.fromLabel && (
               <span className="text-xs text-neutral-500 sm:text-sm">From</span>
             )}
-            {product.originalPrice && (
+            {displayOriginal && (
               <span className="text-xs text-neutral-400 line-through sm:text-sm">
-                Rs.{product.originalPrice}
+                Rs.{parseInt(displayOriginal, 10).toLocaleString()}
               </span>
             )}
             <span className="text-base font-bold text-neutral-900 sm:text-lg">
@@ -166,9 +204,9 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             {product.tag}
           </span>
         )}
-        {product.discount && (
+        {displayDiscount && (
           <span className="absolute right-1.5 top-1.5 rounded bg-[#f2c14e] px-2 py-0.5 text-[9px] font-bold text-neutral-900 shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]">
-            {product.discount}
+            {displayDiscount}
           </span>
         )}
         {!isOrderable && (
