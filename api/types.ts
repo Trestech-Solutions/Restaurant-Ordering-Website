@@ -382,8 +382,77 @@ export type MenuResponse = {
   addon_categories: MenuAddonCategory[];
   // Actual API returns `menu` array of categories
   menu:             MenuCategory[];
+  // Deals — injected at top-level alongside menu
+  fixed_deals?:    MenuFixedDeal[];
+  on_spot_deals?:  MenuOnSpotDeal[];
   // Legacy fallback
   categories?:      MenuCategory[];
+};
+
+// ─── Storefront Deal types (as returned inside menu response) ─────────────────
+
+export type MenuDealItemDetail = {
+  id: number;
+  item: number;
+  item_detail?: MenuItem;
+  quantity: number;
+};
+
+export type MenuOnSpotDealGroupOption = {
+  id: number;
+  item: number;
+  item_detail?: MenuItem;
+  quantity: number;
+};
+
+export type MenuOnSpotDealGroup = {
+  id: number;
+  name: string;
+  select_quantity: number;
+  options: MenuOnSpotDealGroupOption[];
+};
+
+/** Shape of a Fixed Deal as returned inside the menu endpoint response. */
+export type MenuFixedDeal = {
+  id: number;
+  restaurant: number;
+  category: number;            // FK — which menu category this deal belongs to
+  category_detail?: MenuCategory;
+  name: string;
+  description?: string | null;
+  feature_image?: string | null;  // NOTE: field name is feature_image (not image)
+  price: string;
+  discount?: string;
+  discount_type?: 'fixed' | 'percentage';
+  final_price: string;
+  items_detail?: MenuDealItemDetail[];
+  valid_from_date?: string | null;
+  valid_to_date?: string | null;
+  status: boolean | number;    // API returns 1/0 or true/false
+  is_available_now?: boolean;
+};
+
+/** Shape of an On Spot Deal as returned inside the menu endpoint response. */
+export type MenuOnSpotDeal = {
+  id: number;
+  restaurant: number;
+  category: number;            // FK — which menu category this deal belongs to
+  category_detail?: MenuCategory;
+  name: string;
+  description?: string | null;
+  feature_image?: string | null;  // NOTE: field name is feature_image (not image)
+  price: string;
+  discount?: string;
+  discount_type?: 'fixed' | 'percentage';
+  final_price: string;
+  items_detail?: MenuDealItemDetail[];
+  groups_detail?: MenuOnSpotDealGroup[];
+  valid_from_date?: string | null;
+  valid_to_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  status: boolean | number;    // API returns 1/0 or true/false
+  is_available_now?: boolean;
 };
 
 // ─── Storefront Cart ─────────────────────────────────────────────────────────

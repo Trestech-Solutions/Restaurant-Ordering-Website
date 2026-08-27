@@ -1,0 +1,2854 @@
+{
+    "branch": {
+        "id": 1,
+        "branch_name": "DHA Branch",
+        "status": true,
+        "location": "DHA Phase 6, Karachi",
+        "address": "",
+        "map_location": "24.8007,67.0311",
+        "is_default": false,
+        "pickup_status": true,
+        "delivery_status": true
+    },
+    "area": {
+        "id": 11,
+        "name": "Bahadurabaddd",
+        "status": true
+    },
+    "settings": {
+        "id": 1,
+        "date_added": "2026-08-10T20:23:36.737152Z",
+        "date_updated": "2026-08-19T09:28:25.447064Z",
+        "merchant_logo": "/media/settings/merchant_logo/p_XJjdsuJ.jpg",
+        "menu_header": "default",
+        "phone_icon_type": "none",
+        "logo_left_align": true,
+        "hide_phone_from_header": false,
+        "show_navbar": true,
+        "logo_fit_to_navbar": false,
+        "logo_link": "https://meet.google.com/home",
+        "location_link": "https://meet.google.com/home",
+        "navbar_color": "#aa1d1d",
+        "slide_image_1": null,
+        "heading_text_1": "",
+        "heading_color_1": "",
+        "description_text_1": "",
+        "description_color_1": "",
+        "slide_link_1": "",
+        "slide_image_2": null,
+        "heading_text_2": "",
+        "heading_color_2": "",
+        "description_text_2": "",
+        "description_color_2": "",
+        "slide_link_2": "",
+        "slide_image_3": null,
+        "heading_text_3": "",
+        "heading_color_3": "",
+        "description_text_3": "",
+        "description_color_3": "",
+        "slide_link_3": "",
+        "slide_image_4": null,
+        "heading_text_4": "",
+        "heading_color_4": "",
+        "description_text_4": "",
+        "description_color_4": "",
+        "slide_link_4": "",
+        "merchant_header_background": "",
+        "android_icon": null,
+        "android_app_link": "",
+        "ios_icon": null,
+        "ios_app_link": "",
+        "foreground_color": "",
+        "background_color": "#8c1818",
+        "menu_page_background_color": "",
+        "menu_page_background_image": null,
+        "menu_font_family": "333",
+        "item_price_background": "",
+        "item_price_text_color": "",
+        "item_price_border_color": "",
+        "price_rounder_center": false,
+        "show_cart_icon": true,
+        "show_stack_tag_on_item": false,
+        "stack_tag_background_color": "",
+        "stack_tag_color": "",
+        "discount_background_color": "",
+        "discount_text_color": "",
+        "category_navbar_background_color": "",
+        "enable_user_login": true,
+        "price_inclusive_tax": false,
+        "sum_discount_in_minimum_order_amount": false,
+        "add_estimation_time_in_initial_time": false,
+        "enable_number_field_in_area_modal": false,
+        "enable_grid_view_receipt": false,
+        "enable_city_wise_order_mapping": false,
+        "enable_auto_location": false,
+        "discount_ordering": false,
+        "enable_nearest_landmark_required": false,
+        "enable_order_sms_verification": false,
+        "enable_customer_sms_verification": false,
+        "disable_change_branch_option": false,
+        "enable_round_logo_of_location_modal": false,
+        "auto_selection_of_addon_quantity": false,
+        "quick_add_to_cart_with_description": false,
+        "set_full_width_menu": false,
+        "hide_payment_card_logo_from_banner": false,
+        "enable_branch_on_delivery": false,
+        "change_area_filter_option": false,
+        "customer_can_request_sms_code_every": "",
+        "if_item_not_available": "hide",
+        "load_menu_in_chunks": false,
+        "preload_caching": false,
+        "hide_set_delivery_time": false,
+        "show_view_all_categories_floating_popup": false,
+        "hide_alternative_number": false,
+        "hide_delivery_instructions": false,
+        "hide_nearest_landmark": false,
+        "hide_email_address": false,
+        "tax_number": "",
+        "hide_thanks_page_animation": false,
+        "free_delivery_above_subtotal": "1000",
+        "close_store": false,
+        "convenience_fee": "11",
+        "checkout_note": "Nice to have you on checkout (from admin)",
+        "enable_city_on_checkout": true,
+        "delivery_minimum_purchase_amount": "",
+        "delivery_maximum_purchase_amount": "",
+        "dinein_minimum_purchase_amount": "",
+        "dinein_maximum_purchase_amount": "",
+        "pickup_minimum_purchase_amount": "",
+        "pickup_maximum_purchase_amount": "",
+        "packaging_charge": "121",
+        "packaging_incremental": false,
+        "delivery_charges": "100",
+        "do_not_apply_tax_to_delivery_charges": true,
+        "delivery_time": "20",
+        "message_for_delivery": "please pay before taking order",
+        "dinein_time": "1",
+        "message_for_dinein": "please pay before taking order",
+        "pickup_time": "10",
+        "message_for_pickup": "please pay before taking order",
+        "hide_delivery_time": false,
+        "branch_wise_settings": false,
+        "accept_pre_orders": false,
+        "close_message": "Nice to have you on checkout (from admin)",
+        "holiday_close_message": "",
+        "same_message_for_all_holidays": true,
+        "created_by": 4,
+        "updated_by": 4,
+        "restaurant": 1
+    },
+    "branch_settings": {
+        "id": 1,
+        "date_added": "2026-08-11T10:58:01.438900Z",
+        "date_updated": "2026-08-20T20:36:01.253691Z",
+        "enable_city_on_checkout": false,
+        "enable_save_my_info": false,
+        "checkout_note": "Enjoy your meal buddy",
+        "days_forward_for_always_preorder": 51,
+        "message_for_always_preorder": "Enjoy your meal buddy",
+        "time_slot_difference_minutes": 22,
+        "delivery_delivery_time": "120",
+        "delivery_pickup_time": "120",
+        "delivery_dinein_time": "136",
+        "delivery_minimum_order": null,
+        "delivery_message_for_delivery": "Enjoy your meal buddy",
+        "delivery_message_for_pickup": "Enjoy your meal buddy",
+        "delivery_message_for_dinein": "Enjoy your meal buddy",
+        "delivery_message_instruction": "Enjoy your meal buddy",
+        "preorder_delivery_time": "20",
+        "preorder_pickup_time": "20",
+        "preorder_dinein_time": "20",
+        "preorder_minimum_order": "20.00",
+        "preorder_message_for_delivery": "Delivery P MSG NOTHING",
+        "preorder_message_for_pickup": "PICKUP MSG NOTHING",
+        "preorder_message_for_dinein": "dIININ MSG NOTHING",
+        "preorder_message_instruction": "ENJOY YOUR MEAL",
+        "apply_offer_discount_as_on_web_ordering": false,
+        "apply_item_wise_discount_as_on_web_ordering": false,
+        "created_by": 4,
+        "updated_by": 4,
+        "branch": 1,
+        "excluded_categories": [],
+        "excluded_items": []
+    },
+    "business_hours": [],
+    "sizes": [
+        {
+            "id": 6,
+            "restaurant": 1,
+            "name": "Large",
+            "description": "13 inches",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:50:26.977236Z",
+            "date_updated": "2026-08-18T18:50:26.977261Z"
+        },
+        {
+            "id": 5,
+            "restaurant": 1,
+            "name": "Medium",
+            "description": "12 inches",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:50:13.299640Z",
+            "date_updated": "2026-08-18T18:50:13.299666Z"
+        },
+        {
+            "id": 4,
+            "restaurant": 1,
+            "name": "Small",
+            "description": "8 inches",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:50:05.617518Z",
+            "date_updated": "2026-08-18T18:50:05.617539Z"
+        }
+    ],
+    "addon_categories": [
+        {
+            "id": 3,
+            "restaurant": 1,
+            "name": "Drink",
+            "description": "Refresh your meal with a chilled selection of fizzy/",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:52:43.887372Z",
+            "date_updated": "2026-08-18T18:54:55.692480Z",
+            "addons": [
+                {
+                    "id": 5,
+                    "addon_category": 3,
+                    "addon_category_name": "Drink",
+                    "name": "7up",
+                    "description": "500 ml",
+                    "price": "100.00",
+                    "photo": "/media/food_addons/photos/images_1.jpeg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:53:56.676850Z",
+                    "date_updated": "2026-08-18T18:53:56.676873Z"
+                },
+                {
+                    "id": 4,
+                    "addon_category": 3,
+                    "addon_category_name": "Drink",
+                    "name": "Pepsi",
+                    "description": "500 ml",
+                    "price": "100.00",
+                    "photo": "/media/food_addons/photos/images_1.webp",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:53:17.538098Z",
+                    "date_updated": "2026-08-18T18:53:17.538124Z"
+                },
+                {
+                    "id": 9,
+                    "addon_category": 3,
+                    "addon_category_name": "Drink",
+                    "name": "coke",
+                    "description": "diet coke",
+                    "price": "90.00",
+                    "photo": "/media/food_addons/photos/1787034029-WhatsApp-Image-2026-08-18-at-11-17-18-AM--1-.jpeg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T19:55:57.575559Z",
+                    "date_updated": "2026-08-21T19:55:57.575582Z"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "restaurant": 1,
+            "name": "Sauces",
+            "description": "flavorful signature sauces",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:54:11.730163Z",
+            "date_updated": "2026-08-18T18:55:18.545338Z",
+            "addons": [
+                {
+                    "id": 6,
+                    "addon_category": 4,
+                    "addon_category_name": "Sauces",
+                    "name": "Chipotle Sauce",
+                    "description": "2 oz (60 ml)",
+                    "price": "100.00",
+                    "photo": "/media/food_addons/photos/images_2.jpeg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:57:03.031039Z",
+                    "date_updated": "2026-08-18T18:57:03.031133Z"
+                },
+                {
+                    "id": 7,
+                    "addon_category": 4,
+                    "addon_category_name": "Sauces",
+                    "name": "Garlic Mayo",
+                    "description": "2 oz (60 ml)",
+                    "price": "120.00",
+                    "photo": "/media/food_addons/photos/21171-white-sauce-ddmfs-3X4-2010-b99e68247898439b894cb2cf16e78f03.jpg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:57:42.190874Z",
+                    "date_updated": "2026-08-18T18:57:42.190918Z"
+                },
+                {
+                    "id": 8,
+                    "addon_category": 4,
+                    "addon_category_name": "Sauces",
+                    "name": "Honey Mastard",
+                    "description": "2 oz (60 ml)",
+                    "price": "120.00",
+                    "photo": "/media/food_addons/photos/images_3.jpeg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:58:08.687696Z",
+                    "date_updated": "2026-08-18T18:58:08.687720Z"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "restaurant": 1,
+            "name": "TOPPINGS",
+            "description": "Toppings",
+            "status": true,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-10T18:01:12.296944Z",
+            "date_updated": "2026-08-18T18:52:23.603056Z",
+            "addons": [
+                {
+                    "id": 2,
+                    "addon_category": 2,
+                    "addon_category_name": "TOPPINGS",
+                    "name": "Cheese Toppings",
+                    "description": "20 gram",
+                    "price": "100.00",
+                    "photo": "/media/food_addons/photos/images.webp",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:51:30.585772Z",
+                    "date_updated": "2026-08-18T18:51:30.585796Z"
+                },
+                {
+                    "id": 3,
+                    "addon_category": 2,
+                    "addon_category_name": "TOPPINGS",
+                    "name": "Meat Toppings",
+                    "description": "30 gram",
+                    "price": "900.00",
+                    "photo": "/media/food_addons/photos/images.jpeg",
+                    "status": true,
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-18T18:52:09.362862Z",
+                    "date_updated": "2026-08-18T18:52:09.362886Z"
+                }
+            ]
+        }
+    ],
+    "fixed_deals": [],
+    "on_spot_deals": [
+        {
+            "id": 1,
+            "restaurant": 1,
+            "category": 4,
+            "category_detail": {
+                "id": 4,
+                "restaurant": 1,
+                "name": "BarBque",
+                "hide_category_display_name_menu": false,
+                "hide_category_from_navbar": false,
+                "description": "Smoked to Perfection, Served with Passion.",
+                "banner": "/media/food_categories/banners/1787061829-02.webp",
+                "icon": "/media/food_categories/icons/bb1.jpeg",
+                "dish": [],
+                "dish_detail": [],
+                "status": true,
+                "schedule": false,
+                "schedule_days_times": {
+                    "fri": {
+                        "is_open": false,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "mon": {
+                        "is_open": true,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "sat": {
+                        "is_open": false,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "sun": {
+                        "is_open": false,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "thu": {
+                        "is_open": false,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "tue": {
+                        "is_open": true,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    },
+                    "wed": {
+                        "is_open": true,
+                        "open_time": "09:00",
+                        "close_time": "22:00"
+                    }
+                },
+                "hide_category": false,
+                "hide_category_from_third_parties": false,
+                "hide_product_title": false,
+                "hide_prices": false,
+                "app_only": false,
+                "web_only": false,
+                "discount_on_cards_online_payment": false,
+                "secret_key": "",
+                "after_schedule": "show_closed",
+                "layout": "gallery",
+                "created_by": 4,
+                "created_by_username": "admin",
+                "updated_by": 4,
+                "updated_by_username": "admin",
+                "date_added": "2026-08-18T18:34:15.037873Z",
+                "date_updated": "2026-08-21T09:31:07.574855Z"
+            },
+            "name": "Lunch Combo",
+            "description": "Burger, fries, and your choice of drink",
+            "feature_image": null,
+            "price": "10.00",
+            "discount": "10.00",
+            "discount_type": "percentage",
+            "final_price": "9.00",
+            "items_detail": [
+                {
+                    "id": 1,
+                    "item": 1,
+                    "item_detail": {
+                        "id": 1,
+                        "restaurant": 1,
+                        "item_sku": "pizza",
+                        "name": "thick curst",
+                        "description": "",
+                        "status": 1,
+                        "feature_image": null,
+                        "product_background_color": "#ffffff",
+                        "product_title_color": "#22c55e",
+                        "product_description_color": "#6b7280",
+                        "food_category": [],
+                        "food_category_detail": [],
+                        "item_discount": "10.00",
+                        "item_discount_type": "percentage",
+                        "show_discount_tag": true,
+                        "front_price": "900.00",
+                        "branch_prices": [],
+                        "size_prices": [],
+                        "created_by": 4,
+                        "created_by_username": "admin",
+                        "updated_by": 4,
+                        "updated_by_username": "admin",
+                        "date_added": "2026-08-17T18:21:13.295492Z",
+                        "date_updated": "2026-08-17T18:24:48.403954Z"
+                    },
+                    "quantity": 1
+                }
+            ],
+            "groups_detail": [
+                {
+                    "id": 1,
+                    "name": "Choose your drink",
+                    "select_quantity": 1,
+                    "options": [
+                        {
+                            "id": 1,
+                            "item": 1,
+                            "item_detail": {
+                                "id": 1,
+                                "restaurant": 1,
+                                "item_sku": "pizza",
+                                "name": "thick curst",
+                                "description": "",
+                                "status": 1,
+                                "feature_image": null,
+                                "product_background_color": "#ffffff",
+                                "product_title_color": "#22c55e",
+                                "product_description_color": "#6b7280",
+                                "food_category": [],
+                                "food_category_detail": [],
+                                "item_discount": "10.00",
+                                "item_discount_type": "percentage",
+                                "show_discount_tag": true,
+                                "front_price": "900.00",
+                                "branch_prices": [],
+                                "size_prices": [],
+                                "created_by": 4,
+                                "created_by_username": "admin",
+                                "updated_by": 4,
+                                "updated_by_username": "admin",
+                                "date_added": "2026-08-17T18:21:13.295492Z",
+                                "date_updated": "2026-08-17T18:24:48.403954Z"
+                            },
+                            "quantity": 1
+                        }
+                    ]
+                }
+            ],
+            "valid_from_date": null,
+            "valid_to_date": null,
+            "start_time": "12:00:00",
+            "end_time": "15:00:00",
+            "status": 1,
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-27T21:18:45.132132Z",
+            "date_updated": "2026-08-27T21:18:45.132152Z",
+            "is_available_now": false
+        }
+    ],
+    "menu": [
+        {
+            "id": 4,
+            "restaurant": 1,
+            "name": "BarBque",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "Smoked to Perfection, Served with Passion.",
+            "banner": "/media/food_categories/banners/1787061829-02.webp",
+            "icon": "/media/food_categories/icons/bb1.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sat": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:34:15.037873Z",
+            "date_updated": "2026-08-21T09:31:07.574855Z",
+            "items": [
+                {
+                    "id": 2,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Tikka",
+                    "name": "Chicken Tikka",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786621881-ChickenTikka.webp",
+                    "product_background_color": "#df2020",
+                    "product_title_color": "#0400f0",
+                    "product_description_color": "#c6b815",
+                    "food_category": [
+                        4
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 4,
+                            "restaurant": 1,
+                            "name": "BarBque",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Smoked to Perfection, Served with Passion.",
+                            "banner": "/media/food_categories/banners/1787061829-02.webp",
+                            "icon": "/media/food_categories/icons/bb1.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:34:15.037873Z",
+                            "date_updated": "2026-08-21T09:31:07.574855Z"
+                        }
+                    ],
+                    "item_discount": "10.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": false,
+                    "front_price": "199.84",
+                    "branch_prices": [],
+                    "size_prices": [
+                        {
+                            "id": 3,
+                            "size": 6,
+                            "size_name": "Large",
+                            "price": "500.00",
+                            "discount": "5.00",
+                            "discount_type": "percentage"
+                        },
+                        {
+                            "id": 4,
+                            "size": 5,
+                            "size_name": "Medium",
+                            "price": "200.00",
+                            "discount": "2.00",
+                            "discount_type": "percentage"
+                        }
+                    ],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-19T09:23:13.675106Z",
+                    "date_updated": "2026-08-21T14:11:37.434216Z",
+                    "price_at_branch": "199.84"
+                },
+                {
+                    "id": 5,
+                    "restaurant": 1,
+                    "item_sku": "Mix Kabab Rice",
+                    "name": "Mix Kabab Rice",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786626606-MixKababRice.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        4
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 4,
+                            "restaurant": 1,
+                            "name": "BarBque",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Smoked to Perfection, Served with Passion.",
+                            "banner": "/media/food_categories/banners/1787061829-02.webp",
+                            "icon": "/media/food_categories/icons/bb1.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:34:15.037873Z",
+                            "date_updated": "2026-08-21T09:31:07.574855Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": false,
+                    "front_price": "3999.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:25:40.011946Z",
+                    "date_updated": "2026-08-21T12:49:04.691663Z",
+                    "price_at_branch": "3999.00"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "restaurant": 1,
+            "name": "CHEF'S SPECIAL",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "A delicious feast featuring tender, juicy meat served with fragrant, flavorful rice and a selection of fresh sides. Perfect for sharing, our Mandi & Platter brings rich Arabian flavors and a satisfying dining experience to your table.",
+            "banner": "/media/food_categories/banners/1787061815-04.webp",
+            "icon": "/media/food_categories/icons/b3.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sat": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:35:06.257313Z",
+            "date_updated": "2026-08-21T09:37:59.824949Z",
+            "items": [
+                {
+                    "id": 3,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Bihari",
+                    "name": "Chicken Bihari",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786622329-ChickenBihari.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        5
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 5,
+                            "restaurant": 1,
+                            "name": "CHEF'S SPECIAL",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "A delicious feast featuring tender, juicy meat served with fragrant, flavorful rice and a selection of fresh sides. Perfect for sharing, our Mandi & Platter brings rich Arabian flavors and a satisfying dining experience to your table.",
+                            "banner": "/media/food_categories/banners/1787061815-04.webp",
+                            "icon": "/media/food_categories/icons/b3.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:35:06.257313Z",
+                            "date_updated": "2026-08-21T09:37:59.824949Z"
+                        }
+                    ],
+                    "item_discount": "100.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": false,
+                    "front_price": "200.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:13:13.536909Z",
+                    "date_updated": "2026-08-21T12:48:19.517990Z",
+                    "price_at_branch": "200.00"
+                },
+                {
+                    "id": 4,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Bihari Rice",
+                    "name": "Chicken Bihari Rice",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786626590-ChickenBihariRice.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        5
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 5,
+                            "restaurant": 1,
+                            "name": "CHEF'S SPECIAL",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "A delicious feast featuring tender, juicy meat served with fragrant, flavorful rice and a selection of fresh sides. Perfect for sharing, our Mandi & Platter brings rich Arabian flavors and a satisfying dining experience to your table.",
+                            "banner": "/media/food_categories/banners/1787061815-04.webp",
+                            "icon": "/media/food_categories/icons/b3.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:35:06.257313Z",
+                            "date_updated": "2026-08-21T09:37:59.824949Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "2000.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:24:42.355413Z",
+                    "date_updated": "2026-08-21T12:48:25.371262Z",
+                    "price_at_branch": "2000.00"
+                },
+                {
+                    "id": 6,
+                    "restaurant": 1,
+                    "item_sku": "Daal Chawal",
+                    "name": "Daal Chawal",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786626419-DaalChawal.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        5
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 5,
+                            "restaurant": 1,
+                            "name": "CHEF'S SPECIAL",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "A delicious feast featuring tender, juicy meat served with fragrant, flavorful rice and a selection of fresh sides. Perfect for sharing, our Mandi & Platter brings rich Arabian flavors and a satisfying dining experience to your table.",
+                            "banner": "/media/food_categories/banners/1787061815-04.webp",
+                            "icon": "/media/food_categories/icons/b3.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:35:06.257313Z",
+                            "date_updated": "2026-08-21T09:37:59.824949Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "800.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:27:51.724645Z",
+                    "date_updated": "2026-08-21T12:48:58.741945Z",
+                    "price_at_branch": "800.00"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "restaurant": 1,
+            "name": "Rolls",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+            "banner": "/media/food_categories/banners/1787061771-11.webp",
+            "icon": "/media/food_categories/icons/b2.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sat": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:36:01.284910Z",
+            "date_updated": "2026-08-21T09:34:50.474618Z",
+            "items": [
+                {
+                    "id": 9,
+                    "restaurant": 1,
+                    "item_sku": "Beed Bihari",
+                    "name": "Beed Bihari",
+                    "description": "Tender beef marinated in aromatic spices and yogurt,",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786628414-BeefBihariRoll_eqoh7cy.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6,
+                        7,
+                        8
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        },
+                        {
+                            "id": 7,
+                            "restaurant": 1,
+                            "name": "Starter",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Makhni Fry — Crispy, creamy, buttery goodness tossed in a rich makhni sauce.",
+                            "banner": "/media/food_categories/banners/1787061880-07.webp",
+                            "icon": "/media/food_categories/icons/ee.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:08.811541Z",
+                            "date_updated": "2026-08-21T09:36:37.558722Z"
+                        },
+                        {
+                            "id": 8,
+                            "restaurant": 1,
+                            "name": "Traditional",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+                            "banner": "/media/food_categories/banners/1787061801-09.webp",
+                            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:54.257232Z",
+                            "date_updated": "2026-08-21T09:35:32.223915Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "700.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:38:27.950460Z",
+                    "date_updated": "2026-08-21T12:48:00.378709Z",
+                    "price_at_branch": "700.00"
+                },
+                {
+                    "id": 8,
+                    "restaurant": 1,
+                    "item_sku": "Beef Bihari Rolls",
+                    "name": "Beef Bihari Rolls",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786628414-BeefBihariRoll.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": false,
+                    "front_price": "600.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:31:07.379205Z",
+                    "date_updated": "2026-08-21T12:48:06.795849Z",
+                    "price_at_branch": "600.00"
+                },
+                {
+                    "id": 10,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Moyo Roll",
+                    "name": "Chicken Moyo Roll",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786628560-BeefDhaggaKababRoll.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        }
+                    ],
+                    "item_discount": "4.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "800.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:39:39.113353Z",
+                    "date_updated": "2026-08-21T12:48:46.354928Z",
+                    "price_at_branch": "800.00"
+                },
+                {
+                    "id": 7,
+                    "restaurant": 1,
+                    "item_sku": "Rolzilla",
+                    "name": "Rolzilla",
+                    "description": "",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786627519-Rollzilla.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "900.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:30:00.548503Z",
+                    "date_updated": "2026-08-21T11:30:00.548523Z",
+                    "price_at_branch": "900.00"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "restaurant": 1,
+            "name": "Starter",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "Makhni Fry — Crispy, creamy, buttery goodness tossed in a rich makhni sauce.",
+            "banner": "/media/food_categories/banners/1787061880-07.webp",
+            "icon": "/media/food_categories/icons/ee.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sat": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:37:08.811541Z",
+            "date_updated": "2026-08-21T09:36:37.558722Z",
+            "items": [
+                {
+                    "id": 9,
+                    "restaurant": 1,
+                    "item_sku": "Beed Bihari",
+                    "name": "Beed Bihari",
+                    "description": "Tender beef marinated in aromatic spices and yogurt,",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786628414-BeefBihariRoll_eqoh7cy.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6,
+                        7,
+                        8
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        },
+                        {
+                            "id": 7,
+                            "restaurant": 1,
+                            "name": "Starter",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Makhni Fry — Crispy, creamy, buttery goodness tossed in a rich makhni sauce.",
+                            "banner": "/media/food_categories/banners/1787061880-07.webp",
+                            "icon": "/media/food_categories/icons/ee.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:08.811541Z",
+                            "date_updated": "2026-08-21T09:36:37.558722Z"
+                        },
+                        {
+                            "id": 8,
+                            "restaurant": 1,
+                            "name": "Traditional",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+                            "banner": "/media/food_categories/banners/1787061801-09.webp",
+                            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:54.257232Z",
+                            "date_updated": "2026-08-21T09:35:32.223915Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "700.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:38:27.950460Z",
+                    "date_updated": "2026-08-21T12:48:00.378709Z",
+                    "price_at_branch": "700.00"
+                },
+                {
+                    "id": 13,
+                    "restaurant": 1,
+                    "item_sku": "Paneer Reshmi Handi",
+                    "name": "Paneer Reshmi Handi",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786629812-PaneerReshmiHandi.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        7
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 7,
+                            "restaurant": 1,
+                            "name": "Starter",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Makhni Fry — Crispy, creamy, buttery goodness tossed in a rich makhni sauce.",
+                            "banner": "/media/food_categories/banners/1787061880-07.webp",
+                            "icon": "/media/food_categories/icons/ee.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:08.811541Z",
+                            "date_updated": "2026-08-21T09:36:37.558722Z"
+                        }
+                    ],
+                    "item_discount": "2.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "800.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:42:58.226559Z",
+                    "date_updated": "2026-08-21T12:49:10.706412Z",
+                    "price_at_branch": "800.00"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "restaurant": 1,
+            "name": "Traditional",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+            "banner": "/media/food_categories/banners/1787061801-09.webp",
+            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sat": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-18T18:37:54.257232Z",
+            "date_updated": "2026-08-21T09:35:32.223915Z",
+            "items": [
+                {
+                    "id": 9,
+                    "restaurant": 1,
+                    "item_sku": "Beed Bihari",
+                    "name": "Beed Bihari",
+                    "description": "Tender beef marinated in aromatic spices and yogurt,",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786628414-BeefBihariRoll_eqoh7cy.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        6,
+                        7,
+                        8
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 6,
+                            "restaurant": 1,
+                            "name": "Rolls",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Jumbo Rolls  Big, crispy, and loaded with irresistible flavor in every bite.",
+                            "banner": "/media/food_categories/banners/1787061771-11.webp",
+                            "icon": "/media/food_categories/icons/b2.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:36:01.284910Z",
+                            "date_updated": "2026-08-21T09:34:50.474618Z"
+                        },
+                        {
+                            "id": 7,
+                            "restaurant": 1,
+                            "name": "Starter",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Makhni Fry — Crispy, creamy, buttery goodness tossed in a rich makhni sauce.",
+                            "banner": "/media/food_categories/banners/1787061880-07.webp",
+                            "icon": "/media/food_categories/icons/ee.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:08.811541Z",
+                            "date_updated": "2026-08-21T09:36:37.558722Z"
+                        },
+                        {
+                            "id": 8,
+                            "restaurant": 1,
+                            "name": "Traditional",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+                            "banner": "/media/food_categories/banners/1787061801-09.webp",
+                            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:54.257232Z",
+                            "date_updated": "2026-08-21T09:35:32.223915Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "700.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:38:27.950460Z",
+                    "date_updated": "2026-08-21T12:48:00.378709Z",
+                    "price_at_branch": "700.00"
+                },
+                {
+                    "id": 12,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Beef Handi",
+                    "name": "Chicken Beef Handi",
+                    "description": "Tender beef marinated in aromatic spices and yogurt,",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786629768-BeefKababHandi.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        8
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 8,
+                            "restaurant": 1,
+                            "name": "Traditional",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+                            "banner": "/media/food_categories/banners/1787061801-09.webp",
+                            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:54.257232Z",
+                            "date_updated": "2026-08-21T09:35:32.223915Z"
+                        }
+                    ],
+                    "item_discount": "2.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": false,
+                    "front_price": "700.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:42:16.971295Z",
+                    "date_updated": "2026-08-21T12:48:12.468609Z",
+                    "price_at_branch": "700.00"
+                },
+                {
+                    "id": 11,
+                    "restaurant": 1,
+                    "item_sku": "Chicken Kabab Handi",
+                    "name": "Chicken Kabab Handi",
+                    "description": "Tender beef marinated in aromatic spices and yogurt.",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786629749-ChickenKababHandi.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        8
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 8,
+                            "restaurant": 1,
+                            "name": "Traditional",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Handis — Rich, aromatic curries slow-cooked to perfection, packed with authentic desi flavor.",
+                            "banner": "/media/food_categories/banners/1787061801-09.webp",
+                            "icon": "/media/food_categories/icons/1787034036-WhatsApp-Image-2026-08-18-at-11-17-18-AM.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-18T18:37:54.257232Z",
+                            "date_updated": "2026-08-21T09:35:32.223915Z"
+                        }
+                    ],
+                    "item_discount": "4.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "600.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T11:41:48.165851Z",
+                    "date_updated": "2026-08-21T12:48:33.083900Z",
+                    "price_at_branch": "600.00"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "restaurant": 1,
+            "name": "Wow Deals",
+            "hide_category_display_name_menu": false,
+            "hide_category_from_navbar": false,
+            "description": "Wow Deals",
+            "banner": "/media/food_categories/banners/1787061667-10.webp",
+            "icon": "/media/food_categories/icons/1787034029-WhatsApp-Image-2026-08-18-at-11-17-18-AM--1-.jpeg",
+            "dish": [],
+            "dish_detail": [],
+            "status": true,
+            "schedule": false,
+            "schedule_days_times": {
+                "fri": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "mon": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "12:22"
+                },
+                "sat": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "sun": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "thu": {
+                    "is_open": false,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "tue": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                },
+                "wed": {
+                    "is_open": true,
+                    "open_time": "09:00",
+                    "close_time": "22:00"
+                }
+            },
+            "hide_category": false,
+            "hide_category_from_third_parties": false,
+            "hide_product_title": false,
+            "hide_prices": false,
+            "app_only": false,
+            "web_only": false,
+            "discount_on_cards_online_payment": false,
+            "secret_key": "",
+            "after_schedule": "show_closed",
+            "layout": "gallery",
+            "created_by": 4,
+            "created_by_username": "admin",
+            "updated_by": 4,
+            "updated_by_username": "admin",
+            "date_added": "2026-08-21T19:51:03.674291Z",
+            "date_updated": "2026-08-21T19:51:03.674310Z",
+            "items": [
+                {
+                    "id": 14,
+                    "restaurant": 1,
+                    "item_sku": "Tikka-001",
+                    "name": "Chicken Tikka",
+                    "description": "1 Roti , 1 Chest Piece with raita",
+                    "status": 1,
+                    "feature_image": "/media/items/feature_images/1786142219-tIKKAPARATHADEAL.webp",
+                    "product_background_color": "#ffffff",
+                    "product_title_color": "#22c55e",
+                    "product_description_color": "#6b7280",
+                    "food_category": [
+                        9
+                    ],
+                    "food_category_detail": [
+                        {
+                            "id": 9,
+                            "restaurant": 1,
+                            "name": "Wow Deals",
+                            "hide_category_display_name_menu": false,
+                            "hide_category_from_navbar": false,
+                            "description": "Wow Deals",
+                            "banner": "/media/food_categories/banners/1787061667-10.webp",
+                            "icon": "/media/food_categories/icons/1787034029-WhatsApp-Image-2026-08-18-at-11-17-18-AM--1-.jpeg",
+                            "dish": [],
+                            "dish_detail": [],
+                            "status": true,
+                            "schedule": false,
+                            "schedule_days_times": {
+                                "fri": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "mon": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "12:22"
+                                },
+                                "sat": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "sun": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "thu": {
+                                    "is_open": false,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "tue": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                },
+                                "wed": {
+                                    "is_open": true,
+                                    "open_time": "09:00",
+                                    "close_time": "22:00"
+                                }
+                            },
+                            "hide_category": false,
+                            "hide_category_from_third_parties": false,
+                            "hide_product_title": false,
+                            "hide_prices": false,
+                            "app_only": false,
+                            "web_only": false,
+                            "discount_on_cards_online_payment": false,
+                            "secret_key": "",
+                            "after_schedule": "show_closed",
+                            "layout": "gallery",
+                            "created_by": 4,
+                            "created_by_username": "admin",
+                            "updated_by": 4,
+                            "updated_by_username": "admin",
+                            "date_added": "2026-08-21T19:51:03.674291Z",
+                            "date_updated": "2026-08-21T19:51:03.674310Z"
+                        }
+                    ],
+                    "item_discount": "5.00",
+                    "item_discount_type": "percentage",
+                    "show_discount_tag": true,
+                    "front_price": "200.00",
+                    "branch_prices": [],
+                    "size_prices": [],
+                    "created_by": 4,
+                    "created_by_username": "admin",
+                    "updated_by": 4,
+                    "updated_by_username": "admin",
+                    "date_added": "2026-08-21T19:53:03.743937Z",
+                    "date_updated": "2026-08-21T19:53:45.339162Z",
+                    "price_at_branch": "200.00"
+                }
+            ]
+        }
+    ]
+}

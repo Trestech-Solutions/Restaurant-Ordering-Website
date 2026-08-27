@@ -32,6 +32,15 @@ export interface ProductData {
   // NOTE: size selection UI lives only in ProductDetailModal — the card always
   // shows the default (first) size's price and never lets the user switch here.
   sizes?: SizeMeta[]
+  // Deal metadata — set when this card represents a Fixed Deal or On Spot Deal
+  dealType?: 'fixed_deal' | 'on_spot_deal'
+  dealMeta?: {
+    dealId: number
+    finalPrice: string
+    timeWindow?: string | null      // "HH:MM – HH:MM" for on_spot
+    groups?: { name: string; selectQty: number; optionNames: string[] }[]
+    isAvailableNow?: boolean
+  }
 }
 
 interface ProductCardProps {
@@ -104,12 +113,37 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
       {/* Left: text content */}
       <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
         <div>
+          {/* Deal type badge */}
+          {product.dealType && (
+            <span className={`mb-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide sm:text-[10px] ${
+              product.dealType === 'on_spot_deal'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-sky-100 text-sky-700'
+            }`}>
+              {product.dealType === 'on_spot_deal' ? '⚡ On Spot Deal' : '🎁 Fixed Deal'}
+            </span>
+          )}
           <h3 className="text-base font-bold text-neutral-900 leading-snug sm:text-lg">
             {product.name}
           </h3>
           {product.description && (
             <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-neutral-400 sm:mt-2 sm:text-sm">
               {product.description}
+            </p>
+          )}
+          {/* On Spot time window */}
+          {product.dealMeta?.timeWindow && (
+            <p className="mt-1 text-[10px] font-medium text-amber-600 sm:text-xs">
+              🕐 {product.dealMeta.timeWindow}
+              {product.dealMeta.isAvailableNow === false && (
+                <span className="ml-1 text-neutral-400">(not available now)</span>
+              )}
+            </p>
+          )}
+          {/* Choice groups summary */}
+          {product.dealMeta?.groups && product.dealMeta.groups.length > 0 && (
+            <p className="mt-1 text-[10px] text-neutral-500 sm:text-xs">
+              {product.dealMeta.groups.map((g) => `${g.name} (pick ${g.selectQty})`).join(' • ')}
             </p>
           )}
         </div>
@@ -127,6 +161,19 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             )}
             <span className="text-base font-bold text-neutral-900 sm:text-lg">
               Rs. {price.toLocaleString()}
+            </span>
+          </div>
+        )}
+        {/* Deal non-orderable price display */}
+        {!isOrderable && product.dealMeta && (
+          <div className="mt-2 flex items-baseline gap-1.5 sm:mt-3 sm:gap-2">
+            {product.dealMeta.finalPrice && parseFloat(product.dealMeta.finalPrice) !== parseFloat(product.price) && (
+              <span className="text-xs text-neutral-400 line-through sm:text-sm">
+                Rs.{Math.round(parseFloat(product.price)).toLocaleString()}
+              </span>
+            )}
+            <span className="text-base font-bold text-neutral-900 sm:text-lg">
+              Rs. {Math.round(parseFloat(product.dealMeta.finalPrice)).toLocaleString()}
             </span>
           </div>
         )}
@@ -179,7 +226,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
             {displayDiscount}
           </span>
         )}
-        {!isOrderable && (
+        {!isOrderable && !product.dealMeta && (
           <span className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[1px]">
             <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold text-neutral-700 shadow">
               Coming Soon

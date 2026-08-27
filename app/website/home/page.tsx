@@ -14,7 +14,7 @@ import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Categ
 import { useGetMenu } from '@/api/client/browse'
 import { DealsSection } from '@/components/website/DealsSection'
 import type { ProductData } from '@/components/product/ProductCard'
-import type { MenuResponse, MenuItem } from '@/api/types'
+import type { MenuResponse, MenuItem, MenuFixedDeal, MenuOnSpotDeal } from '@/api/types'
 
 const HERO_SLIDES = [
   {
@@ -260,7 +260,7 @@ function transformMenu(menu: MenuResponse | undefined): {
       const itemRecords = cat.items ?? []
       if (itemRecords.length > 0) {
         itemRecords
-          .filter((it) => it.status !== false && it.status !== 0)
+          .filter((it) => it.status !== false && (it.status as unknown) !== 0)
           .forEach((it) => itemToProduct(it, catId, idPairs, products))
 
         return {
@@ -351,6 +351,88 @@ function transformMenu(menu: MenuResponse | undefined): {
         badge:         cat.badge || undefined,
         subCategories: subCats.length > 0 ? subCats : [{ id: `${catId}-all`, label: 'All Items' }],
       }
+    })
+
+  // ── Inject Fixed Deals into their respective categories ─────────────────────
+  const fixedDeals: MenuFixedDeal[] = menu?.fixed_deals ?? []
+  fixedDeals
+    .filter((d) => d.status === true || d.status === 1)
+    .forEach((deal) => {
+      const catId = String(deal.category)
+      const clientId = `fixed_deal_${deal.id}`
+      const image = resolveMediaUrl(deal.feature_image) || PLACEHOLDER_IMAGE
+      const finalPriceNum = Math.round(parseFloat(deal.final_price || '0'))
+      const origPriceNum  = Math.round(parseFloat(deal.price || '0'))
+      const hasDiscount   = finalPriceNum < origPriceNum && origPriceNum > 0
+      const savePct       = hasDiscount ? Math.round(((origPriceNum - finalPriceNum) / origPriceNum) * 100) : 0
+
+      products.push({
+        id:            clientId,
+        productId:     null,          // deals are not orderable via the normal item flow
+        categoryId:    catId,
+        subCategoryId: catId,
+        branchIds:     '*' as const,
+        name:          deal.name,
+        description:   deal.description || '',
+        price:         String(origPriceNum),
+        originalPrice: hasDiscount ? String(origPriceNum) : undefined,
+        discount:      hasDiscount ? `${savePct}% OFF` : undefined,
+        image,
+        options:       [],
+        tag:           'Fixed Deal',
+        dealType:      'fixed_deal',
+        dealMeta: {
+          dealId:       deal.id,
+          finalPrice:   deal.final_price,
+          isAvailableNow: deal.is_available_now,
+        },
+      })
+    })
+
+  // ── Inject On Spot Deals into their respective categories ────────────────────
+  const onSpotDeals: MenuOnSpotDeal[] = menu?.on_spot_deals ?? []
+  onSpotDeals
+    .filter((d) => d.status === true || d.status === 1)
+    .forEach((deal) => {
+      const catId = String(deal.category)
+      const clientId = `on_spot_deal_${deal.id}`
+      const image = resolveMediaUrl(deal.feature_image) || PLACEHOLDER_IMAGE
+      const finalPriceNum = Math.round(parseFloat(deal.final_price || '0'))
+      const origPriceNum  = Math.round(parseFloat(deal.price || '0'))
+      const hasDiscount   = finalPriceNum < origPriceNum && origPriceNum > 0
+      const savePct       = hasDiscount ? Math.round(((origPriceNum - finalPriceNum) / origPriceNum) * 100) : 0
+      const timeWindow    = deal.start_time && deal.end_time
+        ? `${deal.start_time.slice(0, 5)} – ${deal.end_time.slice(0, 5)}`
+        : null
+      const groups = (deal.groups_detail ?? []).map((g) => ({
+        name:        g.name,
+        selectQty:   g.select_quantity,
+        optionNames: g.options.map((o) => o.item_detail?.name ?? `Item ${o.item}`),
+      }))
+
+      products.push({
+        id:            clientId,
+        productId:     null,
+        categoryId:    catId,
+        subCategoryId: catId,
+        branchIds:     '*' as const,
+        name:          deal.name,
+        description:   deal.description || '',
+        price:         String(origPriceNum),
+        originalPrice: hasDiscount ? String(origPriceNum) : undefined,
+        discount:      hasDiscount ? `${savePct}% OFF` : undefined,
+        image,
+        options:       [],
+        tag:           'On Spot Deal',
+        dealType:      'on_spot_deal',
+        dealMeta: {
+          dealId:       deal.id,
+          finalPrice:   deal.final_price,
+          timeWindow,
+          groups:       groups.length > 0 ? groups : undefined,
+          isAvailableNow: deal.is_available_now,
+        },
+      })
     })
 
   return { categories, products, idPairs }
