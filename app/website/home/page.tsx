@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/website/SearchBar'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
 import { useGetMenu } from '@/api/client/browse'
+import { DealsSection } from '@/components/website/DealsSection'
 import type { ProductData } from '@/components/product/ProductCard'
 import type { MenuResponse, MenuItem } from '@/api/types'
 
@@ -565,6 +566,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Deals section — Fixed Deals + On Spot Deals */}
+      <DealsSection />
 
       {/* Category nav — sticks right below hero */}
       <CategoryNav

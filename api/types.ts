@@ -196,7 +196,7 @@ export type City = {
   id: number;
   name: string;
   status?: boolean;
-  branch: number;
+  branch: number;          // FK to Branch
   branch_name?: string | null;
   latitude?: string | null;
   longitude?: string | null;
@@ -206,9 +206,10 @@ export type City = {
 export type Area = {
   id: number;
   name: string;
-  city?: string;
+  city?: number;          // NEW: FK to City (primary relationship)
+  city_name?: string;     // NEW: read-only
   status?: boolean;
-  branch?: number | null;
+  branch?: number | null; // kept for compat
   branch_name?: string | null;
   is_active?: boolean;
   created_at?: string;
@@ -591,4 +592,84 @@ export type OrderHistoryItem = {
   branch_name?: string | null;
   payment_method: string;
   items_count: number;
+};
+
+// ─── Fixed Deal ───────────────────────────────────────────────────────────────
+
+export type FixedDealItem = {
+  id: number;
+  item: number;
+  item_name: string;
+  quantity: number;
+  unit_price?: string;
+};
+
+export type FixedDeal = {
+  id: number;
+  restaurant: number;
+  name: string;
+  description?: string | null;
+  image?: string | null;
+  price: string;
+  discount?: string;
+  discount_type?: 'fixed' | 'percentage';
+  final_price: string;
+  items_detail?: FixedDealItem[];
+  valid_from_date?: string | null;
+  valid_to_date?: string | null;
+  status: boolean;
+  date_added?: string;
+  date_updated?: string;
+};
+
+export type FixedDealListParams = {
+  restaurant?: number;
+  status?: boolean;
+  page?: number;
+  page_size?: number;
+};
+
+// ─── On Spot Deal ─────────────────────────────────────────────────────────────
+
+export type OnSpotDealGroupOption = {
+  id: number;
+  item: number;
+  item_name: string;
+  quantity: number;
+  unit_price?: string;
+};
+
+export type OnSpotDealGroup = {
+  id: number;
+  name: string;
+  select_quantity: number;
+  options: OnSpotDealGroupOption[];
+};
+
+export type OnSpotDeal = {
+  id: number;
+  restaurant: number;
+  name: string;
+  description?: string | null;
+  image?: string | null;
+  price: string;
+  discount?: string;
+  discount_type?: 'fixed' | 'percentage';
+  final_price: string;
+  items_detail?: FixedDealItem[];
+  groups_detail?: OnSpotDealGroup[];
+  valid_from_date?: string | null;
+  valid_to_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  status: boolean;
+  date_added?: string;
+  date_updated?: string;
+};
+
+export type OnSpotDealListParams = {
+  restaurant?: number;
+  status?: boolean;
+  page?: number;
+  page_size?: number;
 };

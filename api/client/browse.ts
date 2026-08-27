@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '../axios';
 import API_ENDPOINTS from '../endpoint';
-import { buildUrl, getRestaurantId } from '../utils';
+import { getRestaurantId } from '../utils';
 import type {
   ApiError,
   Branch,
@@ -10,10 +10,16 @@ import type {
   City,
   MenuResponse,
   LocateResponse,
+  FixedDeal,
+  FixedDealListParams,
+  OnSpotDeal,
+  OnSpotDealListParams,
 } from '../types';
 import { useEffect as reactUseEffect } from 'react';
 
 export { extractErrorMessage } from '../types';
+
+// ─── Branches ─────────────────────────────────────────────────────────────────
 
 export function useGetBranches(options?: {
   restaurantId?: string | number;
@@ -40,7 +46,7 @@ export function useGetBranches(options?: {
 
   reactUseEffect(() => {
     if (query.data && options?.onSuccess) options.onSuccess(query.data);
-  }, [query.data]);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   reactUseEffect(() => {
     if (query.error) {
@@ -48,10 +54,94 @@ export function useGetBranches(options?: {
       toast.error(msg);
       options?.onError?.(msg);
     }
-  }, [query.error]);
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return query;
 }
+
+// ─── Cities — filtered by branch_id (NEW correct flow) ───────────────────────
+
+export function useGetCitiesByBranch(options: {
+  branchId: number | string | null | undefined;
+  onSuccess?: (data: City[]) => void;
+  onError?: (message: string) => void;
+}) {
+  const enabled = !!options.branchId;
+
+  const query = useQuery<City[], ApiError>({
+    queryKey: ['storefront-cities-by-branch', options.branchId],
+    queryFn: () =>
+      api
+        .get<{ results?: City[] } | City[]>(
+          API_ENDPOINTS.StorefrontBrowse.getCities,
+          { params: { branch: options.branchId } }
+        )
+        .then((r) => {
+          const data = r.data as { results?: City[] } | City[];
+          return Array.isArray(data) ? data : data.results ?? [];
+        }),
+    enabled,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
+
+  reactUseEffect(() => {
+    if (query.data && options?.onSuccess) options.onSuccess(query.data);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  reactUseEffect(() => {
+    if (query.error) {
+      const msg = (query.error as ApiError)?.detail || 'Failed to load cities';
+      toast.error(msg);
+      options?.onError?.(msg);
+    }
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return query;
+}
+
+// ─── Areas — filtered by city_id (NEW correct flow) ──────────────────────────
+
+export function useGetAreasByCity(options: {
+  cityId: number | string | null | undefined;
+  onSuccess?: (data: Area[]) => void;
+  onError?: (message: string) => void;
+}) {
+  const enabled = !!options.cityId;
+
+  const query = useQuery<Area[], ApiError>({
+    queryKey: ['storefront-areas-by-city', options.cityId],
+    queryFn: () =>
+      api
+        .get<{ results?: Area[] } | Area[]>(
+          API_ENDPOINTS.StorefrontBrowse.getAreas,
+          { params: { city: options.cityId } }
+        )
+        .then((r) => {
+          const data = r.data as { results?: Area[] } | Area[];
+          return Array.isArray(data) ? data : data.results ?? [];
+        }),
+    enabled,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
+
+  reactUseEffect(() => {
+    if (query.data && options?.onSuccess) options.onSuccess(query.data);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  reactUseEffect(() => {
+    if (query.error) {
+      const msg = (query.error as ApiError)?.detail || 'Failed to load delivery areas';
+      toast.error(msg);
+      options?.onError?.(msg);
+    }
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return query;
+}
+
+// ─── Legacy hooks (kept for backward compat — not used by OrderTypeModal) ─────
 
 export function useGetAreas(options?: {
   restaurantId?: string | number;
@@ -82,7 +172,7 @@ export function useGetAreas(options?: {
 
   reactUseEffect(() => {
     if (query.data && options?.onSuccess) options.onSuccess(query.data);
-  }, [query.data]);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   reactUseEffect(() => {
     if (query.error) {
@@ -90,7 +180,7 @@ export function useGetAreas(options?: {
       toast.error(msg);
       options?.onError?.(msg);
     }
-  }, [query.error]);
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return query;
 }
@@ -120,7 +210,7 @@ export function useGetCities(options?: {
 
   reactUseEffect(() => {
     if (query.data && options?.onSuccess) options.onSuccess(query.data);
-  }, [query.data]);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   reactUseEffect(() => {
     if (query.error) {
@@ -128,10 +218,12 @@ export function useGetCities(options?: {
       toast.error(msg);
       options?.onError?.(msg);
     }
-  }, [query.error]);
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return query;
 }
+
+// ─── Menu ──────────────────────────────────────────────────────────────────────
 
 export function useGetMenu(params: {
   branchId: string | number | null;
@@ -154,7 +246,6 @@ export function useGetMenu(params: {
         .get<MenuResponse>(API_ENDPOINTS.StorefrontBrowse.getMenu, { params: queryParams })
         .then((r) => {
           const data = r.data
-          // Normalise: API returns `menu`, older versions return `categories`
           if (!data.menu && (data as any).categories) {
             data.menu = (data as any).categories
           }
@@ -169,7 +260,7 @@ export function useGetMenu(params: {
 
   reactUseEffect(() => {
     if (query.data && params.onSuccess) params.onSuccess(query.data);
-  }, [query.data]);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   reactUseEffect(() => {
     if (query.error) {
@@ -177,10 +268,12 @@ export function useGetMenu(params: {
       toast.error(msg);
       params.onError?.(msg);
     }
-  }, [query.error]);
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return query;
 }
+
+// ─── Locate ───────────────────────────────────────────────────────────────────
 
 export async function locate(
   lat: number,
@@ -192,4 +285,48 @@ export async function locate(
   if (restaurantId) params.restaurant = restaurantId;
   const r = await api.get<LocateResponse>(API_ENDPOINTS.StorefrontBrowse.locate, { params });
   return r.data;
+}
+
+// ─── Fixed Deals ──────────────────────────────────────────────────────────────
+
+export function useGetFixedDeals(params: FixedDealListParams = {}) {
+  const restaurantId = params.restaurant ?? getRestaurantId();
+
+  return useQuery<FixedDeal[], ApiError>({
+    queryKey: ['storefront-fixed-deals', restaurantId, params],
+    queryFn: () =>
+      api
+        .get<{ results?: FixedDeal[] } | FixedDeal[]>(
+          API_ENDPOINTS.StorefrontDeals.fixedDeals,
+          { params: { restaurant: restaurantId, status: true, ...params } }
+        )
+        .then((r) => {
+          const data = r.data as { results?: FixedDeal[] } | FixedDeal[];
+          return Array.isArray(data) ? data : data.results ?? [];
+        }),
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
+  });
+}
+
+// ─── On Spot Deals ────────────────────────────────────────────────────────────
+
+export function useGetOnSpotDeals(params: OnSpotDealListParams = {}) {
+  const restaurantId = params.restaurant ?? getRestaurantId();
+
+  return useQuery<OnSpotDeal[], ApiError>({
+    queryKey: ['storefront-on-spot-deals', restaurantId, params],
+    queryFn: () =>
+      api
+        .get<{ results?: OnSpotDeal[] } | OnSpotDeal[]>(
+          API_ENDPOINTS.StorefrontDeals.onSpotDeals,
+          { params: { restaurant: restaurantId, status: true, ...params } }
+        )
+        .then((r) => {
+          const data = r.data as { results?: OnSpotDeal[] } | OnSpotDeal[];
+          return Array.isArray(data) ? data : data.results ?? [];
+        }),
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
+  });
 }

@@ -1,14 +1,19 @@
 const API_ENDPOINTS = {
   StorefrontBrowse: {
-    getBranches: '/storefront/branches/',   // ?restaurant=<id>
-    getAreas:    '/storefront/areas/',      // ?branch=<id> or ?restaurant=<id>
-    getCities:   '/storefront/cities/',     // ?restaurant=<id>
-    getMenu:     '/storefront/menu/',       // ?branch=<id>&area=<id optional>
-    locate:      '/storefront/locate/',     // ?lat=<lat>&lng=<lng>&restaurant=<id optional>
+    getBranches:    '/storefront/branches/',    // ?restaurant=<id>
+    getCities:      '/storefront/cities/',      // ?branch=<branch_id>  ← NEW: filtered by branch
+    getAreas:       '/storefront/areas/',       // ?city=<city_id>       ← NEW: filtered by city
+    getMenu:        '/storefront/menu/',        // ?branch=<id>&area=<id optional>
+    locate:         '/storefront/locate/',      // ?lat=<lat>&lng=<lng>&restaurant=<id optional>
+  },
+
+  StorefrontDeals: {
+    fixedDeals:    '/storefront/fixed-deals/',   // ?restaurant=<id>&status=true
+    onSpotDeals:   '/storefront/on-spot-deals/', // ?restaurant=<id>&status=true
   },
 
   StorefrontCheckout: {
-    checkout: '/storefront/checkout/',   // POST
+    checkout: '/storefront/checkout/',
   },
 
   StorefrontCustomerAuth: {
