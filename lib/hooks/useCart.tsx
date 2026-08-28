@@ -147,8 +147,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity?: number
       }
     ) => {
-      const requestedQty  = item.quantity ?? 1
-      const coercedId     = Number(item.id)
+      const requestedQty = item.quantity ?? 1
+
+      // Deals use string ids like "fixed_deal_1" / "on_spot_deal_1"
+      const isDeal =
+        typeof item.id === 'string' &&
+        (item.id.startsWith('fixed_deal_') || item.id.startsWith('on_spot_deal_'))
+
+      const coercedId        = Number(item.id)
       const numericProductId = Number.isFinite(coercedId) && coercedId > 0 ? coercedId : null
 
       if (!numericBranchValid) {
@@ -157,7 +163,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      if (numericProductId === null) {
+      // Deals don't have a numeric product id — they are identified by their
+      // string id prefix. Allow them through without the numeric check.
+      if (!isDeal && numericProductId === null) {
         toast.error('This item is not available for ordering yet')
         return
       }

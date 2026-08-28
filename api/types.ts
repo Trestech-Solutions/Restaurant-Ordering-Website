@@ -428,6 +428,8 @@ export type MenuFixedDeal = {
   items_detail?: MenuDealItemDetail[];
   valid_from_date?: string | null;
   valid_to_date?: string | null;
+  start_time?: string | null;  // "HH:MM:SS" — time window filter (PKT)
+  end_time?: string | null;    // "HH:MM:SS" — time window filter (PKT)
   status: boolean | number;    // API returns 1/0 or true/false
   is_available_now?: boolean;
 };

@@ -13,6 +13,7 @@ import { ProductGrid } from '@/components/product/ProductGrid'
 import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Category } from '@/lib/data/website-products'
 import { useGetMenu } from '@/api/client/browse'
 import { DealsSection } from '@/components/website/DealsSection'
+import { isDealActiveNowPKT } from '@/utils/dealTime'
 import type { ProductData } from '@/components/product/ProductCard'
 import type { MenuResponse, MenuItem, MenuFixedDeal, MenuOnSpotDeal } from '@/api/types'
 
@@ -354,9 +355,9 @@ function transformMenu(menu: MenuResponse | undefined): {
     })
 
   // ── Inject Fixed Deals into their respective categories ─────────────────────
-  const fixedDeals: MenuFixedDeal[] = menu?.fixed_deals ?? []
+  const fixedDeals = (menu?.fixed_deals ?? []) as MenuFixedDeal[]
   fixedDeals
-    .filter((d) => d.status === true || d.status === 1)
+    .filter((d) => (d.status === true || d.status === 1) && isDealActiveNowPKT(d.start_time, d.end_time))
     .forEach((deal) => {
       const catId = String(deal.category)
       const clientId = `fixed_deal_${deal.id}`
@@ -366,14 +367,26 @@ function transformMenu(menu: MenuResponse | undefined): {
       const hasDiscount   = finalPriceNum < origPriceNum && origPriceNum > 0
       const savePct       = hasDiscount ? Math.round(((origPriceNum - finalPriceNum) / origPriceNum) * 100) : 0
 
+      // Build included items list from items_detail
+      const includedItems = (deal.items_detail ?? []).map((di) => ({
+        name: di.item_detail?.name ?? `Item ${di.item}`,
+        qty:  di.quantity,
+      }))
+
+      // Build description from items if none provided
+      const description = deal.description ||
+        (includedItems.length > 0
+          ? includedItems.map((i) => `${i.qty}x ${i.name}`).join(' • ')
+          : '')
+
       products.push({
         id:            clientId,
-        productId:     null,          // deals are not orderable via the normal item flow
+        productId:     null,
         categoryId:    catId,
         subCategoryId: catId,
         branchIds:     '*' as const,
         name:          deal.name,
-        description:   deal.description || '',
+        description,
         price:         String(origPriceNum),
         originalPrice: hasDiscount ? String(origPriceNum) : undefined,
         discount:      hasDiscount ? `${savePct}% OFF` : undefined,
@@ -382,9 +395,10 @@ function transformMenu(menu: MenuResponse | undefined): {
         tag:           'Fixed Deal',
         dealType:      'fixed_deal',
         dealMeta: {
-          dealId:       deal.id,
-          finalPrice:   deal.final_price,
+          dealId:        deal.id,
+          finalPrice:    deal.final_price,
           isAvailableNow: deal.is_available_now,
+          includedItems: includedItems.length > 0 ? includedItems : undefined,
         },
       })
     })
@@ -392,7 +406,7 @@ function transformMenu(menu: MenuResponse | undefined): {
   // ── Inject On Spot Deals into their respective categories ────────────────────
   const onSpotDeals: MenuOnSpotDeal[] = menu?.on_spot_deals ?? []
   onSpotDeals
-    .filter((d) => d.status === true || d.status === 1)
+    .filter((d) => (d.status === true || d.status === 1) && isDealActiveNowPKT(d.start_time, d.end_time))
     .forEach((deal) => {
       const catId = String(deal.category)
       const clientId = `on_spot_deal_${deal.id}`
@@ -404,10 +418,22 @@ function transformMenu(menu: MenuResponse | undefined): {
       const timeWindow    = deal.start_time && deal.end_time
         ? `${deal.start_time.slice(0, 5)} – ${deal.end_time.slice(0, 5)}`
         : null
+
+      // Build groups with full option objects for modal rendering
       const groups = (deal.groups_detail ?? []).map((g) => ({
-        name:        g.name,
-        selectQty:   g.select_quantity,
-        optionNames: g.options.map((o) => o.item_detail?.name ?? `Item ${o.item}`),
+        name:      g.name,
+        selectQty: g.select_quantity,
+        options:   g.options.map((o) => ({
+          id:   o.id,
+          name: o.item_detail?.name ?? `Item ${o.item}`,
+          qty:  o.quantity,
+        })),
+      }))
+
+      // Build included fixed items
+      const includedItems = (deal.items_detail ?? []).map((di) => ({
+        name: di.item_detail?.name ?? `Item ${di.item}`,
+        qty:  di.quantity,
       }))
 
       products.push({
@@ -429,8 +455,9 @@ function transformMenu(menu: MenuResponse | undefined): {
           dealId:       deal.id,
           finalPrice:   deal.final_price,
           timeWindow,
-          groups:       groups.length > 0 ? groups : undefined,
           isAvailableNow: deal.is_available_now,
+          includedItems: includedItems.length > 0 ? includedItems : undefined,
+          groups:        groups.length > 0 ? groups : undefined,
         },
       })
     })

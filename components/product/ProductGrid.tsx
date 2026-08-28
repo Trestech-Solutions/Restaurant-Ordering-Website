@@ -30,9 +30,11 @@ export function ProductGrid({ products, searchQuery }: ProductGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 items-stretch">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} onOpen={setSelected} />
+          <div key={p.id} className="h-full">
+            <ProductCard product={p} onOpen={setSelected} />
+          </div>
         ))}
       </div>
 

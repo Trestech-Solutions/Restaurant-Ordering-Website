@@ -38,8 +38,13 @@ export interface ProductData {
     dealId: number
     finalPrice: string
     timeWindow?: string | null      // "HH:MM – HH:MM" for on_spot
-    groups?: { name: string; selectQty: number; optionNames: string[] }[]
     isAvailableNow?: boolean
+    includedItems?: { name: string; qty: number }[]   // fixed_deal items_detail
+    groups?: {                                         // on_spot groups_detail
+      name: string
+      selectQty: number
+      options: { id: number; name: string; qty: number }[]
+    }[]
   }
 }
 
@@ -108,7 +113,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
   return (
     <div
       onClick={() => onOpen?.(product)}
-      className={`group relative flex items-stretch gap-2 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${onOpen ? 'cursor-pointer' : ''}`}
+      className={`group relative flex h-full items-stretch gap-2 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${onOpen ? 'cursor-pointer' : ''}`}
     >
       {/* Left: text content */}
       <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
@@ -120,10 +125,10 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
                 ? 'bg-amber-100 text-amber-700'
                 : 'bg-sky-100 text-sky-700'
             }`}>
-              {product.dealType === 'on_spot_deal' ? '⚡ On Spot Deal' : '🎁 Fixed Deal'}
+              {product.dealType === 'on_spot_deal' ? '⚡ On Spot Deal' : 'Fixed Deal'}
             </span>
           )}
-          <h3 className="text-base font-bold text-neutral-900 leading-snug sm:text-lg">
+          <h3 className="text-base font-bold text-neutral-900 leading-snug line-clamp-2 sm:text-lg">
             {product.name}
           </h3>
           {product.description && (
@@ -138,12 +143,6 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
               {product.dealMeta.isAvailableNow === false && (
                 <span className="ml-1 text-neutral-400">(not available now)</span>
               )}
-            </p>
-          )}
-          {/* Choice groups summary */}
-          {product.dealMeta?.groups && product.dealMeta.groups.length > 0 && (
-            <p className="mt-1 text-[10px] text-neutral-500 sm:text-xs">
-              {product.dealMeta.groups.map((g) => `${g.name} (pick ${g.selectQty})`).join(' • ')}
             </p>
           )}
         </div>
