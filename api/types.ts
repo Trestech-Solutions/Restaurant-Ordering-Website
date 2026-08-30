@@ -414,8 +414,8 @@ export type MenuOnSpotDealGroupAddonOption = {
     photo?: string | null;
     status: boolean;
   };
-  quantity: number;
-  max_quantity: number | null;
+  quantity: number;       // per-pick quantity (how many of this item per selection)
+  max_quantity: number | null;  // max times this option can be picked (null = group cap only)
 };
 
 /** A normal_dish option within a normal_dish group. */
@@ -423,7 +423,7 @@ export type MenuOnSpotDealGroupItemOption = {
   id: number;
   item: number;
   item_detail?: MenuItem;
-  quantity: number;
+  quantity: number;       // per-pick quantity
   max_quantity: number | null;
 };
 

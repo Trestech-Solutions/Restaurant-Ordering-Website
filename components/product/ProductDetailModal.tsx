@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { X, Share2, Minus, Plus, Trash2, ArrowRight, Clock, CheckCircle2 } from 'lucide-react'
+import { X, Share2, Minus, Plus, Trash2, ArrowRight, Clock } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import type { ProductData } from '../product/ProductCard'
 
@@ -40,7 +40,6 @@ function isWindowActiveNow(timeWindow?: string): boolean | null {
   const nowMin = now.getHours() * 60 + now.getMinutes()
 
   if (start <= end) return nowMin >= start && nowMin <= end
-  // overnight window (e.g. 10 PM - 2 AM)
   return nowMin >= start || nowMin <= end
 }
 
@@ -53,12 +52,34 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const [sharing, setSharing]               = useState(false)
   const [added, setAdded]                   = useState(false)
 
-  const [groupSelections, setGroupSelections] = useState<Record<number, Set<number>>>({})
+  const [groupQtys, setGroupQtys] = useState<Record<string, number>>({})
 
   const isDeal   = !!product.dealType
   const isFixed  = product.dealType === 'fixed_deal'
   const isOnSpot = product.dealType === 'on_spot_deal'
   const dealMeta = product.dealMeta
+
+  const groupTotal = (gi: number): number => {
+    const g = dealMeta?.groups?.[gi]
+    if (!g) return 0
+    return g.options.reduce((sum, opt) => {
+      const key = `${gi}-${opt.id ?? opt.name}`
+      return sum + (groupQtys[key] ?? 0)
+    }, 0)
+  }
+
+  const changeOptionQty = (gi: number, optKey: string, delta: number, maxQty: number | null, selectQty: number) => {
+    setGroupQtys((prev) => {
+      const current = prev[optKey] ?? 0
+      const total = groupTotal(gi) - current
+      let next = current + delta
+      if (next < 0) next = 0
+      if (maxQty !== null && next > maxQty) next = maxQty
+      if (delta > 0 && total + next > selectQty) next = selectQty - total
+      if (next < 0) next = 0
+      return { ...prev, [optKey]: next }
+    })
+  }
 
   const hasSizes    = !!product.sizes && product.sizes.length > 0
   const selectedSize = hasSizes
@@ -81,9 +102,11 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
         ? (selectedSize.hasDiscountTag ? selectedSize.discountLabel : undefined)
         : product.discount)
 
-  const hasPrice = Number.isFinite(unitPrice) && unitPrice > 0
+  const hasPrice = isDeal
+    ? (Number.isFinite(unitPrice) && parseFloat(dealMeta?.finalPrice ?? '0') >= 0 &&
+       parseFloat(product.price) > 0)
+    : (Number.isFinite(unitPrice) && unitPrice > 0)
 
-  // Independently verify against PKT clock; fall back to server-provided flag if unparseable
   const computedAvailable = isOnSpot ? isWindowActiveNow(dealMeta?.timeWindow ?? undefined) : null
   const isAvailableNow = isOnSpot
     ? (computedAvailable !== null ? computedAvailable : dealMeta?.isAvailableNow !== false)
@@ -95,22 +118,6 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
       ? isAvailableNow
       : (product.productId !== null && product.productId !== undefined &&
          Number.isFinite(Number(product.productId)) && Number(product.productId) > 0))
-
-  const toggleGroupOption = (groupIdx: number, optionId: number, selectQty: number) => {
-    setGroupSelections((prev) => {
-      const current = new Set(prev[groupIdx] ?? [])
-      if (current.has(optionId)) {
-        current.delete(optionId)
-      } else {
-        if (current.size >= selectQty) {
-          const first = current.values().next().value as number
-          current.delete(first)
-        }
-        current.add(optionId)
-      }
-      return { ...prev, [groupIdx]: current }
-    })
-  }
 
   const handleShare = async () => {
     if (sharing || !navigator.share) return
@@ -148,10 +155,10 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-2 sm:p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="relative flex w-full max-w-[900px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl max-h-[95vh] sm:max-h-[90vh] sm:flex-row">
+      <div className="relative flex h-[65vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[90vh] sm:flex-row">
 
         {/* ── LEFT — image ────────────────────────────────────────── */}
-        <div className="relative h-56 w-full shrink-0 sm:h-auto sm:w-[42%] lg:w-[400px]">
+        <div className="relative h-56 w-full shrink-0 sm:h-full sm:w-[46%]">
           <Image src={product.image} alt={product.name} fill className="object-cover" priority />
 
           {displayDiscount && (
@@ -165,27 +172,27 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             </span>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-5 pb-5 pt-16 sm:px-6 sm:pb-6 sm:pt-24">
-            <h2 className="text-xl font-bold leading-snug text-white sm:text-2xl lg:text-3xl">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-6 pb-6 pt-24 sm:px-8 sm:pb-8 sm:pt-32">
+            <h2 className="text-2xl font-bold leading-snug text-white sm:text-3xl">
               {product.name}
             </h2>
             {product.description && (
-              <p className="mt-1 text-xs text-white/80 line-clamp-2 sm:text-sm">{product.description}</p>
+              <p className="mt-1.5 text-sm text-white/80 line-clamp-2">{product.description}</p>
             )}
           </div>
         </div>
 
         {/* ── RIGHT — details ──────────────────────────────────────── */}
-        <div className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
 
-          <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3 sm:px-8 sm:pt-6">
+          <div className="flex items-start justify-between gap-3 px-6 pt-6 pb-4 sm:px-10 sm:pt-8">
             {hasPrice ? (
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-2xl font-extrabold text-neutral-900 sm:text-3xl">
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">
                   Rs. {unitPrice.toLocaleString()}
                 </span>
                 {displayOriginal != null && displayOriginal > unitPrice && (
-                  <span className="text-sm text-neutral-400 line-through sm:text-base">
+                  <span className="text-base text-neutral-400 line-through sm:text-lg">
                     Rs. {displayOriginal.toLocaleString()}
                   </span>
                 )}
@@ -194,18 +201,18 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
 
             <div className="flex shrink-0 items-center gap-2">
               <button onClick={handleShare} disabled={sharing} aria-label="Share"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors disabled:opacity-50 sm:h-10 sm:w-10">
-                <Share2 size={15} />
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors disabled:opacity-50">
+                <Share2 size={16} />
               </button>
               <button onClick={onClose} aria-label="Close"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-black transition-colors sm:h-10 sm:w-10">
-                <X size={16} />
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-black transition-colors">
+                <X size={18} />
               </button>
             </div>
           </div>
 
           {isOnSpot && dealMeta?.timeWindow && (
-            <div className={`mx-5 mb-3 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-medium sm:mx-8 ${
+            <div className={`mx-6 mb-4 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-medium sm:mx-10 ${
               !isAvailableNow ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
             }`}>
               <Clock size={14} className="shrink-0" />
@@ -219,7 +226,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
           )}
 
           {isFixed && dealMeta?.includedItems && dealMeta.includedItems.length > 0 && (
-            <div className="px-5 pb-3 sm:px-8">
+            <div className="px-6 pb-4 sm:px-10">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
                 Included in this deal
               </p>
@@ -237,7 +244,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
           )}
 
           {isOnSpot && dealMeta?.includedItems && dealMeta.includedItems.length > 0 && (
-            <div className="px-5 pb-3 sm:px-8">
+            <div className="px-6 pb-4 sm:px-10">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
                 Always included
               </p>
@@ -255,79 +262,138 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
           )}
 
           {isOnSpot && dealMeta?.groups && dealMeta.groups.map((group, gi) => {
-            const selected = groupSelections[gi] ?? new Set<number>()
-            const isFull   = selected.size >= group.selectQty
+            const total    = groupTotal(gi)
+            const isFull   = total >= group.selectQty
             return (
-              <div key={gi} className="px-5 pb-4 sm:px-8">
+              <div key={gi} className="px-6 pb-4 sm:px-10">
                 <div className="mb-2.5 flex items-center justify-between">
                   <p className="text-sm font-bold text-neutral-900">{group.name}</p>
                   <div className="flex items-center gap-1.5">
-                    <span className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">
-                      Required
-                    </span>
+                    {group.isRequired && (
+                      <span className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">
+                        Required
+                      </span>
+                    )}
                     <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                       isFull ? 'bg-amber-400 text-neutral-900' : 'bg-neutral-200 text-neutral-600'
                     }`}>
-                      Select {group.selectQty}
+                      {total}/{group.selectQty}
                     </span>
                   </div>
                 </div>
 
                 <div className="rounded-xl border border-neutral-200 overflow-hidden divide-y divide-neutral-100">
                   {group.options.map((opt) => {
-                    const isSelected = selected.has(opt.id)
+                    const optKey  = `${gi}-${opt.id ?? opt.name}`
+                    const qty     = groupQtys[optKey] ?? 0
+                    const capMax  = opt.maxQty !== null ? opt.maxQty : group.selectQty
+                    const canInc  = qty < capMax && total < group.selectQty
+                    const canDec  = qty > 0
+
                     return (
                       <div
-                        key={opt.id}
+                        key={optKey}
                         className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                          isSelected ? 'bg-amber-50' : 'bg-white hover:bg-neutral-50'
+                          qty > 0 ? 'bg-amber-50' : 'bg-white'
                         }`}
                       >
                         <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                          isSelected ? 'border-amber-500 bg-amber-500' : 'border-neutral-300'
+                          qty > 0 ? 'border-amber-500 bg-amber-500' : 'border-neutral-300'
                         }`}>
-                          {isSelected && <CheckCircle2 size={12} className="text-white" strokeWidth={3} />}
+                          {qty > 0 && (
+                            <span className="text-[9px] font-extrabold text-white leading-none">
+                              {qty}
+                            </span>
+                          )}
                         </div>
 
                         <span className="flex-1 text-sm font-medium text-neutral-800">{opt.name}</span>
 
-                        <button
-                          onClick={() => toggleGroupOption(gi, opt.id, group.selectQty)}
-                          className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                            isSelected
-                              ? 'border-amber-400 bg-amber-400 text-neutral-900'
-                              : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
-                          }`}
-                        >
-                          {isSelected ? (
-                            <>Added <X size={10} /></>
-                          ) : (
-                            <>Add <Plus size={10} /></>
-                          )}
-                        </button>
+                        {opt.qty > 1 && (
+                          <span className="text-[10px] font-semibold text-neutral-400 whitespace-nowrap">
+                            × {opt.qty} pcs
+                          </span>
+                        )}
+
+                        <div className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-1 py-0.5">
+                          <button
+                            type="button"
+                            disabled={!canDec}
+                            onClick={() => changeOptionQty(gi, optKey, -1, opt.maxQty, group.selectQty)}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors text-sm font-bold ${
+                              canDec
+                                ? 'text-neutral-700 hover:bg-neutral-100'
+                                : 'text-neutral-300 cursor-not-allowed'
+                            }`}
+                            aria-label={`Decrease ${opt.name}`}
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold text-neutral-900">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={!canInc}
+                            onClick={() => changeOptionQty(gi, optKey, 1, opt.maxQty, group.selectQty)}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
+                              canInc
+                                ? 'bg-neutral-900 text-white hover:bg-black'
+                                : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
+                            }`}
+                            aria-label={`Increase ${opt.name}`}
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
                       </div>
                     )
                   })}
                 </div>
+
+                <p className={`mt-1.5 text-[11px] ${isFull ? 'text-amber-600 font-medium' : 'text-neutral-400'}`}>
+                  {isFull
+                    ? `✓ ${group.selectQty} selected`
+                    : `Select ${group.selectQty - total} more`}
+                </p>
               </div>
             )
           })}
 
-          {!isDeal && product.options.length > 0 && (
-            <div className="px-5 pb-4 sm:px-8">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-500 sm:text-xs">Select Size</p>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {product.options.map((opt) => {
-                  const sizeMeta   = product.sizes?.find((s) => s.sizeName === opt)
-                  const priceBadge = sizeMeta ? ` · Rs.${sizeMeta.price.toLocaleString()}` : ''
+          {!isDeal && hasSizes && (
+            <div className="px-6 pb-4 sm:px-10">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Choose an Option
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {product.sizes!.map((s) => {
+                  const isSelected = selectedOption === s.sizeName
                   return (
-                    <button key={opt} onClick={() => setSelectedOption(opt)}
-                      className={`rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors sm:px-4 sm:py-1.5 sm:text-xs ${
-                        selectedOption === opt
-                          ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                    <button
+                      key={s.sizeName}
+                      onClick={() => setSelectedOption(s.sizeName)}
+                      className={`flex items-start gap-3 rounded-xl border-2 px-4 py-3.5 text-left transition-colors ${
+                        isSelected
+                          ? 'border-neutral-900 bg-neutral-100'
+                          : 'border-neutral-200 bg-white hover:border-neutral-400'
+                      }`}
+                    >
+                      <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                        isSelected ? 'border-neutral-900' : 'border-neutral-300'
                       }`}>
-                      {opt}{priceBadge}
+                        {isSelected && <span className="h-2 w-2 rounded-full bg-neutral-900" />}
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold text-neutral-900">{s.sizeName}</span>
+                        <span className="block text-sm font-bold text-neutral-900">
+                          Rs. {s.price.toLocaleString()}
+                        </span>
+                        {s.originalPrice != null && s.originalPrice > s.price && (
+                          <span className="block text-xs text-neutral-400 line-through">
+                            Rs. {s.originalPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </span>
                     </button>
                   )
                 })}
@@ -335,37 +401,62 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             </div>
           )}
 
-          <div className="px-5 pb-4 sm:px-8">
+          {!isDeal && !hasSizes && product.options.length > 0 && (
+            <div className="px-6 pb-4 sm:px-10">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Select Size</p>
+              <div className="flex flex-wrap gap-2">
+                {product.options.map((opt) => (
+                  <button key={opt} onClick={() => setSelectedOption(opt)}
+                    className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${
+                      selectedOption === opt
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900'
+                    }`}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="px-6 pb-4 sm:px-10">
             <label className="mb-2 block text-sm font-semibold text-neutral-900">Special Instructions</label>
             <textarea value={instructions}
               onChange={(e) => { if (e.target.value.length <= 500) setInstructions(e.target.value) }}
-              placeholder="Any special requests or notes…"
-              rows={4}
+              placeholder="Please enter instructions about this item"
+              rows={5}
               className="w-full resize-none rounded-xl border border-neutral-200 px-4 py-3 text-sm text-neutral-700 placeholder:text-neutral-400 outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-colors" />
             <p className="mt-1 text-right text-[11px] text-neutral-400">{instructions.length}/500</p>
           </div>
 
           {/* ── FOOTER ───────────────────────────────────────────── */}
           {hasPrice && isOrderable ? (
-            <div className="sticky bottom-0 flex items-center gap-3 border-t border-neutral-100 bg-white px-5 py-4 sm:px-8 sm:py-5">
+            <div className="sticky bottom-0 mt-auto flex items-center gap-3 border-t border-neutral-100 bg-white px-6 py-5 sm:px-10">
               <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-1.5 py-1.5">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={qty <= 1 ? 'Remove' : 'Decrease'}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors sm:h-9 sm:w-9 ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
                     qty <= 1 ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'text-neutral-600 hover:bg-neutral-100'
                   }`}>
                   {qty <= 1 ? <Trash2 size={15} /> : <Minus size={15} />}
                 </button>
                 <span className="w-5 text-center text-sm font-bold text-neutral-900">{qty}</span>
                 <button onClick={() => setQty((q) => q + 1)} aria-label="Increase"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-black transition-colors sm:h-9 sm:w-9">
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-black transition-colors">
                   <Plus size={15} />
                 </button>
               </div>
               <button onClick={handleAdd}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white transition-all sm:px-8 ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold text-white transition-all ${
                   added ? 'bg-green-600' : 'bg-neutral-900 hover:bg-black'
                 }`}>
-                <span>{added ? 'Added!' : `Rs. ${total.toLocaleString()}`}</span>
+                <span>
+                  {added
+                    ? 'Added!'
+                    : isDeal
+                      ? (unitPrice === 0 ? 'FREE' : `Rs. ${total.toLocaleString()}`)
+                      : `Rs. ${total.toLocaleString()}`
+                  }
+                </span>
                 {!added && (
                   <>
                     <span className="text-white/40">|</span>
@@ -377,8 +468,8 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             </div>
 
           ) : hasPrice && isDeal && !isAvailableNow ? (
-            <div className="sticky bottom-0 flex items-center gap-3 border-t border-neutral-100 bg-white px-5 py-4 sm:px-8 sm:py-5">
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-red-600 px-6 py-3 text-sm font-bold text-white sm:px-8">
+            <div className="sticky bottom-0 mt-auto flex items-center gap-3 border-t border-neutral-100 bg-white px-6 py-5 sm:px-10">
+              <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-red-600 px-8 py-3.5 text-sm font-bold text-white">
                 <span>Rs. {unitPrice.toLocaleString()}</span>
                 <span className="text-white/40">|</span>
                 <span>Available {dealMeta?.timeWindow ?? 'at specific hours'}</span>
@@ -386,8 +477,8 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
             </div>
 
           ) : (
-            <div className="sticky bottom-0 border-t border-neutral-100 bg-white px-5 py-4 sm:px-8 sm:py-5">
-              <div className="rounded-xl bg-neutral-100 px-4 py-3 text-center text-xs font-semibold text-neutral-600 sm:text-sm">
+            <div className="sticky bottom-0 mt-auto border-t border-neutral-100 bg-white px-6 py-5 sm:px-10">
+              <div className="rounded-xl bg-neutral-100 px-4 py-3 text-center text-sm font-semibold text-neutral-600">
                 Coming Soon — This item is not available for ordering yet.
               </div>
             </div>

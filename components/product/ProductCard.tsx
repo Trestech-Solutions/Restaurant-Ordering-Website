@@ -42,8 +42,14 @@ export interface ProductData {
     includedItems?: { name: string; qty: number }[]   // fixed_deal items_detail
     groups?: {                                         // on_spot groups_detail
       name: string
+      isRequired: boolean
       selectQty: number
-      options: { id: number; name: string; qty: number }[]
+      options: {
+        id: number | null      // null for addon_items options
+        name: string
+        qty: number
+        maxQty: number | null  // null = capped only by group's selectQty
+      }[]
     }[]
   }
 }

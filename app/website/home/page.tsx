@@ -421,13 +421,27 @@ function transformMenu(menu: MenuResponse | undefined): {
 
       // Build groups with full option objects for modal rendering
       const groups = (deal.groups_detail ?? []).map((g) => ({
-        name:      g.name,
-        selectQty: g.select_quantity,
-        options:   g.options.map((o) => ({
-          id:   o.id,
-          name: o.item_detail?.name ?? `Item ${o.item}`,
-          qty:  o.quantity,
-        })),
+        name:       g.name,
+        isRequired: g.is_required,
+        selectQty:  g.select_quantity,
+        options: g.options.map((o) => {
+          // addon_items: item is null, use addon_detail.name
+          if (o.item === null && 'addon_detail' in o && o.addon_detail) {
+            return {
+              id:     (o as { addon: number }).addon,  // use addon id as unique key
+              name:   o.addon_detail.name,
+              qty:    o.quantity,
+              maxQty: o.max_quantity,   // null = capped only by group's selectQty
+            }
+          }
+          // normal_dish: use item_detail.name
+          return {
+            id:     o.id,
+            name:   (o.item_detail as { name?: string } | null | undefined)?.name ?? `Item ${o.item}`,
+            qty:    o.quantity,
+            maxQty: o.max_quantity,     // null = capped only by group's selectQty
+          }
+        }),
       }))
 
       // Build included fixed items

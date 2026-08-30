@@ -10,7 +10,12 @@
         "pickup_status": true,
         "delivery_status": true
     },
-    "area": null,
+    "area": {
+        "id": 11,
+        "name": "Bahadurabaddd",
+        "status": true,
+        "branch_id": 1
+    },
     "settings": {
         "id": 1,
         "date_added": "2026-08-10T20:23:36.737152Z",
@@ -670,13 +675,13 @@
             "description": "2 Chest Broast 1 Drink",
             "feature_image": "/media/deals/on_spot/s6jf-hero.jpg",
             "price": "400.00",
-            "discount": "129.00",
+            "discount": "12.00",
             "discount_type": "percentage",
-            "final_price": "0.00",
+            "final_price": "352.00",
             "items_detail": [],
             "groups_detail": [
                 {
-                    "id": 21,
+                    "id": 25,
                     "name": "Select Anyone Drink",
                     "group_type": "addon_items",
                     "is_required": true,
@@ -771,7 +776,7 @@
                     ]
                 },
                 {
-                    "id": 22,
+                    "id": 26,
                     "name": "Select Chest or Leg",
                     "group_type": "normal_dish",
                     "is_required": true,
@@ -780,7 +785,7 @@
                     "addon_category_detail": null,
                     "options": [
                         {
-                            "id": 36,
+                            "id": 40,
                             "item": 2,
                             "item_detail": {
                                 "id": 2,
@@ -895,11 +900,11 @@
                                 "date_added": "2026-08-19T09:23:13.675106Z",
                                 "date_updated": "2026-08-21T14:11:37.434216Z"
                             },
-                            "quantity": 1,
+                            "quantity": 4,
                             "max_quantity": null
                         },
                         {
-                            "id": 37,
+                            "id": 41,
                             "item": 8,
                             "item_detail": {
                                 "id": 8,
@@ -1030,7 +1035,7 @@
             "updated_by": 4,
             "updated_by_username": "admin",
             "date_added": "2026-08-30T21:41:17.645951Z",
-            "date_updated": "2026-08-30T21:45:54.444570Z",
+            "date_updated": "2026-08-30T22:13:44.057644Z",
             "is_available_now": true
         },
         {
