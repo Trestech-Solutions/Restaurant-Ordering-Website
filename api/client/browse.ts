@@ -298,7 +298,7 @@ export function useGetFixedDeals(params: FixedDealListParams = {}) {
       api
         .get<{ results?: FixedDeal[] } | FixedDeal[]>(
           API_ENDPOINTS.StorefrontDeals.fixedDeals,
-          { params: { restaurant: restaurantId, status: true, ...params } }
+          { params: { restaurant: restaurantId, status: 1, ...params } }
         )
         .then((r) => {
           const data = r.data as { results?: FixedDeal[] } | FixedDeal[];
@@ -320,7 +320,7 @@ export function useGetOnSpotDeals(params: OnSpotDealListParams = {}) {
       api
         .get<{ results?: OnSpotDeal[] } | OnSpotDeal[]>(
           API_ENDPOINTS.StorefrontDeals.onSpotDeals,
-          { params: { restaurant: restaurantId, status: true, ...params } }
+          { params: { restaurant: restaurantId, status: 1, ...params } }
         )
         .then((r) => {
           const data = r.data as { results?: OnSpotDeal[] } | OnSpotDeal[];

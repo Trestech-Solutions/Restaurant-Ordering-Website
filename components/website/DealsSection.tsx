@@ -35,11 +35,17 @@ function formatValidity(from?: string | null, to?: string | null): string | null
 // ─── Fixed Deal Card ──────────────────────────────────────────────────────────
 
 function FixedDealCard({ deal }: { deal: FixedDeal }) {
-  const image    = resolveMediaUrl(deal.image)
+  // backend field is feature_image (not image)
+  const image    = resolveMediaUrl(deal.feature_image)
   const validity = formatValidity(deal.valid_from_date, deal.valid_to_date)
   const hasDiscount =
     deal.discount && parseFloat(deal.discount) > 0 &&
     deal.final_price !== deal.price
+
+  // item names from nested item_detail (new shape) with fallback to item id
+  const itemNames = (deal.items_detail ?? []).map((i) =>
+    i.item_detail?.name ?? `Item ${i.item}`
+  )
 
   return (
     <div className="flex-shrink-0 w-56 sm:w-64 rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
@@ -86,9 +92,9 @@ function FixedDealCard({ deal }: { deal: FixedDeal }) {
           )}
         </div>
 
-        {deal.items_detail && deal.items_detail.length > 0 && (
+        {itemNames.length > 0 && (
           <p className="text-[10px] text-neutral-400 border-t border-neutral-100 pt-1.5 mt-0.5 line-clamp-1">
-            Includes: {deal.items_detail.map((i) => i.item_name).join(', ')}
+            Includes: {itemNames.join(', ')}
           </p>
         )}
       </div>
@@ -99,15 +105,19 @@ function FixedDealCard({ deal }: { deal: FixedDeal }) {
 // ─── On Spot Deal Card ────────────────────────────────────────────────────────
 
 function OnSpotDealCard({ deal }: { deal: OnSpotDeal }) {
-  const image    = resolveMediaUrl(deal.image)
+  // backend field is feature_image (not image)
+  const image    = resolveMediaUrl(deal.feature_image)
   const validity = formatValidity(deal.valid_from_date, deal.valid_to_date)
   const timeWindow =
     deal.start_time && deal.end_time
-      ? `${deal.start_time} – ${deal.end_time}`
+      ? `${deal.start_time.slice(0, 5)} – ${deal.end_time.slice(0, 5)}`
       : null
   const hasDiscount =
     deal.discount && parseFloat(deal.discount) > 0 &&
     deal.final_price !== deal.price
+
+  // group count — all groups regardless of type
+  const groupCount = deal.groups_detail?.length ?? 0
 
   return (
     <div className="flex-shrink-0 w-56 sm:w-64 rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
@@ -143,9 +153,9 @@ function OnSpotDealCard({ deal }: { deal: OnSpotDeal }) {
           <p className="text-[11px] text-neutral-500 line-clamp-2">{deal.description}</p>
         )}
 
-        {deal.groups_detail && deal.groups_detail.length > 0 && (
+        {groupCount > 0 && (
           <p className="text-[10px] text-sky-600 font-medium">
-            {deal.groups_detail.length} choice group{deal.groups_detail.length > 1 ? 's' : ''}
+            {groupCount} choice group{groupCount > 1 ? 's' : ''}
           </p>
         )}
 
@@ -192,8 +202,9 @@ export function DealsSection() {
   const { data: fixedDeals, isLoading: loadingFixed } = useGetFixedDeals()
   const { data: onSpotDeals, isLoading: loadingOnSpot } = useGetOnSpotDeals()
 
-  const activeFixed   = (fixedDeals ?? []).filter((d) => d.status)
-  const activeOnSpot  = (onSpotDeals ?? []).filter((d) => d.status)
+  // status is now int (1=active, 0=inactive) — filter accordingly
+  const activeFixed   = (fixedDeals ?? []).filter((d) => d.status === 1)
+  const activeOnSpot  = (onSpotDeals ?? []).filter((d) => d.status === 1)
   const hasFixed      = activeFixed.length > 0
   const hasOnSpot     = activeOnSpot.length > 0
   const isLoading     = loadingFixed || loadingOnSpot

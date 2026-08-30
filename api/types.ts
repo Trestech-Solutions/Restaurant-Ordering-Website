@@ -398,17 +398,52 @@ export type MenuDealItemDetail = {
   quantity: number;
 };
 
-export type MenuOnSpotDealGroupOption = {
+/** An add-on option within an addon_items group. */
+export type MenuOnSpotDealGroupAddonOption = {
+  id: null;
+  item: null;
+  item_detail: null;
+  addon: number;
+  addon_detail: {
+    id: number;
+    addon_category: number;
+    addon_category_name: string;
+    name: string;
+    description?: string;
+    price: string;
+    photo?: string | null;
+    status: boolean;
+  };
+  quantity: number;
+  max_quantity: number | null;
+};
+
+/** A normal_dish option within a normal_dish group. */
+export type MenuOnSpotDealGroupItemOption = {
   id: number;
   item: number;
   item_detail?: MenuItem;
   quantity: number;
+  max_quantity: number | null;
 };
+
+export type MenuOnSpotDealGroupOption =
+  | MenuOnSpotDealGroupAddonOption
+  | MenuOnSpotDealGroupItemOption;
 
 export type MenuOnSpotDealGroup = {
   id: number;
   name: string;
+  group_type: 'normal_dish' | 'addon_items';
+  is_required: boolean;
   select_quantity: number;
+  addon_category: number | null;
+  addon_category_detail: {
+    id: number;
+    name: string;
+    description?: string;
+    status: boolean;
+  } | null;
   options: MenuOnSpotDealGroupOption[];
 };
 
@@ -416,11 +451,11 @@ export type MenuOnSpotDealGroup = {
 export type MenuFixedDeal = {
   id: number;
   restaurant: number;
-  category: number;            // FK — which menu category this deal belongs to
-  category_detail?: MenuCategory;
+  category: number | null;         // FK — which menu category this deal belongs to
+  category_detail?: MenuCategory | null;
   name: string;
   description?: string | null;
-  feature_image?: string | null;  // NOTE: field name is feature_image (not image)
+  feature_image?: string | null;   // field name is feature_image (not image)
   price: string;
   discount?: string;
   discount_type?: 'fixed' | 'percentage';
@@ -428,9 +463,9 @@ export type MenuFixedDeal = {
   items_detail?: MenuDealItemDetail[];
   valid_from_date?: string | null;
   valid_to_date?: string | null;
-  start_time?: string | null;  // "HH:MM:SS" — time window filter (PKT)
-  end_time?: string | null;    // "HH:MM:SS" — time window filter (PKT)
-  status: boolean | number;    // API returns 1/0 or true/false
+  start_time?: string | null;      // "HH:MM:SS" — time window filter (PKT)
+  end_time?: string | null;        // "HH:MM:SS" — time window filter (PKT)
+  status: boolean | number;        // API returns 1/0 or true/false
   is_available_now?: boolean;
 };
 
@@ -438,11 +473,11 @@ export type MenuFixedDeal = {
 export type MenuOnSpotDeal = {
   id: number;
   restaurant: number;
-  category: number;            // FK — which menu category this deal belongs to
-  category_detail?: MenuCategory;
+  category: number | null;         // FK — which menu category this deal belongs to
+  category_detail?: MenuCategory | null;
   name: string;
   description?: string | null;
-  feature_image?: string | null;  // NOTE: field name is feature_image (not image)
+  feature_image?: string | null;   // field name is feature_image (not image)
   price: string;
   discount?: string;
   discount_type?: 'fixed' | 'percentage';
@@ -453,7 +488,7 @@ export type MenuOnSpotDeal = {
   valid_to_date?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  status: boolean | number;    // API returns 1/0 or true/false
+  status: boolean | number;        // API returns 1/0 or true/false
   is_available_now?: boolean;
 };
 
@@ -670,17 +705,18 @@ export type OrderHistoryItem = {
 export type FixedDealItem = {
   id: number;
   item: number;
-  item_name: string;
+  item_detail?: MenuItem;      // full item object (nested)
   quantity: number;
-  unit_price?: string;
 };
 
 export type FixedDeal = {
   id: number;
   restaurant: number;
+  category: number | null;
+  category_detail?: MenuCategory | null;
   name: string;
   description?: string | null;
-  image?: string | null;
+  feature_image?: string | null;   // field name is feature_image (not image)
   price: string;
   discount?: string;
   discount_type?: 'fixed' | 'percentage';
@@ -688,41 +724,77 @@ export type FixedDeal = {
   items_detail?: FixedDealItem[];
   valid_from_date?: string | null;
   valid_to_date?: string | null;
-  status: boolean;
+  status: number;                  // int: 1=active, 0=inactive
   date_added?: string;
   date_updated?: string;
 };
 
 export type FixedDealListParams = {
   restaurant?: number;
-  status?: boolean;
+  status?: number;
   page?: number;
   page_size?: number;
 };
 
 // ─── On Spot Deal ─────────────────────────────────────────────────────────────
 
-export type OnSpotDealGroupOption = {
+/** An add-on-category option within an addon_items group (standalone API). */
+export type OnSpotDealGroupAddonOption = {
+  id: null;
+  item: null;
+  item_detail: null;
+  addon: number;
+  addon_detail: {
+    id: number;
+    addon_category: number;
+    addon_category_name: string;
+    name: string;
+    description?: string;
+    price: string;
+    photo?: string | null;
+    status: boolean;
+  };
+  quantity: number;
+  max_quantity: number | null;
+};
+
+/** A manually-curated item option within a normal_dish group (standalone API). */
+export type OnSpotDealGroupItemOption = {
   id: number;
   item: number;
-  item_name: string;
+  item_detail?: MenuItem;
   quantity: number;
-  unit_price?: string;
+  max_quantity: number | null;
 };
+
+export type OnSpotDealGroupOption =
+  | OnSpotDealGroupAddonOption
+  | OnSpotDealGroupItemOption;
 
 export type OnSpotDealGroup = {
   id: number;
   name: string;
+  group_type: 'normal_dish' | 'addon_items';
+  is_required: boolean;
   select_quantity: number;
+  addon_category: number | null;
+  addon_category_detail: {
+    id: number;
+    name: string;
+    description?: string;
+    status: boolean;
+  } | null;
   options: OnSpotDealGroupOption[];
 };
 
 export type OnSpotDeal = {
   id: number;
   restaurant: number;
+  category: number | null;
+  category_detail?: MenuCategory | null;
   name: string;
   description?: string | null;
-  image?: string | null;
+  feature_image?: string | null;   // field name is feature_image (not image)
   price: string;
   discount?: string;
   discount_type?: 'fixed' | 'percentage';
@@ -733,14 +805,15 @@ export type OnSpotDeal = {
   valid_to_date?: string | null;
   start_time?: string | null;
   end_time?: string | null;
-  status: boolean;
+  status: number;                  // int: 1=active, 0=inactive
+  is_available_now?: boolean;
   date_added?: string;
   date_updated?: string;
 };
 
 export type OnSpotDealListParams = {
   restaurant?: number;
-  status?: boolean;
+  status?: number;
   page?: number;
   page_size?: number;
 };
