@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { X, Share2, Minus, Plus, Trash2, ArrowRight, Clock } from 'lucide-react'
+import { X, Share2, Minus, Plus, Trash2, ArrowRight, Clock, Check } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import type { ProductData } from '../product/ProductCard'
 
@@ -52,7 +52,8 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
   const [sharing, setSharing]               = useState(false)
   const [added, setAdded]                   = useState(false)
 
-  const [groupQtys, setGroupQtys] = useState<Record<string, number>>({})
+  // groupSelections: which option keys are ticked, per group
+  const [groupSelections, setGroupSelections] = useState<Record<string, boolean>>({})
 
   const isDeal   = !!product.dealType
   const isFixed  = product.dealType === 'fixed_deal'
@@ -64,20 +65,18 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
     if (!g) return 0
     return g.options.reduce((sum, opt) => {
       const key = `${gi}-${opt.id ?? opt.name}`
-      return sum + (groupQtys[key] ?? 0)
+      return sum + (groupSelections[key] ? 1 : 0)
     }, 0)
   }
 
-  const changeOptionQty = (gi: number, optKey: string, delta: number, maxQty: number | null, selectQty: number) => {
-    setGroupQtys((prev) => {
-      const current = prev[optKey] ?? 0
-      const total = groupTotal(gi) - current
-      let next = current + delta
-      if (next < 0) next = 0
-      if (maxQty !== null && next > maxQty) next = maxQty
-      if (delta > 0 && total + next > selectQty) next = selectQty - total
-      if (next < 0) next = 0
-      return { ...prev, [optKey]: next }
+  const toggleOption = (gi: number, optKey: string, selectQty: number) => {
+    setGroupSelections((prev) => {
+      const isSelected = !!prev[optKey]
+      if (isSelected) {
+        return { ...prev, [optKey]: false }
+      }
+      if (groupTotal(gi) >= selectQty) return prev
+      return { ...prev, [optKey]: true }
     })
   }
 
@@ -112,10 +111,14 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
     ? (computedAvailable !== null ? computedAvailable : dealMeta?.isAvailableNow !== false)
     : true
 
+  const requiredGroupsFilled = isOnSpot
+    ? (dealMeta?.groups ?? []).every((g, gi) => !g.isRequired || groupTotal(gi) >= g.selectQty)
+    : true
+
   const isOrderable =
     hasPrice &&
     (isDeal
-      ? isAvailableNow
+      ? isAvailableNow && requiredGroupsFilled
       : (product.productId !== null && product.productId !== undefined &&
          Number.isFinite(Number(product.productId)) && Number(product.productId) > 0))
 
@@ -155,8 +158,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-2 sm:p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="relative flex h-[65vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[90vh] sm:flex-row">
-
+<div className="relative flex h-[vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[70vh] sm:flex-row">
         {/* ── LEFT — image ────────────────────────────────────────── */}
         <div className="relative h-56 w-full shrink-0 sm:h-full sm:w-[46%]">
           <Image src={product.image} alt={product.name} fill className="object-cover" priority />
@@ -284,27 +286,24 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
 
                 <div className="rounded-xl border border-neutral-200 overflow-hidden divide-y divide-neutral-100">
                   {group.options.map((opt) => {
-                    const optKey  = `${gi}-${opt.id ?? opt.name}`
-                    const qty     = groupQtys[optKey] ?? 0
-                    const capMax  = opt.maxQty !== null ? opt.maxQty : group.selectQty
-                    const canInc  = qty < capMax && total < group.selectQty
-                    const canDec  = qty > 0
+                    const optKey     = `${gi}-${opt.id ?? opt.name}`
+                    const isSelected = !!groupSelections[optKey]
+                    const canToggle  = isSelected || total < group.selectQty
 
                     return (
-                      <div
+                      <button
                         key={optKey}
-                        className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                          qty > 0 ? 'bg-amber-50' : 'bg-white'
+                        type="button"
+                        disabled={!canToggle}
+                        onClick={() => toggleOption(gi, optKey, group.selectQty)}
+                        className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
+                          isSelected ? 'bg-amber-50' : canToggle ? 'bg-white hover:bg-neutral-50' : 'bg-white opacity-50 cursor-not-allowed'
                         }`}
                       >
                         <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                          qty > 0 ? 'border-amber-500 bg-amber-500' : 'border-neutral-300'
+                          isSelected ? 'border-amber-500 bg-amber-500' : 'border-neutral-300'
                         }`}>
-                          {qty > 0 && (
-                            <span className="text-[9px] font-extrabold text-white leading-none">
-                              {qty}
-                            </span>
-                          )}
+                          {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                         </div>
 
                         <span className="flex-1 text-sm font-medium text-neutral-800">{opt.name}</span>
@@ -314,39 +313,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
                             × {opt.qty} pcs
                           </span>
                         )}
-
-                        <div className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-1 py-0.5">
-                          <button
-                            type="button"
-                            disabled={!canDec}
-                            onClick={() => changeOptionQty(gi, optKey, -1, opt.maxQty, group.selectQty)}
-                            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors text-sm font-bold ${
-                              canDec
-                                ? 'text-neutral-700 hover:bg-neutral-100'
-                                : 'text-neutral-300 cursor-not-allowed'
-                            }`}
-                            aria-label={`Decrease ${opt.name}`}
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="w-4 text-center text-xs font-bold text-neutral-900">
-                            {qty}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={!canInc}
-                            onClick={() => changeOptionQty(gi, optKey, 1, opt.maxQty, group.selectQty)}
-                            className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
-                              canInc
-                                ? 'bg-neutral-900 text-white hover:bg-black'
-                                : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
-                            }`}
-                            aria-label={`Increase ${opt.name}`}
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
-                      </div>
+                      </button>
                     )
                   })}
                 </div>
@@ -465,6 +432,13 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
                   </>
                 )}
               </button>
+            </div>
+
+          ) : hasPrice && isOnSpot && isAvailableNow && !requiredGroupsFilled ? (
+            <div className="sticky bottom-0 mt-auto border-t border-neutral-100 bg-white px-6 py-5 sm:px-10">
+              <div className="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
+                Please select all required options to continue
+              </div>
             </div>
 
           ) : hasPrice && isDeal && !isAvailableNow ? (

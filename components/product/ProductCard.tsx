@@ -68,6 +68,13 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
   const defaultSize = hasSizes ? product.sizes![0]! : undefined
   const defaultOption = product.options[0] ?? ''
 
+  // Quick-add only works when there's nothing to choose — a single size/option
+  // and no deal groups. Anything requiring a choice must go through the modal.
+  const needsSelection =
+    !!product.dealMeta ||
+    (hasSizes && product.sizes!.length > 1) ||
+    (!hasSizes && product.options.length > 1)
+
   const displayPriceNum = defaultSize
     ? defaultSize.price
     : (parseInt(product.price, 10) || 0)
@@ -83,14 +90,22 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
   const isOrderable = hasPrice && product.productId !== null && product.productId !== undefined
   const price       = displayPriceNum
 
-  const cartItem = items.find(
-    (i) => i.id === product.id && (i.selectedOption ?? '') === (defaultOption ?? '')
+  const cartItem = items.find((i) =>
+    hasSizes
+      ? i.id === product.id && i.variantId === defaultSize!.sizeId
+      : i.id === product.id && (i.selectedOption ?? '') === (defaultOption ?? '')
   )
   const cartQty = cartItem?.quantity ?? 0
+
+  const handleCardClick = () => onOpen?.(product)
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!isOrderable) return
+    if (needsSelection) {
+      onOpen?.(product)
+      return
+    }
     addItem({
       id:             product.id,
       productId:      product.productId,
@@ -118,8 +133,18 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
 
   return (
     <div
-      onClick={() => onOpen?.(product)}
-      className={`group relative flex h-full items-stretch gap-2 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${onOpen ? 'cursor-pointer' : ''}`}
+      onClick={handleCardClick}
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onOpen(product)
+        }
+      }}
+      className={`group relative flex h-full items-stretch gap-2 overflow-hidden rounded-2xl bg-white p-3 shadow-sm transition-all duration-300 hover:shadow-xl sm:gap-4 sm:p-4 ${
+        onOpen ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2' : ''
+      }`}
     >
       {/* Left: text content */}
       <div className="flex flex-1 flex-col justify-between py-0.5 min-w-0">
@@ -184,15 +209,16 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
         )}
 
         {/* Cart controls (only shown once added, since + sits on image otherwise) */}
-        {isOrderable && cartQty > 0 && (
+        {isOrderable && !needsSelection && cartQty > 0 && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="mt-2 flex w-fit items-center gap-1.5 rounded-full border-2 border-[#000000] px-1.5 py-1 sm:gap-2 sm:px-2 sm:py-1"
+            className="mt-2 flex w-fit items-center gap-1.5 rounded-full border-2 border-neutral-900 px-1.5 py-1 sm:gap-2 sm:px-2 sm:py-1"
           >
             <button
+              type="button"
               onClick={handleDecrease}
-              aria-label="Decrease"
-              className="flex h-6 w-6 items-center justify-center rounded-full text-[#000000] hover:bg-[#000000]/10 transition-colors sm:h-7 sm:w-7"
+              aria-label="Decrease quantity"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-900 hover:bg-neutral-900/10 transition-colors sm:h-7 sm:w-7"
             >
               <Minus size={12} className="sm:hidden" />
               <Minus size={14} className="hidden sm:block" />
@@ -201,9 +227,10 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
               {cartQty}
             </span>
             <button
+              type="button"
               onClick={handleIncrease}
-              aria-label="Increase"
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#000000] text-white hover:bg-[#1f1f1f] transition-colors sm:h-7 sm:w-7"
+              aria-label="Increase quantity"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-900 text-white hover:bg-neutral-800 transition-colors sm:h-7 sm:w-7"
             >
               <Plus size={12} className="sm:hidden" />
               <Plus size={14} className="hidden sm:block" />
@@ -218,6 +245,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           src={product.image}
           alt={product.name}
           fill
+          sizes="(min-width: 768px) 160px, (min-width: 640px) 144px, 112px"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
@@ -239,20 +267,18 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           </span>
         )}
 
-        {/* Overlapping ADD (+) button — bottom-right corner of image */}
-        {isOrderable && cartQty === 0 && (
+        {/* Overlapping ADD (+) button — bottom-right corner of image.
+           Opens the modal instead of adding directly when a choice is needed. */}
+        {isOrderable && (needsSelection || cartQty === 0) && (
           <button
+            type="button"
             onClick={handleAdd}
-            aria-label="Add to cart"
+            aria-label={needsSelection ? 'Choose options' : 'Add to cart'}
             className={`absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full shadow-md transition-all sm:h-9 sm:w-9 ${
-              added ? 'bg-green-600 text-white' : 'bg-[#000000] text-white hover:bg-[#1f1f1f]'
+              added ? 'bg-green-600 text-white' : 'bg-neutral-900 text-white hover:bg-neutral-800'
             }`}
           >
-            {added ? (
-              <Check size={16} />
-            ) : (
-              <Plus size={18} />
-            )}
+            {added ? <Check size={16} /> : <Plus size={18} />}
           </button>
         )}
       </div>

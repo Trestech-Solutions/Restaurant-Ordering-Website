@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ProductCard, type ProductData } from './ProductCard'
 import { ProductDetailModal } from './ProductDetailModal'
 import { ShoppingBag } from 'lucide-react'
@@ -12,6 +12,23 @@ interface ProductGridProps {
 
 export function ProductGrid({ products, searchQuery }: ProductGridProps) {
   const [selected, setSelected] = useState<ProductData | null>(null)
+
+  useEffect(() => {
+    if (!selected) return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelected(null)
+    }
+
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [selected])
 
   if (products.length === 0) {
     return (
