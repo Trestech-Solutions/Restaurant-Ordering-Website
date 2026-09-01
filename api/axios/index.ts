@@ -16,9 +16,31 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("trestech_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const url = config.url ?? '';
+
+      // Storefront endpoints are AllowAny (guest-friendly) or use a
+      // separate customer JWT — never attach the admin staff token to them.
+      // Attaching a staff token causes the backend to return 403 because
+      // StaffJWTAuthentication succeeds but the staff user lacks storefront
+      // permissions.
+      const isStorefront = url.startsWith('/storefront/') || url.includes('/storefront/');
+
+      if (!isStorefront) {
+        // Admin API — attach staff JWT if present
+        const token = localStorage.getItem("trestech_token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } else {
+        // Storefront — attach customer JWT if present, otherwise send no
+        // Authorization header so AllowAny endpoints work for guests.
+        const customerToken = localStorage.getItem("trestech_customer_token");
+        if (customerToken) {
+          config.headers.Authorization = `Bearer ${customerToken}`;
+        } else {
+          // Explicitly remove any inherited Authorization header
+          delete config.headers.Authorization;
+        }
       }
     }
     return config;
@@ -42,9 +64,19 @@ axiosInstance.interceptors.response.use(
         }
         break;
 
-      case 403:
-        console.error("Forbidden:", error.response?.data);
+      case 403: {
+        const detail = error.response?.data?.detail;
+        const isMissingCreds =
+          typeof detail === 'string' &&
+          detail.toLowerCase().includes('authentication credentials');
+        if (isMissingCreds) {
+          // Guest users hitting customer-protected endpoints — normal, not an error
+          console.warn('403 (guest/no token):', detail);
+        } else {
+          console.error('Forbidden:', error.response?.data);
+        }
         break;
+      }
 
       case 404:
         // 404s are handled by the calling hook — no global log needed

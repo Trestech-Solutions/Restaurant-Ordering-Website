@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   MapPin, Phone, Menu, ShoppingCart,
 } from 'lucide-react'
-import { useCart } from '@/lib/hooks/useCart'
+import { useCart, useStoreSettings } from '@/lib/hooks/useCart'
 import { UserDropdown } from '@/components/website/UserDropdown'
 
 interface WebsiteNavbarProps {
@@ -24,6 +24,14 @@ export function WebsiteNavbar({
   const pathname = usePathname()
   const router = useRouter()
   const { totalItems, openCart, location, openLocationModal } = useCart()
+  const { settings } = useStoreSettings()
+
+  // navbar_color default to black if unset
+  const navBg = settings.navbar_color || '#000000'
+  // foreground_color default to white if unset
+  const navFg = settings.foreground_color || '#ffffff'
+  const showPhone = settings.show_navbar !== false && !settings.hide_phone_from_header
+  const showCartIcon = settings.show_cart_icon !== false
 
   const isCheckout = pathname === '/website/checkout'
 
@@ -58,12 +66,14 @@ export function WebsiteNavbar({
         width={logoImgSize}
         height={logoImgSize}
         className="object-contain"
+        loading="eager"
+        priority
       />
     </div>
   )
 
   return (
-    <header className="relative bg-black text-white">
+    <header className="relative text-white" style={{ backgroundColor: navBg, color: navFg }}>
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 md:gap-4 md:px-8 md:py-2.5">
 
         {/* Location */}
@@ -87,43 +97,49 @@ export function WebsiteNavbar({
         </button>
 
         {/* Phone Number */}
-        <a
-          href="tel:021111022022"
-          className="hidden items-center gap-2 rounded bg-white px-3 py-1.5 text-sm font-medium text-black sm:flex"
-        >
-          <Phone size={16} className="text-black" />
-          <span className="text-black">
-            021-111-022-022
-          </span>
-        </a>
+        {showPhone && (
+          <a
+            href="tel:021111022022"
+            className="hidden items-center gap-2 rounded bg-white px-3 py-1.5 text-sm font-medium text-black sm:flex"
+          >
+            <Phone size={16} className="text-black" />
+            <span className="text-black">
+              021-111-022-022
+            </span>
+          </a>
+        )}
 
         {/* Logo */}
         {isHome ? LogoContent : <Link href="/">{LogoContent}</Link>}
 
         <div className="flex-1" />
 
-    
-        {/* Cart */}
-        <button
-          onClick={openCart}
-          aria-label="Open cart"
-          className="relative rounded-full p-1.5 transition-colors hover:bg-white/10 sm:p-2"
-        >
-          <ShoppingCart size={20} className="sm:hidden" />
-          <ShoppingCart size={22} className="hidden sm:block" />
 
-          {totalItems > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-neutral-900 sm:h-5 sm:w-5 sm:text-[10px]">
-              {totalItems}
-            </span>
-          )}
-        </button>
+        {/* Cart */}
+        {showCartIcon && (
+          <button
+            onClick={openCart}
+            aria-label="Open cart"
+            className="relative rounded-full p-1.5 transition-colors hover:bg-white/10 sm:p-2"
+            style={{ color: navFg }}
+          >
+            <ShoppingCart size={20} className="sm:hidden" />
+            <ShoppingCart size={22} className="hidden sm:block" />
+
+            {totalItems > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-neutral-900 sm:h-5 sm:w-5 sm:text-[10px]">
+                {totalItems}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Menu */}
         <button
           aria-label="Open menu"
           onClick={onMenuClick}
           className="rounded-full p-1 hover:bg-white/10 sm:p-0"
+          style={{ color: navFg }}
         >
           <Menu size={20} className="sm:hidden" />
           <Menu size={22} className="hidden sm:block" />

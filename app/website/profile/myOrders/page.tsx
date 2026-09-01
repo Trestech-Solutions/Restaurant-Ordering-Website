@@ -7,6 +7,7 @@ import { Loader2, Package, ChevronDown, ChevronUp, Clock, Bike, Store, Receipt }
 import { useGetOrderHistory } from '@/api/client/customer'
 import { useGetOrder as useGetOrderDetail } from '@/api/client/checkout'
 import type { OrderHistoryItem } from '@/api/types'
+import OrderStatusTimeline, { ApprovalBanner } from '@/components/order/OrderStatusTimeline'
 
 const NON_TERMINAL_STATUSES = new Set([
   'Pending', 'Received', 'Accepted', 'Preparing',
@@ -51,7 +52,7 @@ export default function MyOrdersPage() {
   const [tab, setTab] = useState<'active' | 'past'>('active')
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
-  const { data: history = [], isLoading, refetch } = useGetOrderHistory()
+  const { data: history = [], isLoading, refetch } = useGetOrderHistory({ enabled: !!user })
 
   const { active, past } = useMemo(() => {
     const list: OrderHistoryItem[] = Array.isArray(history) ? history : []
@@ -151,6 +152,7 @@ function OrderRow({
   onToggle: () => void;
 }) {
   const cls = statusClasses(order.status)
+  const totalNum = fmtMoneyNum(order.total)
   return (
     <div>
       <button
@@ -209,13 +211,13 @@ function OrderRow({
         </div>
       </button>
 
-      {expanded && <OrderDetail orderId={order.id} />}
+      {expanded && <OrderDetail summary={order} />}
     </div>
   )
 }
 
-function OrderDetail({ orderId }: { orderId: number }) {
-  const { data: order, isLoading } = useGetOrderDetail({ orderId })
+function OrderDetail({ summary }: { summary: OrderHistoryItem }) {
+  const { data: detail, isLoading } = useGetOrderDetail({ orderId: summary.id })
   if (isLoading) {
     return (
       <div className="px-6 pb-5 flex items-center gap-2 text-xs text-neutral-500">
@@ -223,80 +225,110 @@ function OrderDetail({ orderId }: { orderId: number }) {
       </div>
     )
   }
-  if (!order) {
-    return null
-  }
-  const items = (order as any).items || []
+  const d = (detail ?? {}) as any
+  const items = (d.items ?? []) as any[]
+  const total = fmtMoney(d.grand_total ?? d.total ?? summary.total)
+
   return (
-    <div className="border-t border-neutral-100 bg-neutral-50/60 px-6 py-4 space-y-3">
-      {items.length > 0 && (
-        <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white overflow-hidden">
-          {items.map((it: any, idx: number) => {
-            const qty = it.quantity ?? 1
-            const price = parseFloat(String(it.unit_price ?? it.price ?? 0))
-            const name  = it.product_name || it.name || `Item ${idx + 1}`
-            const img   = it.product_image
-            return (
-              <div key={idx} className="flex items-center gap-3 px-4 py-3 text-sm">
-                {img && (
-                  <div className="h-11 w-11 shrink-0 overflow-hidden rounded-md border border-neutral-200 bg-neutral-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt={name} className="h-full w-full object-cover" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-neutral-800 truncate">{name}</p>
-                  {it.variant_name && (
-                    <p className="text-[11px] text-neutral-400">{it.variant_name}</p>
+    <div className="border-t border-neutral-100 bg-neutral-50/60 px-6 py-4 space-y-4">
+      {/* Grand total header */}
+      <div className="rounded-xl bg-[#000000] px-5 py-4 text-center text-white shadow-sm">
+        <p className="text-[10px] uppercase tracking-wider text-neutral-400 mb-0.5">
+          Order #{summary.order_no} · Grand Total
+        </p>
+        <p className="text-2xl font-extrabold tracking-tight">{total}</p>
+      </div>
+
+      {/* Approval status timeline */}
+      <div className="rounded-xl bg-white p-5 shadow-sm">
+        <OrderStatusTimeline
+          status={summary.status}
+          createdAt={summary.placed_at}
+          updatedAt={(d.updated_at) ?? summary.delivered_at ?? summary.estimated_delivery_at ?? undefined}
+        />
+      </div>
+
+      {/* Good news / status banner */}
+      <ApprovalBanner
+        status={summary.status}
+        orderNo={summary.order_no}
+        orderHref={`/website/profile/myOrders#order-${summary.id}`}
+      />
+
+      {/* Items */}
+      <div>
+        <h3 className="pb-2 text-lg font-bold text-neutral-900 tracking-tight">
+          Order details
+        </h3>
+        {items.length > 0 && (
+          <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white overflow-hidden">
+            {items.map((it, idx) => {
+              const qty = it.quantity ?? 1
+              const price = parseFloat(String(it.unit_price ?? it.price ?? 0))
+              const name  = it.product_name || it.name || `Item ${idx + 1}`
+              const img   = it.product_image
+              return (
+                <div key={idx} className="flex items-center gap-3 px-4 py-3 text-sm">
+                  {img && (
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-md border border-neutral-200 bg-neutral-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={name} className="h-full w-full object-cover" />
+                    </div>
                   )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-neutral-800 truncate">{name}</p>
+                    {it.variant_name && (
+                      <p className="text-[11px] text-neutral-400">{it.variant_name}</p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-semibold text-neutral-800">
+                      {fmtMoney(price * qty)}
+                    </p>
+                    <p className="text-[11px] text-neutral-400">
+                      {qty} × {fmtMoney(price)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="font-semibold text-neutral-800">
-                    {fmtMoney(price * qty)}
-                  </p>
-                  <p className="text-[11px] text-neutral-400">
-                    {qty} × {fmtMoney(price)}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Summary */}
       <div className="rounded-lg border border-neutral-200 bg-white p-4 space-y-2 text-xs">
-        <Row k="Subtotal"         v={fmtMoney((order as any).subtotal)} />
-        {Number((order as any).discount || 0) > 0 &&
-          <Row k="Discount"       v={fmtMoney((order as any).discount)} vClass="text-red-600 font-semibold" />
+        <Row k="Subtotal"         v={fmtMoney(d.subtotal)} />
+        {Number(d.discount || 0) > 0 &&
+          <Row k="Discount"       v={fmtMoney(d.discount)} vClass="text-red-600 font-semibold" />
         }
-        {Number((order as any).delivery_fee || 0) > 0 &&
-          <Row k="Delivery Fee"   v={fmtMoney((order as any).delivery_fee)} />
+        {Number(d.delivery_fee || 0) > 0 &&
+          <Row k="Delivery Fee"   v={fmtMoney(d.delivery_fee)} />
         }
-        {Number((order as any).tax || 0) > 0 &&
-          <Row k="Tax"            v={fmtMoney((order as any).tax)} />
+        {Number(d.tax || 0) > 0 &&
+          <Row k="Tax"            v={fmtMoney(d.tax)} />
         }
         <div className="border-t border-neutral-100 pt-2 flex items-center justify-between text-sm">
           <span className="font-bold text-neutral-800">Grand Total</span>
-          <span className="font-bold text-[#000000]">{fmtMoney((order as any).grand_total ?? (order as any).total)}</span>
+          <span className="font-bold text-[#000000]">{total}</span>
         </div>
       </div>
 
       {/* Address / customer info, if present */}
-      {((order as any).delivery_address || (order as any).customer_name || (order as any).customer_phone) && (
+      {(d.delivery_address || d.customer_name || d.customer_phone) && (
         <div className="rounded-lg border border-neutral-200 bg-white p-4 space-y-1.5 text-xs">
-          {(order as any).customer_name && (
-            <p className="text-sm font-semibold text-neutral-800">{(order as any).customer_name}</p>
+          {d.customer_name && (
+            <p className="text-sm font-semibold text-neutral-800">{d.customer_name}</p>
           )}
-          {(order as any).customer_phone && (
-            <p className="text-neutral-500">📞 {(order as any).customer_phone}</p>
+          {d.customer_phone && (
+            <p className="text-neutral-500">📞 {d.customer_phone}</p>
           )}
-          {(order as any).delivery_address && (
-            <p className="text-neutral-500">📍 {(order as any).delivery_address}</p>
+          {d.delivery_address && (
+            <p className="text-neutral-500">📍 {d.delivery_address}</p>
           )}
-          {(order as any).special_instructions && (
+          {d.special_instructions && (
             <p className="text-neutral-500 pt-1">
-              <span className="font-semibold">Note:</span> {(order as any).special_instructions}
+              <span className="font-semibold">Note:</span> {d.special_instructions}
             </p>
           )}
         </div>

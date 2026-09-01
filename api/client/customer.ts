@@ -135,6 +135,7 @@ export function useRefreshToken(options?: {
 export function useGetMyProfile(options?: {
   onSuccess?: (data: CustomerProfile) => void;
   onError?: (message: string) => void;
+  enabled?: boolean;
 }) {
   const query = useQuery<CustomerProfile, ApiError>({
     queryKey: PROFILE_QUERY_KEY,
@@ -144,6 +145,7 @@ export function useGetMyProfile(options?: {
         .then((r) => r.data),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
+    enabled: options?.enabled ?? true,
   });
 
   reactUseEffect(() => {
@@ -227,6 +229,7 @@ export function useDeleteCustomer(options?: {
 export function useGetAddresses(options?: {
   onSuccess?: (data: CustomerAddress[]) => void;
   onError?: (message: string) => void;
+  enabled?: boolean;
 }) {
   const query = useQuery<CustomerAddress[], ApiError>({
     queryKey: ADDRESSES_QUERY_KEY,
@@ -241,6 +244,7 @@ export function useGetAddresses(options?: {
         }),
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 30,
+    enabled: options?.enabled ?? true,
   });
 
   reactUseEffect(() => {
@@ -375,6 +379,7 @@ export function useDeleteAddress(options?: {
 export function useGetOrderHistory(options?: {
   onSuccess?: (data: OrderHistoryItem[]) => void;
   onError?: (message: string) => void;
+  enabled?: boolean;
 }) {
   const query = useQuery<OrderHistoryItem[], ApiError>({
     queryKey: ORDER_HISTORY_QUERY_KEY,
@@ -389,6 +394,7 @@ export function useGetOrderHistory(options?: {
         }),
     staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 15,
+    enabled: options?.enabled ?? true,
   });
 
   reactUseEffect(() => {

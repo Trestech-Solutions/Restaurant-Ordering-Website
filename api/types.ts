@@ -169,6 +169,148 @@ export type RestaurantsListParams = ListParams & {
 
 // ─── Storefront Browse ───────────────────────────────────────────────────────
 
+export type StoreSettings = {
+  id: number
+  date_added?: string
+  date_updated?: string
+  created_by?: number
+  updated_by?: number
+  restaurant?: number
+
+  // Branding / visuals
+  merchant_logo?: string | null
+  menu_header?: string
+  phone_icon_type?: 'none' | 'call' | 'whatsapp' | string
+  logo_left_align?: boolean
+  hide_phone_from_header?: boolean
+  show_navbar?: boolean
+  logo_fit_to_navbar?: boolean
+  logo_link?: string
+  location_link?: string
+  navbar_color?: string
+  merchant_header_background?: string
+  foreground_color?: string
+  background_color?: string
+  menu_page_background_color?: string
+  menu_page_background_image?: string | null
+  menu_font_family?: string
+  item_price_background?: string
+  item_price_text_color?: string
+  item_price_border_color?: string
+  price_rounder_center?: boolean
+  category_navbar_background_color?: string
+
+  // Android / iOS app
+  android_icon?: string | null
+  android_app_link?: string
+  ios_icon?: string | null
+  ios_app_link?: string
+
+  // Hero slides (up to 4)
+  slide_image_1?: string | null
+  heading_text_1?: string
+  heading_color_1?: string
+  description_text_1?: string
+  description_color_1?: string
+  slide_link_1?: string
+  slide_image_2?: string | null
+  heading_text_2?: string
+  heading_color_2?: string
+  description_text_2?: string
+  description_color_2?: string
+  slide_link_2?: string
+  slide_image_3?: string | null
+  heading_text_3?: string
+  heading_color_3?: string
+  description_text_3?: string
+  description_color_3?: string
+  slide_link_3?: string
+  slide_image_4?: string | null
+  heading_text_4?: string
+  heading_color_4?: string
+  description_text_4?: string
+  description_color_4?: string
+  slide_link_4?: string
+
+  // UI toggles
+  show_cart_icon?: boolean
+  show_stack_tag_on_item?: boolean
+  stack_tag_background_color?: string
+  stack_tag_color?: string
+  discount_background_color?: string
+  discount_text_color?: string
+  enable_user_login?: boolean
+  enable_auto_location?: boolean
+  set_full_width_menu?: boolean
+  hide_payment_card_logo_from_banner?: boolean
+  enable_branch_on_delivery?: boolean
+  change_area_filter_option?: boolean
+  price_inclusive_tax?: boolean
+  sum_discount_in_minimum_order_amount?: boolean
+  add_estimation_time_in_initial_time?: boolean
+  enable_number_field_in_area_modal?: boolean
+  enable_grid_view_receipt?: boolean
+  enable_city_wise_order_mapping?: boolean
+  discount_ordering?: boolean
+  enable_nearest_landmark_required?: boolean
+  enable_order_sms_verification?: boolean
+  enable_customer_sms_verification?: boolean
+  disable_change_branch_option?: boolean
+  enable_round_logo_of_location_modal?: boolean
+  auto_selection_of_addon_quantity?: boolean
+  quick_add_to_cart_with_description?: boolean
+  show_view_all_categories_floating_popup?: boolean
+  hide_delivery_time?: boolean
+  hide_set_delivery_time?: boolean
+  // Checkout field visibility
+  hide_alternative_number?: boolean
+  hide_delivery_instructions?: boolean
+  hide_nearest_landmark?: boolean
+  hide_email_address?: boolean
+  hide_thanks_page_animation?: boolean
+  accept_pre_orders?: boolean
+  same_message_for_all_holidays?: boolean
+  load_menu_in_chunks?: boolean
+  preload_caching?: boolean
+  branch_wise_settings?: boolean
+  packaging_incremental?: boolean
+  do_not_apply_tax_to_delivery_charges?: boolean
+
+  if_item_not_available?: 'hide' | 'show_disabled' | string
+
+  // Pricing & charges
+  tax_number?: string
+  free_delivery_above_subtotal?: string | number | null
+  close_store?: boolean
+  convenience_fee?: string | number | null
+  checkout_note?: string
+  enable_city_on_checkout?: boolean
+  // min / max purchase amount per order type (empty string = not set)
+  delivery_minimum_purchase_amount?: string | number | null
+  delivery_maximum_purchase_amount?: string | number | null
+  dinein_minimum_purchase_amount?: string | number | null
+  dinein_maximum_purchase_amount?: string | number | null
+  pickup_minimum_purchase_amount?: string | number | null
+  pickup_maximum_purchase_amount?: string | number | null
+  packaging_charge?: string | number | null
+  delivery_charges?: string | number | null
+  customer_can_request_sms_code_every?: string
+
+  // Estimated delivery times (minutes)
+  delivery_time?: string | number | null
+  dinein_time?: string | number | null
+  pickup_time?: string | number | null
+
+  // Per-order-type messages
+  message_for_delivery?: string
+  message_for_dinein?: string
+  message_for_pickup?: string
+
+  // Close messages
+  close_message?: string
+  holiday_close_message?: string
+}
+
 export type Branch = {
   id: number;
   name?: string;
@@ -206,14 +348,23 @@ export type City = {
 export type Area = {
   id: number;
   name: string;
-  city?: number;          // NEW: FK to City (primary relationship)
-  city_name?: string;     // NEW: read-only
+  city: number;           // FK to City — always present per list response
+  city_name: string;      // read-only — always present per list response
+  branch: number;         // FK to Branch — extract this as the branchId
+  branch_name: string;    // read-only — always present per list response
   status?: boolean;
-  branch?: number | null; // kept for compat
-  branch_name?: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+  radius_km?: number | string | null;
   is_active?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_by?: number;
+  created_by_username?: string;
+  updated_by?: number;
+  updated_by_username?: string;
+  date_added?: string;
+  date_updated?: string;
+  created_at?: string;    // legacy
+  updated_at?: string;    // legacy
 };
 
 export type LocateResponse = {
@@ -252,7 +403,7 @@ export type MenuItem = {
   item_sku?: string;
   name: string;
   description?: string | null;
-  status?: boolean;
+  status?: boolean | number;
   feature_image?: string | null;  // product image
   front_price?: string;           // base price
   price_at_branch?: string;       // branch-overridden price (injected by MenuView)
@@ -375,8 +526,8 @@ export type MenuAddonCategory = {
 export type MenuResponse = {
   branch:           Branch;
   area:             Area | null;
-  settings:         Record<string, unknown>;
-  branch_settings:  Record<string, unknown>;
+  settings:         StoreSettings;
+  branch_settings:  Partial<StoreSettings>;
   business_hours:   unknown[];
   sizes:            MenuSize[];
   addon_categories: MenuAddonCategory[];
@@ -534,10 +685,48 @@ export type UpdateCartItemPayload = {
   quantity: number;
 };
 
-// ─── Storefront Checkout ─────────────────────────────────────────────────────
+// ─── Storefront Order Create ──────────────────────────────────────────────────
+// POST /api/storefront/orders/
+// No cart/checkout steps — everything in one shot.
 
-export type CheckoutPayload = {
-  cart_token: string;
+export type OrderCreateAddon = {
+  addon: number;
+  quantity?: number;
+};
+
+export type OrderCreateGroupSelection = {
+  group: number;           // OnSpotDealGroup.id
+  options: number[];       // list of item_id or addon_id depending on group_type
+};
+
+/** One line in the order. type defaults to "item" if omitted. */
+export type OrderCreateLine =
+  | {
+      type?: 'item';
+      item: number;
+      size?: number | null;
+      quantity?: number;
+      notes?: string;
+      addons?: OrderCreateAddon[];
+    }
+  | {
+      type: 'fixed_deal';
+      deal: number;
+      quantity?: number;
+      notes?: string;
+    }
+  | {
+      type: 'on_spot_deal';
+      deal: number;
+      quantity?: number;
+      notes?: string;
+      selections?: OrderCreateGroupSelection[];
+    };
+
+/** Full one-shot order payload matching OrderCreateSerializer. */
+export type OrderCreatePayload = {
+  branch: number;
+  area?: number | null;
   order_type: 'delivery' | 'pickup' | 'dinein';
   customer_name: string;
   customer_phone: string;
@@ -545,7 +734,11 @@ export type CheckoutPayload = {
   customer_address?: string;
   customer_landmark?: string;
   customer_instructions?: string;
+  items: OrderCreateLine[];
 };
+
+/** Keep old name as alias so existing imports don't break immediately. */
+export type CheckoutPayload = OrderCreatePayload;
 
 export type OrderItemAddon = {
   id: number;
@@ -555,9 +748,22 @@ export type OrderItemAddon = {
   quantity: number;
 };
 
+export type OrderItemComponent = {
+  id: number;
+  component_type: string;
+  group_name: string;
+  item: number | null;
+  addon: number | null;
+  item_name: string;
+  quantity: number;
+};
+
 export type OrderItem = {
   id: number;
-  item: number;
+  line_type: string;           // "item" | "fixed_deal" | "on_spot_deal"
+  item: number | null;
+  fixed_deal: number | null;
+  on_spot_deal: number | null;
   item_name: string;
   size?: number | null;
   size_name?: string;
@@ -566,6 +772,7 @@ export type OrderItem = {
   line_total: string;
   notes?: string;
   addons: OrderItemAddon[];
+  components: OrderItemComponent[];
 };
 
 export type Order = {

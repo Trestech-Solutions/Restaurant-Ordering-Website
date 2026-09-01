@@ -146,6 +146,7 @@ export function ProductDetailModal({ product, onClose }: ProductDetailModalProps
       image: product.image,
       selectedOption: selectedOption || undefined,
       variantId: selectedSize ? selectedSize.sizeId : undefined,
+      sizeFk:      selectedSize ? selectedSize.sizeFk : undefined,
       specialInstructions: instructions || undefined,
       quantity: qty,
     })

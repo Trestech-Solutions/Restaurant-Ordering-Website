@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useCallback,
+  useMemo,
   ReactNode,
 } from 'react'
 import { toast } from 'sonner'
@@ -34,6 +35,8 @@ import {
   closeLocationModal as reduxCloseLocationModal,
   type OrderType,
 } from '@/redux/slices/orderSlice'
+import { useGetSettings } from '@/api/client/browse'
+import type { StoreSettings } from '@/api/types'
 
 export type { CartItem, AuthUser, OrderType }
 
@@ -69,6 +72,7 @@ interface CartContextType {
   addItem: (
     item: Omit<CartItem, 'quantity' | 'cartItemId'> & {
       variantId?: number | null
+      sizeFk?: number | null
       specialInstructions?: string
       quantity?: number
     }
@@ -143,6 +147,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     (
       item: Omit<CartItem, 'quantity' | 'cartItemId'> & {
         variantId?: number | null
+        sizeFk?: number | null
         specialInstructions?: string
         quantity?: number
       }
@@ -255,4 +260,94 @@ export function useCart() {
 
 export function useRegisterProductId() {
   return (_clientId: string, _numericId: number) => {}
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// StoreSettingsProvider — exposes the StoreSettings API response globally
+// with numeric helpers + sensible defaults.
+// ──────────────────────────────────────────────────────────────────────────
+
+export const DEFAULT_DELIVERY_FEE   = 200
+export const DEFAULT_TAX_RATE       = 0.18
+
+/** Helper: parse a setting that may be "100" (string) or 100 (number) or ""/null → fallback */
+function toNumber(
+  v: string | number | null | undefined,
+  fallback: number,
+): number {
+  if (v === null || v === undefined || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+
+export interface StoreSettingsDerived extends StoreSettings {
+  /** delivery_charges parsed as number; fallback = 0 (use caller's default if needed) */
+  deliveryFee: number
+  /** packaging_charge parsed as number; fallback = 0 */
+  packagingCharge: number
+  /** convenience_fee parsed as number; fallback = 0 */
+  convenienceFee: number
+  /** free_delivery_above_subtotal parsed as number; Infinity means "never free" */
+  freeDeliveryAboveSubtotal: number
+  /** delivery_time parsed as number (minutes) */
+  deliveryTimeMinutes: number | null
+  /** pickup_time parsed as number (minutes) */
+  pickupTimeMinutes: number | null
+  /** dinein_time parsed as number (minutes) */
+  dineinTimeMinutes: number | null
+}
+
+interface StoreSettingsContextType {
+  settings: StoreSettingsDerived
+  /** Is the settings request still loading? */
+  isLoading: boolean
+}
+
+const StoreSettingsContext = createContext<StoreSettingsContextType | undefined>(undefined)
+
+function deriveSettings(raw: StoreSettings | undefined): StoreSettingsDerived {
+  const r = (raw ?? {}) as StoreSettings
+  return {
+    ...r,
+    deliveryFee:               toNumber(r.delivery_charges, 0),
+    packagingCharge:           toNumber(r.packaging_charge, 0),
+    convenienceFee:            toNumber(r.convenience_fee, 0),
+    freeDeliveryAboveSubtotal: (() => {
+      const n = toNumber(r.free_delivery_above_subtotal, NaN)
+      return Number.isFinite(n) && n > 0 ? n : Infinity
+    })(),
+    deliveryTimeMinutes: (() => {
+      const n = toNumber(r.delivery_time, NaN)
+      return Number.isFinite(n) && n > 0 ? n : null
+    })(),
+    pickupTimeMinutes: (() => {
+      const n = toNumber(r.pickup_time, NaN)
+      return Number.isFinite(n) && n > 0 ? n : null
+    })(),
+    dineinTimeMinutes: (() => {
+      const n = toNumber(r.dinein_time, NaN)
+      return Number.isFinite(n) && n > 0 ? n : null
+    })(),
+  }
+}
+
+export function StoreSettingsProvider({ children }: { children: ReactNode }) {
+  const { branchId, areaId } = useCart()
+  const { data, isLoading } = useGetSettings({ branchId, areaId })
+  const derived = useMemo(() => deriveSettings(data), [data])
+  const value = useMemo<StoreSettingsContextType>(
+    () => ({ settings: derived, isLoading }),
+    [derived, isLoading],
+  )
+  return (
+    <StoreSettingsContext.Provider value={value}>
+      {children}
+    </StoreSettingsContext.Provider>
+  )
+}
+
+export function useStoreSettings() {
+  const ctx = useContext(StoreSettingsContext)
+  if (!ctx) throw new Error('useStoreSettings must be used within StoreSettingsProvider')
+  return ctx
 }

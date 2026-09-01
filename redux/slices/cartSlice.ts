@@ -10,6 +10,7 @@ export interface CartItem {
   quantity: number
   selectedOption?: string
   variantId?: number | null
+  sizeFk?: number | null
   specialInstructions?: string
 }
 
@@ -40,6 +41,7 @@ const cartSlice = createSlice({
           quantity?: number
           cartItemId?: number | null
           variantId?: number | null
+          sizeFk?: number | null
           specialInstructions?: string
         }
       >

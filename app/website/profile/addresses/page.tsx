@@ -28,7 +28,7 @@ export default function AddressesPage() {
   const [lng, setLng]           = useState<string>('')
 
   // Data from API
-  const { data: apiAddresses = [], isLoading: loadingAddresses, refetch } = useGetAddresses()
+  const { data: apiAddresses = [], isLoading: loadingAddresses, refetch } = useGetAddresses({ enabled: !!user })
 
   const addrAdder = useAddAddress({
     onSuccess() { resetForm() },

@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Navigation, ChevronDown, X, ExternalLink, Loader2 } from 'lucide-react'
+import { Navigation, ChevronDown, X, Loader2 } from 'lucide-react'
 import { useCart, type OrderType } from '@/lib/hooks/useCart'
 import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import {
-  useGetBranches,
-  useGetCitiesByBranch,
+  useGetCities,
   useGetAreasByCity,
   locate,
 } from '@/api/client/browse'
-import type { Branch, Area, City } from '@/api/types'
+import type { Area, City } from '@/api/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,33 +36,6 @@ export const FALLBACK_BRANCHES: BranchInfo[] = [
 
 export const UK_BRANCHES = FALLBACK_BRANCHES
 
-function branchToInfo(b: Branch): BranchInfo {
-  const name    = b.branch_name || b.name || 'Branch'
-  const address = b.address || b.location || ''
-  const q       = encodeURIComponent(`${name} ${address}`.trim())
-
-  let lat: number | undefined
-  let lng: number | undefined
-  if (b.map_location) {
-    const [latStr, lngStr] = b.map_location.split(',')
-    lat = latStr ? parseFloat(latStr.trim()) : undefined
-    lng = lngStr ? parseFloat(lngStr.trim()) : undefined
-  } else if (b.latitude && b.longitude) {
-    lat = parseFloat(String(b.latitude))
-    lng = parseFloat(String(b.longitude))
-  }
-
-  return {
-    id:        String(b.id),
-    numericId: b.id,
-    name,
-    address,
-    mapsUrl:   `https://maps.google.com/?q=${q}`,
-    lat,
-    lng,
-  }
-}
-
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R    = 6371
   const dLat = ((lat2 - lat1) * Math.PI) / 180
@@ -83,34 +55,22 @@ interface OrderTypeModalProps {
 }
 
 export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
-  const { orderType, setOrderType, setLocation, setBranch, setAreaId } = useCart()
+  const {
+    orderType, setOrderType, setLocation, setBranch, setAreaId,
+  } = useCart()
   const { setStoreLocation } = useStoreLocation()
 
-  // ── Branches (always loaded) ──────────────────────────────────────────────
-  const { data: branches, isLoading: loadingBranches } = useGetBranches()
-  const branchList: BranchInfo[] = (branches ?? []).map(branchToInfo)
-  const finalBranchList = branchList.length > 0 ? branchList : FALLBACK_BRANCHES
-
-  // ── Local UI state ────────────────────────────────────────────────────────
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(finalBranchList[0].id)
-  const [selectedCityId,   setSelectedCityId]   = useState<string>('')
-  const [selectedAreaId,   setSelectedAreaId]   = useState<string>('')
-  const [geoLoading,       setGeoLoading]       = useState(false)
-  const [geoError,         setGeoError]         = useState('')
-
-  const activeBranch = finalBranchList.find((b) => b.id === selectedBranchId) ?? finalBranchList[0]
-  const activeBranchNumericId = activeBranch.numericId
-
-  // ── Cities — loaded only when a branch is selected ────────────────────────
-  const {
-    data: cities,
-    isLoading: loadingCities,
-  } = useGetCitiesByBranch({
-    branchId: orderType === 'delivery' ? activeBranchNumericId : null,
-  })
-
+  // ── Cities (always loaded — no branch filter since branch comes from area) ─
+  const { data: cities, isLoading: loadingCities } = useGetCities()
   const cityList: City[] = cities ?? []
   const sortedCities = [...cityList].sort((a, b) => a.name.localeCompare(b.name))
+
+  // ── Local UI state ────────────────────────────────────────────────────────
+  const [selectedCityId, setSelectedCityId] = useState<string>('')
+  const [selectedAreaId, setSelectedAreaId] = useState<string>('')
+  const [geoLoading,    setGeoLoading]    = useState(false)
+  const [geoError,      setGeoError]      = useState('')
+
   const selectedCityObj = sortedCities.find((c) => String(c.id) === selectedCityId)
 
   // ── Areas — loaded only when a city is selected ───────────────────────────
@@ -118,37 +78,23 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
     data: cityAreas,
     isLoading: loadingCityAreas,
   } = useGetAreasByCity({
-    cityId: orderType === 'delivery' && selectedCityId ? selectedCityId : null,
+    cityId: selectedCityId || null,
   })
 
   const areaList: Area[] = cityAreas ?? []
+  const selectedAreaObj = areaList.find((a) => String(a.id) === selectedAreaId)
 
-  // Auto-set first branch when branches load
+  // Auto-select first city when cities load
   useEffect(() => {
-    if (finalBranchList.length > 0) {
-      setSelectedBranchId(finalBranchList[0].id)
-    }
-  }, [finalBranchList.length]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // When selected branch changes (delivery), reset city + area
-  useEffect(() => {
-    if (orderType === 'delivery') {
-      setSelectedCityId('')
-      setSelectedAreaId('')
-    }
-  }, [selectedBranchId, orderType])
-
-  // When cities load for current branch, auto-select first city
-  useEffect(() => {
-    if (orderType === 'delivery' && sortedCities.length > 0 && !selectedCityId) {
+    if (sortedCities.length > 0 && !selectedCityId) {
       setSelectedCityId(String(sortedCities[0].id))
     }
-  }, [sortedCities.length, orderType]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sortedCities.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When selected city changes, reset area selection
+  // When selected city changes, reset area + auto-select first area
   useEffect(() => {
     setSelectedAreaId('')
-    if (orderType === 'delivery' && areaList.length > 0) {
+    if (areaList.length > 0) {
       setSelectedAreaId(String(areaList[0].id))
     }
   }, [selectedCityId, areaList.length]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -170,23 +116,13 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
           const result = await locate(latitude, longitude)
 
           if (result.success) {
-            if (orderType === 'pickup') {
-              if (result.branch_id) {
-                const match = finalBranchList.find((b) => b.numericId === result.branch_id)
-                if (match) setSelectedBranchId(match.id)
-              }
-            } else {
-              // For delivery: locate returns city_id → find branch for that city → set branch → city auto-loads
-              if (result.branch_id) {
-                const match = finalBranchList.find((b) => b.numericId === result.branch_id)
-                if (match) setSelectedBranchId(match.id)
-              }
-              if (result.city_id) {
-                setSelectedCityId(String(result.city_id))
-              }
-              if (result.area_id) {
-                setSelectedAreaId(String(result.area_id))
-              }
+            if (result.city_id) {
+              setSelectedCityId(String(result.city_id))
+            }
+            if (result.area_id) {
+              // Defer area selection one tick so the areas list for this city
+              // has a chance to populate (city change effect above will run)
+              setTimeout(() => setSelectedAreaId(String(result.area_id)), 0)
             }
             setGeoLoading(false)
             return
@@ -195,37 +131,25 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
           // Fall through to Haversine fallback
         }
 
-        // Haversine fallback
-        if (orderType === 'pickup') {
-          const withCoords = finalBranchList.filter((b) => b.lat && b.lng)
-          if (withCoords.length > 0) {
-            const nearest = withCoords.reduce((best, b) =>
-              distanceKm(latitude, longitude, b.lat!, b.lng!) <
-              distanceKm(latitude, longitude, best.lat!, best.lng!)
-                ? b : best
+        // Haversine fallback — find nearest city by lat/lng
+        const citiesWithCoords = sortedCities.filter(
+          (c) => c.latitude != null && c.longitude != null
+        )
+        if (citiesWithCoords.length > 0) {
+          const nearest = citiesWithCoords.reduce((best, c) =>
+            distanceKm(
+              latitude, longitude,
+              parseFloat(String(c.latitude)),
+              parseFloat(String(c.longitude))
+            ) <
+            distanceKm(
+              latitude, longitude,
+              parseFloat(String(best.latitude)),
+              parseFloat(String(best.longitude))
             )
-            setSelectedBranchId(nearest.id)
-          }
-        } else {
-          const citiesWithCoords = sortedCities.filter(
-            (c) => c.latitude != null && c.longitude != null
+              ? c : best
           )
-          if (citiesWithCoords.length > 0) {
-            const nearest = citiesWithCoords.reduce((best, c) =>
-              distanceKm(
-                latitude, longitude,
-                parseFloat(String(c.latitude)),
-                parseFloat(String(c.longitude))
-              ) <
-              distanceKm(
-                latitude, longitude,
-                parseFloat(String(best.latitude)),
-                parseFloat(String(best.longitude))
-              )
-                ? c : best
-            )
-            setSelectedCityId(String(nearest.id))
-          }
+          setSelectedCityId(String(nearest.id))
         }
         setGeoLoading(false)
       },
@@ -243,45 +167,40 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
 
   // ── Confirm ────────────────────────────────────────────────────────────────
   const handleConfirm = () => {
-    if (orderType === 'pickup') {
-      setStoreLocation({
-        branchId:     activeBranch.numericId,
-        branchName:   activeBranch.name,
-        cityId:       null,
-        cityName:     '',
-        areaId:       null,
-        areaName:     '',
-        displayLabel: activeBranch.name,
-      })
-      setLocation(activeBranch.name)
-      setBranch(activeBranch.id)
-      setAreaId(null)
-      onClose()
-    } else {
-      if (!selectedCityId || !selectedAreaId) return
-      const areaObj = areaList.find((a) => String(a.id) === selectedAreaId)
-      if (!areaObj) return
-      const cityName = selectedCityObj?.name ?? ''
+    if (!selectedCityId || !selectedAreaId || !selectedAreaObj) return
 
-      setStoreLocation({
-        branchId:     activeBranch.numericId,
-        branchName:   activeBranch.name,
-        cityId:       selectedCityObj?.id ?? null,
-        cityName,
-        areaId:       areaObj.id,
-        areaName:     areaObj.name,
-        displayLabel: `${areaObj.name}, ${cityName}`,
-      })
+    // Extract IDs from the selected Area object (as returned by backend):
+    //   area.id     → areaId
+    //   area.branch → branchId
+    const areaIdNum: number     = selectedAreaObj.id
+    const branchIdNum: number   = Number(selectedAreaObj.branch)
+    const cityName:  string     = selectedAreaObj.city_name  ?? selectedCityObj?.name ?? ''
+    const branchName: string    = selectedAreaObj.branch_name ?? ''
+    const areaName:   string    = selectedAreaObj.name
+    const displayLabel = orderType === 'pickup'
+      ? branchName || `${areaName}, ${cityName}`
+      : `${areaName}, ${cityName}`
 
-      setLocation(`${areaObj.name}, ${cityName}`)
-      setAreaId(areaObj.id)
-      setBranch(String(activeBranch.numericId))
-      onClose()
-    }
+    // Redux: store location slice (human-readable data)
+    setStoreLocation({
+      branchId:   branchIdNum,
+      branchName: branchName,
+      cityId:     selectedCityObj?.id ?? Number(selectedCityId),
+      cityName,
+      areaId:     areaIdNum,
+      areaName,
+      displayLabel,
+    })
+
+    // Redux: order slice (the canonical branch/area IDs consumed by menu API)
+    setLocation(displayLabel)
+    setAreaId(areaIdNum)
+    setBranch(branchIdNum)
+
+    onClose()
   }
 
-  const canConfirm =
-    orderType === 'pickup' || (!!selectedCityId && !!selectedAreaId)
+  const canConfirm = !!selectedCityId && !!selectedAreaId && !!selectedAreaObj
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -305,6 +224,8 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               width={80}
               height={80}
               className="h-full w-full object-contain"
+              loading="eager"
+              priority
             />
           </div>
         </div>
@@ -320,7 +241,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
               {(['delivery', 'pickup'] as OrderType[]).map((type) => (
                 <button
                   key={type}
-                  onClick={() => { setOrderType(type); setGeoError(''); setSelectedCityId(''); setSelectedAreaId('') }}
+                  onClick={() => { setOrderType(type); setGeoError('') }}
                   className={`rounded-full px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all sm:px-6 sm:py-2 sm:text-xs ${
                     orderType === type
                       ? 'bg-[#000000] text-white shadow-sm'
@@ -337,150 +258,88 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
             <p className="mb-3 text-center text-xs text-red-600">{geoError}</p>
           )}
 
-          {/* ── PICKUP ── */}
-          {orderType === 'pickup' && (
-            <>
-              <p className="mb-3 text-center text-sm font-medium text-neutral-600">
-                Which outlet would you like to pick up from?
+          {/* ── COMMON SECTION: City + Area (same for delivery & pickup) ── */}
+          <p className="mb-3 text-center text-sm font-medium text-neutral-600">
+            {orderType === 'pickup'
+              ? 'Please select your city and area to find the nearest outlet'
+              : 'Please select your delivery location'}
+          </p>
+
+          <div className="mb-3.5 flex justify-center sm:mb-4">
+            <button
+              onClick={handleUseCurrentLocation}
+              disabled={geoLoading}
+              className="flex items-center gap-1.5 rounded-full bg-[#000000] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
+            >
+              {geoLoading ? <Loader2 size={12} className="animate-spin" /> : <Navigation size={12} />}
+              {geoLoading ? 'Detecting...' : 'Use Current Location'}
+            </button>
+          </div>
+
+          {/* City */}
+          <div className="relative mb-2.5 sm:mb-3">
+            {loadingCities ? (
+              <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
+                <Loader2 size={16} className="animate-spin text-[#000000]" />
+              </div>
+            ) : (
+              <select
+                value={selectedCityId}
+                onChange={(e) => { setSelectedCityId(e.target.value); setSelectedAreaId('') }}
+                className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
+              >
+                <option value="">Select City</option>
+                {sortedCities.map((c) => (
+                  <option key={c.id} value={String(c.id)}>{c.name}</option>
+                ))}
+              </select>
+            )}
+            <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          </div>
+
+          {/* Area */}
+          <div className="relative mb-2.5 sm:mb-3">
+            {!selectedCityId ? (
+              <div className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 pr-10 text-xs text-neutral-400 sm:px-4 sm:py-3 sm:text-sm">
+                Select a city first
+              </div>
+            ) : loadingCityAreas ? (
+              <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
+                <Loader2 size={16} className="animate-spin text-[#000000]" />
+              </div>
+            ) : (
+              <select
+                value={selectedAreaId}
+                onChange={(e) => setSelectedAreaId(e.target.value)}
+                disabled={!selectedCityId || areaList.length === 0}
+                className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
+              >
+                <option value="">
+                  {areaList.length === 0 ? 'No areas available' : 'Select your area'}
+                </option>
+                {areaList.map((a: Area) => (
+                  <option key={a.id} value={String(a.id)}>{a.name}</option>
+                ))}
+              </select>
+            )}
+            <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          </div>
+
+          {/* Branch preview — shows which branch is assigned by the area */}
+          {selectedAreaObj && (
+            <div className="mb-5 rounded-lg bg-neutral-50 px-3 py-3 space-y-1.5 border border-neutral-100">
+              <p className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold sm:text-xs">
+                Assigned Outlet
               </p>
-
-              <div className="mb-3.5 flex justify-center sm:mb-4">
-                <button
-                  onClick={handleUseCurrentLocation}
-                  disabled={geoLoading}
-                  className="flex items-center gap-1.5 rounded-full bg-[#000000] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
-                >
-                  {geoLoading ? <Loader2 size={12} className="animate-spin" /> : <Navigation size={12} />}
-                  {geoLoading ? 'Detecting...' : 'Use Current Location'}
-                </button>
-              </div>
-
-              <div className="relative mb-2.5 sm:mb-3">
-                {loadingBranches ? (
-                  <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#000000]" />
-                  </div>
-                ) : (
-                  <select
-                    value={selectedBranchId}
-                    onChange={(e) => setSelectedBranchId(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    {finalBranchList.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                )}
-                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              </div>
-
-              <div className="mb-5 rounded-lg bg-neutral-50 px-3 py-3 space-y-1.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] font-semibold text-neutral-800 sm:text-xs">
-                      {activeBranch.address || 'Address not available'}
-                    </p>
-                  </div>
-                  <a
-                    href={activeBranch.mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex shrink-0 items-center gap-1 rounded-full bg-[#000000] px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700 transition-colors"
-                  >
-                    Directions <ExternalLink size={9} />
-                  </a>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── DELIVERY ── */}
-          {orderType === 'delivery' && (
-            <>
-              <p className="mb-3 text-center text-sm font-medium text-neutral-600">
-                Please select your delivery location
+              <p className="text-sm font-bold text-neutral-800">
+                {selectedAreaObj.branch_name || '—'}
               </p>
-
-              <div className="mb-3.5 flex justify-center sm:mb-4">
-                <button
-                  onClick={handleUseCurrentLocation}
-                  disabled={geoLoading}
-                  className="flex items-center gap-1.5 rounded-full bg-[#000000] px-4 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1f1f1f] disabled:opacity-60 transition-colors sm:gap-2 sm:px-5 sm:py-2 sm:text-xs"
-                >
-                  {geoLoading ? <Loader2 size={12} className="animate-spin" /> : <Navigation size={12} />}
-                  {geoLoading ? 'Detecting...' : 'Use Current Location'}
-                </button>
-              </div>
-
-              {/* Branch selector (for delivery: determines which cities to load) */}
-              <div className="relative mb-2.5 sm:mb-3">
-                {loadingBranches ? (
-                  <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#000000]" />
-                  </div>
-                ) : (
-                  <select
-                    value={selectedBranchId}
-                    onChange={(e) => { setSelectedBranchId(e.target.value); setSelectedCityId(''); setSelectedAreaId('') }}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    {finalBranchList.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                )}
-                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              </div>
-
-              {/* City */}
-              <div className="relative mb-2.5 sm:mb-3">
-                {loadingCities ? (
-                  <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#000000]" />
-                  </div>
-                ) : (
-                  <select
-                    value={selectedCityId}
-                    onChange={(e) => { setSelectedCityId(e.target.value); setSelectedAreaId('') }}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    <option value="">Select City</option>
-                    {sortedCities.map((c) => (
-                      <option key={c.id} value={String(c.id)}>{c.name}</option>
-                    ))}
-                  </select>
-                )}
-                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              </div>
-
-              {/* Area */}
-              <div className="relative mb-2.5 sm:mb-3">
-                {!selectedCityId ? (
-                  <div className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 pr-10 text-xs text-neutral-400 sm:px-4 sm:py-3 sm:text-sm">
-                    Select a city first
-                  </div>
-                ) : loadingCityAreas ? (
-                  <div className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 flex items-center justify-center">
-                    <Loader2 size={16} className="animate-spin text-[#000000]" />
-                  </div>
-                ) : (
-                  <select
-                    value={selectedAreaId}
-                    onChange={(e) => setSelectedAreaId(e.target.value)}
-                    disabled={!selectedCityId || areaList.length === 0}
-                    className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 pr-10 text-xs text-neutral-700 focus:border-[#000000] focus:outline-none focus:ring-1 focus:ring-[#000000] disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 sm:px-4 sm:py-3 sm:text-sm"
-                  >
-                    <option value="">
-                      {areaList.length === 0 ? 'No areas available' : 'Select your area'}
-                    </option>
-                    {areaList.map((a: Area) => (
-                      <option key={a.id} value={String(a.id)}>{a.name}</option>
-                    ))}
-                  </select>
-                )}
-                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              </div>
-            </>
+              {orderType === 'delivery' && (
+                <p className="text-[11px] sm:text-xs text-neutral-500">
+                  Serving area: {selectedAreaObj.name}, {selectedAreaObj.city_name}
+                </p>
+              )}
+            </div>
           )}
 
           <button

@@ -114,6 +114,7 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
       image:          product.image,
       selectedOption: defaultOption || undefined,
       variantId:      defaultSize ? defaultSize.sizeId : undefined,
+      sizeFk:         defaultSize ? defaultSize.sizeFk : undefined,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)

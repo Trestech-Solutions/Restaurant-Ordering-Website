@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName]   = useState('')
 
-  const { data: profile, isLoading: profileLoading, refetch } = useGetMyProfile()
+  const { data: profile, isLoading: profileLoading, refetch } = useGetMyProfile({ enabled: !!user })
 
   const updater = useUpdateMyProfile({
     onSuccess(p) {

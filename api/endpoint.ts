@@ -4,6 +4,7 @@ const API_ENDPOINTS = {
     getCities:      '/storefront/cities/',      // ?branch=<branch_id>  ← NEW: filtered by branch
     getAreas:       '/storefront/areas/',       // ?city=<city_id>       ← NEW: filtered by city
     getMenu:        '/storefront/menu/',        // ?branch=<id>&area=<id optional>
+    getSettings:    '/storefront/settings/',    // ?restaurant=<id>
     locate:         '/storefront/locate/',      // ?lat=<lat>&lng=<lng>&restaurant=<id optional>
   },
 
@@ -12,8 +13,9 @@ const API_ENDPOINTS = {
     onSpotDeals:   '/storefront/on-spot-deals/', // ?restaurant=<id>&status=true
   },
 
-  StorefrontCheckout: {
-    checkout: '/storefront/checkout/',
+  StorefrontOrders: {
+    create: '/storefront/orders/',
+    detail: (id: number | string) => `/storefront/orders/${id}/`,
   },
 
   StorefrontCustomerAuth: {

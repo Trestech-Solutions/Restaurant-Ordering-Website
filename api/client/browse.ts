@@ -14,6 +14,7 @@ import type {
   FixedDealListParams,
   OnSpotDeal,
   OnSpotDealListParams,
+  StoreSettings,
 } from '../types';
 import { useEffect as reactUseEffect } from 'react';
 
@@ -285,6 +286,47 @@ export async function locate(
   if (restaurantId) params.restaurant = restaurantId;
   const r = await api.get<LocateResponse>(API_ENDPOINTS.StorefrontBrowse.locate, { params });
   return r.data;
+}
+
+// ─── Store Settings ──────────────────────────────────────────────────────────
+// Backend does not expose a dedicated /settings endpoint; instead the global
+// settings live inside MenuResponse.settings. This hook piggy-backs on useGetMenu
+// and extracts just the settings block, reusing the react-query cache so we
+// never issue a duplicate /menu/ request for the same branch+area.
+
+export function useGetSettings(params?: {
+  branchId?: string | number | null
+  areaId?: string | number | null
+  onSuccess?: (data: StoreSettings) => void
+  onError?: (message: string) => void
+}) {
+  const bid = params?.branchId ?? null
+  const aid = params?.areaId ?? null
+
+  const menu = useGetMenu({
+    branchId: bid,
+    areaId: aid,
+  })
+
+  reactUseEffect(() => {
+    if (menu.data?.settings && params?.onSuccess) {
+      params.onSuccess(menu.data.settings)
+    }
+  }, [menu.data]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  reactUseEffect(() => {
+    if (menu.error && params?.onError) {
+      const msg = (menu.error as ApiError)?.detail || 'Failed to load settings'
+      params.onError(msg)
+    }
+  }, [menu.error]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const settings = menu.data?.settings ?? ({} as StoreSettings)
+
+  return {
+    ...menu,
+    data: settings,
+  }
 }
 
 // ─── Fixed Deals ──────────────────────────────────────────────────────────────

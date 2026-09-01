@@ -5,17 +5,20 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { CheckCircle, Circle, Plus, Bike, ArrowLeft, Navigation, Loader2 } from 'lucide-react'
-import { useCart, type CartItem } from '@/lib/hooks/useCart'
-import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
+import {
+  useCart, useStoreSettings,
+  DEFAULT_TAX_RATE, DEFAULT_DELIVERY_FEE,
+  type CartItem,
+} from '@/lib/hooks/useCart'
 import { UK_BRANCHES } from '@/components/website/OrderTypeModal'
 import { useCheckout, buildCheckoutPayload } from '@/api/client/checkout'
 import { useGetAddresses, useAddAddress } from '@/api/client/customer'
 import { PaymentSection } from '@/components/checkout/PaymentSection'
 import type { CheckoutFormValues } from '@/components/checkout/types'
+import OrderStatusTimeline, { ApprovalBanner } from '@/components/order/OrderStatusTimeline'
 
-const TAX_RATE     = 0.18
-const DELIVERY_FEE = 200
-const UK_PHONE     = '021-111-022-022'
+const TAX_RATE = DEFAULT_TAX_RATE
+const UK_PHONE = '021-111-022-022'
 
 const inputClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] placeholder:text-neutral-400'
@@ -29,6 +32,7 @@ interface OrderSnapshot {
   orderId: number
   orderType: string
   status: string
+  placedAt: string
   customerName: string
   customerPhone: string
   customerAddress: string
@@ -43,7 +47,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const {
     items, orderType, user, addAddress: addLocalAddress,
-    branch, location, subtotal, clearCart, cartToken: liveCartToken,
+    branch, branchId, areaId, location, subtotal, clearCart, cartToken: liveCartToken,
   } = useCart()
 
   // ─── form ──────────────────────────────────────────────────────────────────
@@ -70,7 +74,7 @@ export default function CheckoutPage() {
   const formValues = watch()
 
   // ─── API addresses (logged-in) ─────────────────────────────────────────────
-  const { data: apiAddresses = [], isLoading: loadingAddresses } = useGetAddresses()
+  const { data: apiAddresses = [], isLoading: loadingAddresses } = useGetAddresses({ enabled: !!user })
   const apiAddrAdder = useAddAddress({
     onSuccess(newAddr) {
       setValue('selectedAddressId', String(newAddr.id))
@@ -92,10 +96,38 @@ export default function CheckoutPage() {
     }
   }, [apiAddresses]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ─── store settings ───────────────────────────────────────────────────────
+  const { settings } = useStoreSettings()
+
+  // Delivery fee from settings, fallback to DEFAULT_DELIVERY_FEE
+  const deliveryFeeRaw = orderType === 'delivery'
+    ? (settings.deliveryFee > 0 ? settings.deliveryFee : DEFAULT_DELIVERY_FEE)
+    : 0
+
+  // Free delivery if subtotal meets threshold
+  const effectiveDeliveryFee =
+    orderType === 'delivery' && subtotal >= settings.freeDeliveryAboveSubtotal
+      ? 0
+      : deliveryFeeRaw
+
+  const packagingFee = settings.packagingCharge
+  const convenience  = settings.convenienceFee
+
   // ─── derived ──────────────────────────────────────────────────────────────
-  const tax        = Math.round(subtotal * TAX_RATE)
-  const fee        = orderType === 'delivery' ? DELIVERY_FEE : 0
-  const grandTotal = subtotal + tax + fee
+  const tax            = Math.round(subtotal * TAX_RATE)
+  const grandTotal     = subtotal + tax + effectiveDeliveryFee + packagingFee + convenience
+  const checkoutNote   = settings.checkout_note
+  const orderTypeStr   = orderType as string
+  const estMins        = orderTypeStr === 'pickup'
+    ? settings.pickupTimeMinutes
+    : orderTypeStr === 'dinein'
+      ? settings.dineinTimeMinutes
+      : settings.deliveryTimeMinutes
+  const typeMessage    = orderTypeStr === 'pickup'
+    ? settings.message_for_pickup
+    : orderTypeStr === 'dinein'
+      ? settings.message_for_dinein
+      : settings.message_for_delivery
 
   const selectedAddr = apiAddresses.find(
     (a) => String(a.id) === formValues.selectedAddressId
@@ -127,6 +159,7 @@ export default function CheckoutPage() {
         orderId:       res.id,
         orderType:     res.order_type,
         status:        res.status,
+        placedAt:      (res as any).created_at ?? new Date().toISOString(),
         customerName:  res.customer_name,
         customerPhone: res.customer_phone,
         customerAddress: res.customer_address || '',
@@ -163,8 +196,19 @@ export default function CheckoutPage() {
       ? (selectedAddr?.city || '')
       : (orderType === 'delivery' ? (location?.split(', ').pop() || '') : '')
 
+    const resolvedBranchId = branchId ?? (branch ? Number(branch) : undefined)
+    if (!resolvedBranchId || Number.isNaN(resolvedBranchId)) {
+      setErrorMsg('Please select a branch before placing your order.')
+      return
+    }
+    if (items.length === 0) {
+      setErrorMsg('Your cart is empty. Please add items before placing an order.')
+      return
+    }
+
     const payload = buildCheckoutPayload({
-      cart_token:             resolvedToken,
+      branch:                 resolvedBranchId,
+      area:                   areaId ?? null,
       order_type:             orderType as 'delivery' | 'pickup',
       customer_name:          customerName,
       customer_phone:         customerPhone,
@@ -172,6 +216,7 @@ export default function CheckoutPage() {
       customer_city:          customerCity || undefined,
       customer_landmark:      (user ? undefined : values.guestLandmark) || undefined,
       customer_instructions:  values.instructions || undefined,
+      cartItems:              items,
     })
 
     checkoutMutation.checkout(payload)
@@ -233,9 +278,40 @@ export default function CheckoutPage() {
 
             <hr className="border-neutral-100" />
 
+            {settings.close_store && (
+              <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <p className="font-bold">Store is currently closed</p>
+                {settings.close_message && (
+                  <p className="mt-1 text-red-700">{settings.close_message}</p>
+                )}
+              </div>
+            )}
+
             {errorMsg && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {errorMsg}
+              </div>
+            )}
+
+            {/* Checkout note from admin */}
+            {checkoutNote && (
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+                <p className="font-semibold text-neutral-900 mb-0.5">Note</p>
+                <p>{checkoutNote}</p>
+              </div>
+            )}
+
+            {/* Per-order-type message + estimated time */}
+            {(typeMessage || estMins) && (
+              <div className="rounded-lg border border-neutral-200 bg-black/[0.02] px-4 py-3 text-sm text-neutral-700">
+                {estMins && (
+                  <p className="font-bold text-black mb-0.5">
+                    Estimated{' '}
+                    {orderTypeStr === 'pickup' ? 'pickup' : orderTypeStr === 'dinein' ? 'prep' : 'delivery'}{' '}
+                    time: {estMins} min
+                  </p>
+                )}
+                {typeMessage && <p>{typeMessage}</p>}
               </div>
             )}
 
@@ -266,10 +342,12 @@ export default function CheckoutPage() {
                     </div>
                     <input {...register('guestMobile')} placeholder="03xx-xxxxxxx" className={inputClass} />
                   </div>
-                  <div>
-                    <label className={labelClass}>Alternate Mobile</label>
-                    <input {...register('guestAltMobile')} placeholder="03xx-xxxxxxx" className={inputClass} />
-                  </div>
+                  {!settings.hide_alternative_number && (
+                    <div>
+                      <label className={labelClass}>Alternate Mobile</label>
+                      <input {...register('guestAltMobile')} placeholder="03xx-xxxxxxx" className={inputClass} />
+                    </div>
+                  )}
                 </div>
 
                 {orderType === 'delivery' && (
@@ -281,22 +359,28 @@ export default function CheckoutPage() {
                       </div>
                       <input {...register('guestAddress')} placeholder="Enter your complete address" className={inputClass} />
                     </div>
-                    <div>
-                      <label className={labelClass}>Nearest Landmark</label>
-                      <input {...register('guestLandmark')} placeholder="Any famous place nearby" className={inputClass} />
-                    </div>
+                    {!settings.hide_nearest_landmark && (
+                      <div>
+                        <label className={labelClass}>Nearest Landmark</label>
+                        <input {...register('guestLandmark')} placeholder="Any famous place nearby" className={inputClass} />
+                      </div>
+                    )}
                   </>
                 )}
 
-                <div>
-                  <label className={labelClass}>Email (optional)</label>
-                  <input type="email" {...register('guestEmail')} placeholder="Enter your email" className={inputClass} />
-                </div>
+                {!settings.hide_email_address && (
+                  <div>
+                    <label className={labelClass}>Email (optional)</label>
+                    <input type="email" {...register('guestEmail')} placeholder="Enter your email" className={inputClass} />
+                  </div>
+                )}
 
-                <div>
-                  <label className={labelClass}>{orderType === 'pickup' ? 'Pickup Notes' : 'Delivery Instructions'}</label>
-                  <input {...register('instructions')} placeholder="Any special instructions…" className={inputClass} />
-                </div>
+                {!settings.hide_delivery_instructions && (
+                  <div>
+                    <label className={labelClass}>{orderType === 'pickup' ? 'Pickup Notes' : 'Delivery Instructions'}</label>
+                    <input {...register('instructions')} placeholder="Any special instructions…" className={inputClass} />
+                  </div>
+                )}
 
                 <PaymentSection control={control} register={register} orderType={orderType} />
               </div>
@@ -328,7 +412,7 @@ export default function CheckoutPage() {
                           <button key={addr.id} type="button"
                             onClick={() => setValue('selectedAddressId', String(addr.id))}
                             className={`w-full flex items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
-                              sel ? 'border-green-600 bg-green-50 text-green-800'
+                              sel ? 'border-black bg-neutral-50 text-black'
                                   : 'border-neutral-200 text-neutral-700 hover:border-neutral-300'
                             }`}>
                             <div>
@@ -336,7 +420,7 @@ export default function CheckoutPage() {
                               {addr.city && <span className="text-neutral-400">, {addr.city}</span>}
                             </div>
                             {sel
-                              ? <CheckCircle size={18} className="shrink-0 text-green-600" />
+                              ? <CheckCircle size={18} className="shrink-0 text-black" />
                               : <Circle size={18} className="shrink-0 text-neutral-300" />}
                           </button>
                         )
@@ -408,8 +492,36 @@ export default function CheckoutPage() {
               <PriceRow label="Subtotal"  value={`Rs. ${subtotal.toLocaleString()}`} />
               <PriceRow label="Tax 18%"   value={`Rs. ${tax.toLocaleString()}`} />
               {orderType === 'delivery' && (
-                <PriceRow label="Delivery Fee" value={`Rs. ${fee.toLocaleString()}`} />
+                effectiveDeliveryFee > 0 ? (
+                  <PriceRow label="Delivery Fee" value={`Rs. ${effectiveDeliveryFee.toLocaleString()}`} />
+                ) : (
+                  <PriceRow
+                    label={
+                      subtotal >= settings.freeDeliveryAboveSubtotal
+                        ? 'Delivery Fee'
+                        : 'Delivery Fee'
+                    }
+                    value={
+                      subtotal >= settings.freeDeliveryAboveSubtotal
+                        ? <span className="text-black font-bold">FREE</span>
+                        : `Rs. ${effectiveDeliveryFee.toLocaleString()}`
+                    }
+                  />
+                )
               )}
+              {packagingFee > 0 && (
+                <PriceRow label="Packaging Charge" value={`Rs. ${packagingFee.toLocaleString()}`} />
+              )}
+              {convenience > 0 && (
+                <PriceRow label="Convenience Fee" value={`Rs. ${convenience.toLocaleString()}`} />
+              )}
+              {orderType === 'delivery' &&
+               settings.freeDeliveryAboveSubtotal < Infinity &&
+               subtotal < settings.freeDeliveryAboveSubtotal && (
+                 <p className="text-[11px] text-neutral-500 pt-1 -mt-1">
+                   Add Rs. {(settings.freeDeliveryAboveSubtotal - subtotal).toLocaleString()} more for FREE delivery
+                 </p>
+               )}
               <div className="border-t border-neutral-200 pt-3 flex items-center justify-between font-bold text-neutral-900 text-sm">
                 <span>Grand Total</span>
                 <span>Rs. {grandTotal.toLocaleString()}</span>
@@ -436,7 +548,7 @@ export default function CheckoutPage() {
 // ─── Price row ─────────────────────────────────────────────────────────────────
 
 function PriceRow({ label, value, valueClass = 'font-semibold' }: {
-  label: string; value: string; valueClass?: string
+  label: string; value: React.ReactNode; valueClass?: string
 }) {
   return (
     <div className="flex items-center justify-between text-sm text-neutral-600">
@@ -451,51 +563,92 @@ function PriceRow({ label, value, valueClass = 'font-semibold' }: {
 function OrderReceipt({ order, onPlaceAnother }: {
   order: OrderSnapshot; onPlaceAnother: () => void
 }) {
+  const gt = parseFloat(order.grandTotal) || 0
   return (
-    <div className="min-h-screen bg-neutral-50 py-16 px-4">
-      <div className="mx-auto max-w-[560px] space-y-4">
-        <div className="rounded-2xl bg-green-600 px-6 py-8 text-center text-white shadow">
-          <CheckCircle size={48} className="mx-auto mb-3" />
-          <h1 className="text-2xl font-bold">Order Placed!</h1>
-          <p className="mt-1 text-green-100 text-sm">Order #{order.orderId}</p>
-        </div>
+    <div className="min-h-screen bg-neutral-50 py-10 px-4">
+      <div className="mx-auto max-w-[1100px] w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm space-y-3 text-sm">
-          <DetailRow label="Customer"    value={order.customerName} />
-          <DetailRow label="Phone"       value={order.customerPhone} />
-          <DetailRow label="Order Type"  value={order.orderType} />
-          <DetailRow label="Branch"      value={order.branchName} />
-          {order.customerAddress && <DetailRow label="Address" value={order.customerAddress} />}
-          <DetailRow label="Status"      value={order.status} />
-        </div>
-
-        <div className="rounded-2xl bg-white p-6 shadow-sm divide-y divide-neutral-100">
-          <h2 className="pb-3 font-bold text-neutral-800">Items</h2>
-          {order.items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between py-2.5 text-sm">
-              <span className="text-neutral-700">
-                {item.quantity} × {item.name}
-              </span>
-              <span className="font-semibold">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+          {/* ── LEFT COLUMN: Order Details ── */}
+          <div className="space-y-5 min-w-0">
+            {/* Grand total header */}
+            <div className="rounded-2xl bg-[#000000] px-6 py-6 text-center text-white shadow">
+              <p className="text-xs uppercase tracking-wider text-neutral-400 mb-1">
+                Order #{order.orderId} · Grand Total
+              </p>
+              <p className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                Rs. {isNaN(gt) ? order.grandTotal : gt.toLocaleString()}
+              </p>
             </div>
-          ))}
-        </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm space-y-2 text-sm">
-          <PriceRow label="Subtotal"      value={`Rs. ${parseFloat(order.subtotal).toLocaleString()}`} />
-          {parseFloat(order.deliveryCharge) > 0 && (
-            <PriceRow label="Delivery Charge" value={`Rs. ${parseFloat(order.deliveryCharge).toLocaleString()}`} />
-          )}
-          <div className="border-t border-neutral-200 pt-3 flex items-center justify-between font-bold text-neutral-900">
-            <span>Grand Total</span>
-            <span>Rs. {parseFloat(order.grandTotal).toLocaleString()}</span>
+            {/* Order details section */}
+            <div className="space-y-3">
+              <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight pt-2">
+                Order details
+              </h2>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm space-y-3 text-sm">
+                <DetailRow label="Customer"    value={order.customerName} />
+                <DetailRow label="Phone"       value={order.customerPhone} />
+                <DetailRow label="Order Type"  value={order.orderType} />
+                <DetailRow label="Branch"      value={order.branchName} />
+                {order.customerAddress && <DetailRow label="Address" value={order.customerAddress} />}
+                <DetailRow label="Status"      value={order.status} />
+              </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm divide-y divide-neutral-100">
+                <h3 className="pb-3 font-bold text-neutral-800">Products</h3>
+                {order.items.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between py-2.5 text-sm">
+                    <span className="text-neutral-700">
+                      {item.quantity} × {item.name}
+                      {item.selectedOption ? ` (${item.selectedOption})` : ''}
+                    </span>
+                    <span className="font-semibold">
+                      Rs. {(item.price * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-sm space-y-2 text-sm">
+                <PriceRow label="Subtotal"         value={`Rs. ${parseFloat(order.subtotal).toLocaleString()}`} />
+                {parseFloat(order.deliveryCharge) > 0 && (
+                  <PriceRow label="Delivery Charge" value={`Rs. ${parseFloat(order.deliveryCharge).toLocaleString()}`} />
+                )}
+                <div className="border-t border-neutral-200 pt-3 flex items-center justify-between font-bold text-neutral-900">
+                  <span>Grand Total</span>
+                  <span>Rs. {gt.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={onPlaceAnother}
+              className="w-full rounded-xl bg-black py-4 text-sm font-bold text-[#ffffff] hover:bg-[#1f1f1f] transition-colors">
+              Place Another Order
+            </button>
           </div>
-        </div>
 
-        <button onClick={onPlaceAnother}
-          className="w-full rounded-xl bg-black py-4 text-sm font-bold text-[#ffffff] hover:bg-red-700 transition-colors">
-          Place Another Order
-        </button>
+          {/* ── RIGHT COLUMN: Sticky Approval Status ── */}
+          <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+            {/* Approval status timeline */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <OrderStatusTimeline
+                status={order.status}
+                createdAt={order.placedAt}
+                updatedAt={order.placedAt}
+              />
+            </div>
+
+            {/* Good news / status banner */}
+            <ApprovalBanner
+              status={order.status}
+              orderNo={order.orderId}
+              orderHref="/website/profile/myOrders"
+            />
+          </div>
+
+        </div>
       </div>
     </div>
   )

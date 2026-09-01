@@ -2,33 +2,31 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import api from '../axios';
 import API_ENDPOINTS from '../endpoint';
-import { getCartToken } from '../utils';
 import type {
   ApiError,
-  CheckoutPayload,
+  OrderCreatePayload,
+  OrderCreateLine,
   CheckoutResponse,
 } from '../types';
 
 export { extractErrorMessage } from '../types';
 
-// ─── Checkout ─────────────────────────────────────────────────────────────────
-// POST /api/storefront/checkout/
-// Body: { cart_token, order_type, customer_name, customer_phone,
-//         customer_city?, customer_address?, customer_landmark?,
-//         customer_instructions? }
-// Response: Order object (same as OrderSerializer)
+// ─── Re-export alias so old imports keep working ──────────────────────────────
+export type CheckoutPayload = OrderCreatePayload;
+
+// ─── Place Order ──────────────────────────────────────────────────────────────
+// POST /api/storefront/orders/
+// Body: OrderCreatePayload (branch, area, order_type, customer details, items[])
+// Response: Order object (OrderSerializer)
 
 export function useCheckout(options?: {
   onSuccess?: (data: CheckoutResponse) => void;
   onError?: (message: string) => void;
 }) {
-  const mutation = useMutation<CheckoutResponse, ApiError, CheckoutPayload>({
+  const mutation = useMutation<CheckoutResponse, ApiError, OrderCreatePayload>({
     mutationFn: (payload) =>
       api
-        .post<CheckoutResponse>(
-          API_ENDPOINTS.StorefrontCheckout.checkout,
-          payload
-        )
+        .post<CheckoutResponse>(API_ENDPOINTS.StorefrontOrders.create, payload)
         .then((r) => r.data),
     onSuccess(data) {
       toast.success('Order placed successfully!');
@@ -37,10 +35,11 @@ export function useCheckout(options?: {
     onError(err) {
       const e = err as ApiError;
       const msg =
-        e.detail ||
-        (Array.isArray(Object.values(e)[0])
-          ? (Object.values(e)[0] as string[])[0]
-          : 'Failed to place order. Please try again.');
+        typeof e.detail === 'string'
+          ? e.detail
+          : Array.isArray(Object.values(e)[0])
+            ? (Object.values(e)[0] as string[])[0]
+            : 'Failed to place order. Please try again.';
       toast.error(msg);
       options?.onError?.(msg);
     },
@@ -53,9 +52,17 @@ export function useCheckout(options?: {
   };
 }
 
-// ─── Build checkout payload ───────────────────────────────────────────────────
-
-export function buildCheckoutPayload(params: {
+// ─── Build order payload ───────────────────────────────────────────────────────
+/**
+ * Converts the Redux cart items array + checkout form values into the
+ * one-shot OrderCreatePayload the backend expects.
+ *
+ * Cart items whose `id` starts with "fixed_deal_" or "on_spot_deal_" are
+ * mapped to the appropriate line type; everything else is a regular "item".
+ */
+export function buildOrderPayload(params: {
+  branch: number;
+  area?: number | null;
   order_type: 'delivery' | 'pickup' | 'dinein';
   customer_name: string;
   customer_phone: string;
@@ -63,10 +70,59 @@ export function buildCheckoutPayload(params: {
   customer_address?: string;
   customer_landmark?: string;
   customer_instructions?: string;
-  cart_token?: string;
-}): CheckoutPayload {
+  cartItems: {
+    id: string;
+    productId: number | null;
+    quantity: number;
+    variantId?: number | null;
+    sizeFk?: number | null;
+    specialInstructions?: string;
+    // deal group selections (on_spot_deal only)
+    groupSelections?: { group: number; options: number[] }[];
+  }[];
+}): OrderCreatePayload {
+  const safeCartItems = params.cartItems ?? [];
+  const lines: OrderCreateLine[] = safeCartItems
+    .map((cartItem): OrderCreateLine | null => {
+      if (typeof cartItem.id === 'string' && cartItem.id.startsWith('fixed_deal_')) {
+        const dealId = parseInt(cartItem.id.replace('fixed_deal_', ''), 10);
+        if (!dealId) return null;
+        return {
+          type:     'fixed_deal',
+          deal:     dealId,
+          quantity: cartItem.quantity,
+          notes:    cartItem.specialInstructions || '',
+        };
+      }
+
+      if (typeof cartItem.id === 'string' && cartItem.id.startsWith('on_spot_deal_')) {
+        const dealId = parseInt(cartItem.id.replace('on_spot_deal_', ''), 10);
+        if (!dealId) return null;
+        return {
+          type:       'on_spot_deal',
+          deal:       dealId,
+          quantity:   cartItem.quantity,
+          notes:      cartItem.specialInstructions || '',
+          selections: cartItem.groupSelections ?? [],
+        };
+      }
+
+      // Regular menu item
+      if (!cartItem.productId) return null;
+      return {
+        type:     'item',
+        item:     cartItem.productId,
+        size:     cartItem.sizeFk ?? cartItem.variantId ?? null,
+        quantity: cartItem.quantity,
+        notes:    cartItem.specialInstructions || '',
+        addons:   [],
+      };
+    })
+    .filter((line): line is OrderCreateLine => line !== null);
+
   return {
-    cart_token:             params.cart_token || getCartToken() || '',
+    branch:                 params.branch,
+    area:                   params.area ?? null,
     order_type:             params.order_type,
     customer_name:          params.customer_name,
     customer_phone:         params.customer_phone,
@@ -74,20 +130,31 @@ export function buildCheckoutPayload(params: {
     customer_address:       params.customer_address,
     customer_landmark:      params.customer_landmark,
     customer_instructions:  params.customer_instructions,
+    items:                  lines,
   };
 }
 
-// ─── Legacy compat exports (avoid breaking imports elsewhere) ─────────────────
-export const useCheckoutGuest      = useCheckout;
-export const useCheckoutLoggedIn   = useCheckout;
-export const buildGuestPayload     = buildCheckoutPayload;
-export const buildLoggedInPayload  = buildCheckoutPayload;
+/** Legacy alias — keep old call-sites compiling. */
+export const buildCheckoutPayload = buildOrderPayload;
 
-// ─── useGetOrder stub (no order detail endpoint in current backend) ────────────
-export function useGetOrder(_params: { orderId: string | number | null }): {
-  data: Record<string, unknown> | undefined;
-  isLoading: boolean;
-  error: null;
-} {
-  return { data: undefined, isLoading: false, error: null };
+// ─── Legacy compat exports ─────────────────────────────────────────────────────
+export const useCheckoutGuest     = useCheckout;
+export const useCheckoutLoggedIn  = useCheckout;
+export const buildGuestPayload    = buildOrderPayload;
+export const buildLoggedInPayload = buildOrderPayload;
+
+// ─── Get Order detail ──────────────────────────────────────────────────────────
+// GET /api/storefront/orders/<id>/
+export function useGetOrder(params: { orderId: string | number | null }) {
+  // Not using useQuery here — orders are fetched once on the receipt page
+  // and the response is already returned from the create mutation.
+  // Keeping this as a plain async helper; call it from a component effect if needed.
+  const fetch = async () => {
+    if (!params.orderId) return null;
+    const res = await api.get<CheckoutResponse>(
+      API_ENDPOINTS.StorefrontOrders.detail(params.orderId)
+    );
+    return res.data;
+  };
+  return { fetch, data: undefined as CheckoutResponse | undefined, isLoading: false, error: null };
 }

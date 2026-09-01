@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
-import { CartProvider, useCart } from '@/lib/hooks/useCart'
+import {
+  CartProvider, StoreSettingsProvider, useCart, useStoreSettings,
+} from '@/lib/hooks/useCart'
 import { ReduxProvider } from '@/redux/Provider'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CartBar } from '@/components/cart/CartBar'
@@ -14,11 +16,16 @@ import { CorporateOrderModal } from '@/components/website/CorporateOrderModal'
 import { MenuDrawer } from '@/components/website/MenuDrawer'
 import { OrderTypeModal } from '@/components/website/OrderTypeModal'
 
+const DEFAULT_PATTERN_URL =
+  'https://assets.indolj.io/upload/1693394669-Final-Pattern.png'
+
 export default function WebsiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <ReduxProvider>
       <CartProvider>
-        <WebsiteLayoutInner>{children}</WebsiteLayoutInner>
+        <StoreSettingsProvider>
+          <WebsiteLayoutInner>{children}</WebsiteLayoutInner>
+        </StoreSettingsProvider>
       </CartProvider>
     </ReduxProvider>
   )
@@ -26,20 +33,31 @@ export default function WebsiteLayout({ children }: { children: React.ReactNode 
 
 function WebsiteLayoutInner({ children }: { children: React.ReactNode }) {
   const { locationModalOpen, closeLocationModal } = useCart()
+  const { settings } = useStoreSettings()
   const [authModalOpen, setAuthModalOpen]           = useState(false)
   const [corporateModalOpen, setCorporateModalOpen] = useState(false)
   const [menuOpen, setMenuOpen]                     = useState(false)
 
+  // Background: prefer menu_page_background_image → background_color → default pattern
+  const bgImage = settings.menu_page_background_image || DEFAULT_PATTERN_URL
+  const bgColor = settings.background_color || ''
+
   return (
     <div
       style={{
-        backgroundImage: `url("https://assets.indolj.io/upload/1693394669-Final-Pattern.png")`,
+        ...(bgColor ? { backgroundColor: bgColor } : {}),
+        backgroundImage: `url("${bgImage}")`,
         backgroundRepeat: 'repeat',
         backgroundSize: 'auto',
         backgroundAttachment: 'fixed',
         minHeight: '100vh',
       }}
     >
+      {settings.close_store && settings.close_message && (
+        <div className="sticky top-0 z-40 bg-red-600 text-white text-center text-xs sm:text-sm py-2 px-3 font-semibold">
+          Store is currently closed — {settings.close_message}
+        </div>
+      )}
       <WebsiteBootstrap />
       <CartDrawer />
 
