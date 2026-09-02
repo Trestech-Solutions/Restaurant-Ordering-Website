@@ -2,6 +2,7 @@
 
 import { Icon } from '@iconify/react'
 import Image from 'next/image'
+import { useStoreSettings } from '@/lib/hooks/useCart'
 
 type CategoryIcon = { type: 'image'; value: string } | { type: 'iconify'; value: string }
 
@@ -17,8 +18,11 @@ interface CategoryNavProps {
 }
 
 export function CategoryNav({ categories, activeCategoryId, onSelect }: CategoryNavProps) {
+  const { settings } = useStoreSettings()
+  const navBg = settings.category_navbar_background_color || '#000000'
+
   return (
-    <nav className="bg-black sticky top-0 z-30">
+    <nav className="sticky top-0 z-30" style={{ backgroundColor: navBg }}>
       <div className="mx-auto flex max-w-[1400px] overflow-x-auto scrollbar-hide snap-x snap-mandatory touch-pan-x">
         {categories.map((cat) => {
           const isActive = cat.id === activeCategoryId

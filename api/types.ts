@@ -301,7 +301,7 @@ export type StoreSettings = {
   dinein_time?: string | number | null
   pickup_time?: string | number | null
 
-  // Per-order-type messages
+  // Per-order-type messages (global / regular ordering)
   message_for_delivery?: string
   message_for_dinein?: string
   message_for_pickup?: string
@@ -309,6 +309,45 @@ export type StoreSettings = {
   // Close messages
   close_message?: string
   holiday_close_message?: string
+
+  // ─── Branch-level settings overrides ──────────────────────────────────────
+
+  branch?: number | null
+
+  enable_save_my_info?: boolean
+
+  // General / always preorder
+  days_forward_for_always_preorder?: number | null
+  message_for_always_preorder?: string
+  time_slot_difference_minutes?: number | null
+
+  // Delivery (Regular Ordering) — order-type specific per mode
+  delivery_delivery_time?: string | number | null
+  delivery_pickup_time?: string | number | null
+  delivery_dinein_time?: string | number | null
+  delivery_minimum_order?: string | number | null
+  delivery_message_for_delivery?: string
+  delivery_message_for_pickup?: string
+  delivery_message_for_dinein?: string
+  delivery_message_instruction?: string
+
+  // Preorder (Scheduled Ahead)
+  preorder_delivery_time?: string | number | null
+  preorder_pickup_time?: string | number | null
+  preorder_dinein_time?: string | number | null
+  preorder_minimum_order?: string | number | null
+  preorder_message_for_delivery?: string
+  preorder_message_for_pickup?: string
+  preorder_message_for_dinein?: string
+  preorder_message_instruction?: string
+
+  // Discount toggles
+  apply_offer_discount_as_on_web_ordering?: boolean
+  apply_item_wise_discount_as_on_web_ordering?: boolean
+
+  // Exclusions
+  excluded_categories?: number[]
+  excluded_items?: number[]
 }
 
 export type Branch = {

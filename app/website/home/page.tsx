@@ -5,7 +5,9 @@ import Image from 'next/image'
 import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
-import { useCart, useRegisterProductId } from '@/lib/hooks/useCart'
+import {
+  useCart, useRegisterProductId, useStoreSettings,
+} from '@/lib/hooks/useCart'
 import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import { CategoryNav } from '@/components/website/CategoryNav'
 import { SearchBar } from '@/components/website/SearchBar'
@@ -17,22 +19,10 @@ import { isDealActiveNowPKT } from '@/utils/dealTime'
 import type { ProductData } from '@/components/product/ProductCard'
 import type { MenuResponse, MenuItem, MenuFixedDeal, MenuOnSpotDeal } from '@/api/types'
 
-const HERO_SLIDES = [
-  {
-    id: 'slide-1',
-    image: '/web/b1.webp',
-    title: "mango"
-  },
-  {
-    id: 'slide-2',
-    image: '/web/b2.webp',
-    title: "mango"
-  },
-    {
-    id: 'slide-3',
-    image: '/web/b3.webp',
-    title: "mango"
-  },
+const HERO_SLIDES_FALLBACK = [
+  { id: 'slide-1', image: '/web/b1.webp', title: 'mango' },
+  { id: 'slide-2', image: '/web/b2.webp', title: 'mango' },
+  { id: 'slide-3', image: '/web/b3.webp', title: 'mango' },
 ]
 
 const DEFAULT_ICON = 'solar:cup-hot-bold-duotone'
@@ -44,10 +34,9 @@ function resolveMediaUrl(path?: string | null): string | undefined {
   if (!path || path.trim() === '') return undefined
   if (path.startsWith('http')) return path
   if (path.startsWith('/')) {
-    const base = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
+    const base = MEDIA_BASE.replace(/\/+$/, '').replace(/\/api$/i, '')
     if (!base) return undefined
-    const origin = base.replace(/\/+$/, '').replace(/\/api$/i, '')
-    return `${origin}${path}`
+    return `${base}${path}`
   }
   return path
 }
@@ -545,9 +534,46 @@ function ContentSkeleton() {
   )
 }
 
+type HeroSlide = {
+  id: string
+  image: string
+  title?: string
+  heading?: string
+  headingColor?: string
+  description?: string
+  descriptionColor?: string
+  link?: string
+}
+
+/** Build hero slides from settings, falling back to local static ones when API data is empty. */
+function buildHeroSlides(settings: ReturnType<typeof useStoreSettings>['settings']): HeroSlide[] {
+  const indices: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4]
+  const fromSettings = indices
+    .map((i) => {
+      const img = resolveMediaUrl(
+        (settings as any)[`slide_image_${i}`] as string | null | undefined,
+      )
+      if (!img) return null
+      return {
+        id: `settings-slide-${i}`,
+        image: img,
+        heading: (settings as any)[`heading_text_${i}`] as string | undefined,
+        headingColor: (settings as any)[`heading_color_${i}`] as string | undefined,
+        description: (settings as any)[`description_text_${i}`] as string | undefined,
+        descriptionColor: (settings as any)[`description_color_${i}`] as string | undefined,
+        link: (settings as any)[`slide_link_${i}`] as string | undefined,
+      }
+    })
+    .filter((s) => s !== null) as HeroSlide[]
+
+  if (fromSettings.length > 0) return fromSettings
+  return HERO_SLIDES_FALLBACK
+}
+
 export default function HomePage() {
   const { branch } = useCart()
   const { branchId: reduxBranchId, areaId: reduxAreaId } = useStoreLocation()
+  const { settings } = useStoreSettings()
   const registerProductId = useRegisterProductId()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -560,6 +586,9 @@ export default function HomePage() {
     branchId: numericBranch,
     areaId: numericArea,
   })
+
+  // ── Hero slides: prefer settings.slide_image_N, fallback to static files ─
+  const HERO_SLIDES = useMemo(() => buildHeroSlides(settings), [settings])
 
   const { categories, products, idPairs } = useMemo(() => transformMenu(menu), [menu])
 
@@ -634,16 +663,52 @@ export default function HomePage() {
       {/* Hero carousel — black inset card, rounded, with floating arrows + pill pagination */}
       <section className="bg-white px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
         <div className="relative mx-auto h-[20vh] w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 sm:h-[40vh] sm:rounded-3xl md:h-[55vh] lg:h-[70vh] xl:h-[75vh]">
-          {HERO_SLIDES.map((s, i) => (
-            <div
-              key={s.id}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                i === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              <Image src={s.image} alt={s.title} fill priority={i === 0} className="object-cover object-center" />
-            </div>
-          ))}
+          {HERO_SLIDES.map((s, i) => {
+            const isActive = i === currentSlide
+            const isExternal = s.link && /^https?:\/\//i.test(s.link)
+            const Wrapper: React.FC<{ children: React.ReactNode }> = s.link
+              ? ({ children }) =>
+                  isExternal
+                    ? (
+                        <a href={s.link!} target="_blank" rel="noopener noreferrer" className="absolute inset-0 block">{children}</a>
+                      )
+                    : (
+                        <a href={s.link!} className="absolute inset-0 block">{children}</a>
+                      )
+              : ({ children }) => <>{children}</>
+            return (
+              <div
+                key={s.id}
+                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                  isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+              >
+                <Wrapper>
+                  <Image src={s.image} alt={s.title || s.heading || 'slide'} fill priority={i === 0} className="object-cover object-center" />
+                  {(s.heading || s.description) && (
+                    <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent px-6 pb-10 sm:px-12 sm:pb-16 md:px-16">
+                      {s.heading && (
+                        <h2
+                          className="text-2xl font-extrabold tracking-tight drop-shadow-lg sm:text-3xl md:text-5xl"
+                          style={{ color: s.headingColor || '#ffffff' }}
+                        >
+                          {s.heading}
+                        </h2>
+                      )}
+                      {s.description && (
+                        <p
+                          className="mt-2 max-w-2xl text-sm font-medium leading-snug drop-shadow sm:text-base md:text-lg"
+                          style={{ color: s.descriptionColor || '#f5f5f5' }}
+                        >
+                          {s.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </Wrapper>
+              </div>
+            )
+          })}
 
           {/* Prev / Next arrows — floating circular, inset from the card edges */}
           <button
@@ -679,14 +744,16 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Secure payments badge — hide on xs, show sm+ */}
-          <div className="absolute bottom-4 right-3 z-20 hidden rounded-md bg-white/95 px-2 py-1 shadow-md sm:bottom-6 sm:right-6 sm:flex sm:flex-col sm:gap-1 sm:px-4 sm:py-2">
-            <span className="text-[8px] font-bold tracking-wide text-neutral-700 sm:text-[10px]">SECURE PAYMENTS</span>
-            <div className="flex gap-1 sm:gap-2">
-              <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-blue-700 sm:px-2 sm:text-[10px]">VISA</span>
-              <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-orange-600 sm:px-2 sm:text-[10px]">MasterCard</span>
+          {/* Secure payments badge — respect hide_payment_card_logo_from_banner */}
+          {settings.hide_payment_card_logo_from_banner !== true && (
+            <div className="absolute bottom-4 right-3 z-20 hidden rounded-md bg-white/95 px-2 py-1 shadow-md sm:bottom-6 sm:right-6 sm:flex sm:flex-col sm:gap-1 sm:px-4 sm:py-2">
+              <span className="text-[8px] font-bold tracking-wide text-neutral-700 sm:text-[10px]">SECURE PAYMENTS</span>
+              <div className="flex gap-1 sm:gap-2">
+                <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-blue-700 sm:px-2 sm:text-[10px]">VISA</span>
+                <span className="rounded border border-neutral-300 px-1.5 py-0.5 text-[8px] font-bold text-orange-600 sm:px-2 sm:text-[10px]">MasterCard</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

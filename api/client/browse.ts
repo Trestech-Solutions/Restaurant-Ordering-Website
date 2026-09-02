@@ -321,7 +321,9 @@ export function useGetSettings(params?: {
     }
   }, [menu.error]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const settings = menu.data?.settings ?? ({} as StoreSettings)
+  const baseSettings = menu.data?.settings ?? ({} as StoreSettings)
+  const branchSettings = menu.data?.branch_settings ?? ({} as Partial<StoreSettings>)
+  const settings = { ...baseSettings, ...branchSettings } as StoreSettings
 
   return {
     ...menu,

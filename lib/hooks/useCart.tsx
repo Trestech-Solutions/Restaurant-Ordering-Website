@@ -289,12 +289,33 @@ export interface StoreSettingsDerived extends StoreSettings {
   convenienceFee: number
   /** free_delivery_above_subtotal parsed as number; Infinity means "never free" */
   freeDeliveryAboveSubtotal: number
-  /** delivery_time parsed as number (minutes) */
+  /** delivery_time parsed as number (minutes) — global/legacy */
   deliveryTimeMinutes: number | null
-  /** pickup_time parsed as number (minutes) */
+  /** pickup_time parsed as number (minutes) — global/legacy */
   pickupTimeMinutes: number | null
-  /** dinein_time parsed as number (minutes) */
+  /** dinein_time parsed as number (minutes) — global/legacy */
   dineinTimeMinutes: number | null
+
+  // ─── Branch-level / per-mode numeric helpers ─────────────────────────────
+
+  daysForwardForAlwaysPreorder: number | null
+  timeSlotDifferenceMinutes: number | null
+
+  /** Delivery mode — Regular (non-preorder): delivery time minutes */
+  deliveryDeliveryTimeMinutes: number | null
+  /** Delivery mode — Regular (non-preorder): pickup time minutes */
+  deliveryPickupTimeMinutes: number | null
+  /** Delivery mode — Regular (non-preorder): dinein time minutes */
+  deliveryDineinTimeMinutes: number | null
+  deliveryMinimumOrder: number | null
+
+  /** Preorder mode: delivery time minutes */
+  preorderDeliveryTimeMinutes: number | null
+  /** Preorder mode: pickup time minutes */
+  preorderPickupTimeMinutes: number | null
+  /** Preorder mode: dinein time minutes */
+  preorderDineinTimeMinutes: number | null
+  preorderMinimumOrder: number | null
 }
 
 interface StoreSettingsContextType {
@@ -304,6 +325,13 @@ interface StoreSettingsContextType {
 }
 
 const StoreSettingsContext = createContext<StoreSettingsContextType | undefined>(undefined)
+
+function toPositiveNumberOrNull(
+  v: string | number | null | undefined,
+): number | null {
+  const n = toNumber(v, NaN)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
 
 function deriveSettings(raw: StoreSettings | undefined): StoreSettingsDerived {
   const r = (raw ?? {}) as StoreSettings
@@ -316,18 +344,22 @@ function deriveSettings(raw: StoreSettings | undefined): StoreSettingsDerived {
       const n = toNumber(r.free_delivery_above_subtotal, NaN)
       return Number.isFinite(n) && n > 0 ? n : Infinity
     })(),
-    deliveryTimeMinutes: (() => {
-      const n = toNumber(r.delivery_time, NaN)
-      return Number.isFinite(n) && n > 0 ? n : null
-    })(),
-    pickupTimeMinutes: (() => {
-      const n = toNumber(r.pickup_time, NaN)
-      return Number.isFinite(n) && n > 0 ? n : null
-    })(),
-    dineinTimeMinutes: (() => {
-      const n = toNumber(r.dinein_time, NaN)
-      return Number.isFinite(n) && n > 0 ? n : null
-    })(),
+    deliveryTimeMinutes: toPositiveNumberOrNull(r.delivery_time),
+    pickupTimeMinutes:   toPositiveNumberOrNull(r.pickup_time),
+    dineinTimeMinutes:   toPositiveNumberOrNull(r.dinein_time),
+
+    daysForwardForAlwaysPreorder: toPositiveNumberOrNull(r.days_forward_for_always_preorder),
+    timeSlotDifferenceMinutes:    toPositiveNumberOrNull(r.time_slot_difference_minutes),
+
+    deliveryDeliveryTimeMinutes: toPositiveNumberOrNull(r.delivery_delivery_time),
+    deliveryPickupTimeMinutes:   toPositiveNumberOrNull(r.delivery_pickup_time),
+    deliveryDineinTimeMinutes:   toPositiveNumberOrNull(r.delivery_dinein_time),
+    deliveryMinimumOrder:        toPositiveNumberOrNull(r.delivery_minimum_order),
+
+    preorderDeliveryTimeMinutes: toPositiveNumberOrNull(r.preorder_delivery_time),
+    preorderPickupTimeMinutes:   toPositiveNumberOrNull(r.preorder_pickup_time),
+    preorderDineinTimeMinutes:   toPositiveNumberOrNull(r.preorder_dinein_time),
+    preorderMinimumOrder:        toPositiveNumberOrNull(r.preorder_minimum_order),
   }
 }
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Check, Minus, Plus } from 'lucide-react'
-import { useCart } from '@/lib/hooks/useCart'
+import { useCart, useStoreSettings } from '@/lib/hooks/useCart'
 
 export interface SizeMeta {
   sizeId: number                  // size_prices.id — cart variantId PK
@@ -61,7 +61,23 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onOpen }: ProductCardProps) {
   const { addItem, items, updateQuantity, removeItem } = useCart()
+  const { settings } = useStoreSettings()
   const [added, setAdded] = useState(false)
+
+  // ─── Visual overrides from settings ──────────────────────────────────────
+  const priceBg = settings.item_price_background
+  const priceFg = settings.item_price_text_color
+  const priceBorder = settings.item_price_border_color
+  const discountBg = settings.discount_background_color
+  const discountFg = settings.discount_text_color
+  const stackTagBg = settings.stack_tag_background_color
+  const stackTagFg = settings.stack_tag_color
+  const priceRoundedCenter = Boolean(settings.price_rounder_center)
+  const showStackTag = Boolean(settings.show_stack_tag_on_item)
+  // If item not available and policy is 'hide' — bail out completely
+  if (!product.productId && !product.dealMeta && settings.if_item_not_available === 'hide') {
+    return null
+  }
 
   // Default size is always the first one — no in-card size switching.
   const hasSizes = !!product.sizes && product.sizes.length > 0
@@ -181,16 +197,28 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
 
         {/* Price */}
         {isOrderable && (
-          <div className="mt-2 flex items-baseline gap-1.5 sm:mt-3 sm:gap-2">
+          <div className={`mt-2 flex items-baseline gap-1.5 sm:mt-3 sm:gap-2 ${
+            priceRoundedCenter ? 'justify-center rounded-2xl px-3 py-2 border' : ''
+          }`} style={{
+            ...(priceRoundedCenter && priceBg ? { backgroundColor: priceBg } : {}),
+            ...(priceRoundedCenter && priceFg ? { color: priceFg } : {}),
+            ...(priceRoundedCenter && priceBorder ? { borderColor: priceBorder } : {}),
+            ...(priceRoundedCenter && !priceBorder ? { borderColor: 'rgba(0,0,0,0.08)' } : {}),
+          }}>
             {product.fromLabel && (
-              <span className="text-xs text-neutral-500 sm:text-sm">From</span>
+              <span className={`text-xs sm:text-sm ${priceFg ? '' : 'text-neutral-500'}`}
+                style={priceFg ? { color: priceFg, opacity: 0.85 } : undefined}>
+                From
+              </span>
             )}
             {displayOriginal && (
-              <span className="text-xs text-neutral-400 line-through sm:text-sm">
+              <span className={`text-xs line-through sm:text-sm ${priceFg ? '' : 'text-neutral-400'}`}
+                style={priceFg ? { color: priceFg, opacity: 0.55 } : undefined}>
                 Rs.{parseInt(displayOriginal, 10).toLocaleString()}
               </span>
             )}
-            <span className="text-base font-bold text-neutral-900 sm:text-lg">
+            <span className={`text-base font-bold sm:text-lg ${priceFg ? '' : 'text-neutral-900'}`}
+              style={priceFg ? { color: priceFg } : undefined}>
               Rs. {price.toLocaleString()}
             </span>
           </div>
@@ -250,13 +278,29 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
-        {product.tag && (
+        {product.tag && showStackTag ? (
+          <span
+            className="absolute left-1.5 top-1.5 rounded px-2 py-0.5 text-[9px] font-bold shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]"
+            style={{
+              backgroundColor: stackTagBg || '#ffffff',
+              color: stackTagFg || '#000000',
+            }}
+          >
+            {product.tag}
+          </span>
+        ) : product.tag && !showStackTag ? (
           <span className="absolute left-1.5 top-1.5 rounded bg-white px-2 py-0.5 text-[9px] font-bold text-neutral-900 shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]">
             {product.tag}
           </span>
-        )}
+        ) : null}
         {displayDiscount && (
-          <span className="absolute right-1.5 top-1.5 rounded bg-[#f2c14e] px-2 py-0.5 text-[9px] font-bold text-neutral-900 shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]">
+          <span
+            className="absolute right-1.5 top-1.5 rounded px-2 py-0.5 text-[9px] font-bold shadow-sm sm:px-2.5 sm:py-1 sm:text-[10px]"
+            style={{
+              backgroundColor: discountBg || '#f2c14e',
+              color: discountFg || '#000000',
+            }}
+          >
             {displayDiscount}
           </span>
         )}

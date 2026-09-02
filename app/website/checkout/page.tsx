@@ -26,6 +26,13 @@ const labelClass = 'mb-2 block text-sm font-semibold text-neutral-700'
 
 const TITLE_OPTIONS = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.']
 
+/** Safe numeric parser for min/max purchase, used when settings contain ''/null/number/string-number. */
+function toNullableNum(v: string | number | null | undefined): number | null {
+  if (v == null || v === '') return null
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
 // ─── Order snapshot shown on receipt ──────────────────────────────────────────
 
 interface OrderSnapshot {
@@ -110,24 +117,75 @@ export default function CheckoutPage() {
       ? 0
       : deliveryFeeRaw
 
-  const packagingFee = settings.packagingCharge
+  const packagingFeeBase = settings.packagingCharge
+  const packagingFee = settings.packaging_incremental ? packagingFeeBase * items.length : packagingFeeBase
   const convenience  = settings.convenienceFee
 
   // ─── derived ──────────────────────────────────────────────────────────────
-  const tax            = Math.round(subtotal * TAX_RATE)
-  const grandTotal     = subtotal + tax + effectiveDeliveryFee + packagingFee + convenience
-  const checkoutNote   = settings.checkout_note
-  const orderTypeStr   = orderType as string
-  const estMins        = orderTypeStr === 'pickup'
-    ? settings.pickupTimeMinutes
-    : orderTypeStr === 'dinein'
-      ? settings.dineinTimeMinutes
-      : settings.deliveryTimeMinutes
-  const typeMessage    = orderTypeStr === 'pickup'
-    ? settings.message_for_pickup
-    : orderTypeStr === 'dinein'
-      ? settings.message_for_dinein
-      : settings.message_for_delivery
+  // Tax logic:
+  //   — If do_not_apply_tax_to_delivery_charges === TRUE (default behavior):
+  //     tax is calculated on subtotal only.
+  //   — If FALSE: delivery charges are included in the taxable base.
+  const taxableBase =
+    settings.do_not_apply_tax_to_delivery_charges === false
+      ? subtotal + effectiveDeliveryFee
+      : subtotal
+  const tax        = Math.round(taxableBase * TAX_RATE)
+  const grandTotal = subtotal + tax + effectiveDeliveryFee + packagingFee + convenience
+  const checkoutNote = settings.checkout_note
+  const orderTypeStr = orderType as string
+
+  // ── Global per-order-type min/max purchase amounts (numeric parsers) ──────
+  const globalMinByType: Record<string, number | null> = {
+    delivery: toNullableNum(settings.delivery_minimum_purchase_amount),
+    dinein:   toNullableNum(settings.dinein_minimum_purchase_amount),
+    pickup:   toNullableNum(settings.pickup_minimum_purchase_amount),
+  }
+  const globalMaxByType: Record<string, number | null> = {
+    delivery: toNullableNum(settings.delivery_maximum_purchase_amount),
+    dinein:   toNullableNum(settings.dinein_maximum_purchase_amount),
+    pickup:   toNullableNum(settings.pickup_maximum_purchase_amount),
+  }
+
+  // ── Estimated time: prefer branch-level (regular order) per-type, fallback to global ──
+  const estMins: number | null = (() => {
+    if (orderTypeStr === 'pickup') {
+      return settings.deliveryPickupTimeMinutes ?? settings.pickupTimeMinutes
+    }
+    if (orderTypeStr === 'dinein') {
+      return settings.deliveryDineinTimeMinutes ?? settings.dineinTimeMinutes
+    }
+    return settings.deliveryDeliveryTimeMinutes ?? settings.deliveryTimeMinutes
+  })()
+
+  // ── Per-type message: prefer branch-level (regular order), fallback to global ──
+  const typeMessage: string | undefined = (() => {
+    if (orderTypeStr === 'pickup') {
+      return settings.delivery_message_for_pickup ?? settings.message_for_pickup
+    }
+    if (orderTypeStr === 'dinein') {
+      return settings.delivery_message_for_dinein ?? settings.message_for_dinein
+    }
+    return settings.delivery_message_for_delivery ?? settings.message_for_delivery
+  })()
+
+  // ── Additional instruction message (regular order) ──
+  const instructionMessage = settings.delivery_message_instruction
+
+  // ── Minimum order validation:
+  //    Branch-level deliveryMinimumOrder takes precedence for delivery;
+  //    fallback to global per-order-type minimum.
+  //    sum_discount_in_minimum_order_amount = TRUE means compare subtotal
+  //    (discounts already netted into per-item prices, so comparison stays same).
+  const minimumOrder: number | null =
+    orderTypeStr === 'delivery'
+      ? (settings.deliveryMinimumOrder ?? globalMinByType['delivery'])
+      : (globalMinByType[orderTypeStr] ?? null)
+
+  const maximumOrder: number | null = globalMaxByType[orderTypeStr] ?? null
+  const meetsMinOrder = minimumOrder == null || subtotal >= minimumOrder
+  const meetsMaxOrder = maximumOrder == null || subtotal <= maximumOrder
+  const withinPurchaseBounds = meetsMinOrder && meetsMaxOrder
 
   const selectedAddr = apiAddresses.find(
     (a) => String(a.id) === formValues.selectedAddressId
@@ -138,7 +196,7 @@ export default function CheckoutPage() {
     formValues.guestMobile.trim() !== '' &&
     (orderType === 'pickup' || formValues.guestAddress.trim() !== '')
   const userReady  = items.length > 0 && (orderType === 'pickup' || !!selectedAddr)
-  const canPlace   = items.length > 0 && (user ? userReady : guestReady)
+  const canPlace   = items.length > 0 && withinPurchaseBounds && (user ? userReady : guestReady)
 
   const handleAddAddress = () => {
     const line = getValues('newAddrLine')
@@ -301,9 +359,31 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Per-order-type message + estimated time */}
-            {(typeMessage || estMins) && (
-              <div className="rounded-lg border border-neutral-200 bg-black/[0.02] px-4 py-3 text-sm text-neutral-700">
+            {/* Minimum order not met */}
+            {!meetsMinOrder && minimumOrder != null && (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <p className="font-bold text-amber-900">Minimum order amount not reached</p>
+                <p className="mt-0.5">
+                  Please add Rs. {Math.max(0, minimumOrder - subtotal).toLocaleString()} more to place your order.
+                  Subtotal: Rs. {subtotal.toLocaleString()} · Minimum: Rs. {minimumOrder.toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            {/* Maximum order exceeded */}
+            {!meetsMaxOrder && maximumOrder != null && (
+              <div className="rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <p className="font-bold text-rose-900">Maximum order amount exceeded</p>
+                <p className="mt-0.5">
+                  Please remove items to bring subtotal down by Rs. {(subtotal - maximumOrder).toLocaleString()}.
+                  Subtotal: Rs. {subtotal.toLocaleString()} · Maximum: Rs. {maximumOrder.toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            {/* Per-order-type message + estimated time + instruction */}
+            {(typeMessage || estMins || instructionMessage) && (
+              <div className="rounded-lg border border-neutral-200 bg-black/[0.02] px-4 py-3 text-sm text-neutral-700 space-y-1">
                 {estMins && (
                   <p className="font-bold text-black mb-0.5">
                     Estimated{' '}
@@ -312,6 +392,11 @@ export default function CheckoutPage() {
                   </p>
                 )}
                 {typeMessage && <p>{typeMessage}</p>}
+                {instructionMessage && (
+                  <p className="pt-1 border-t border-black/5 mt-1 text-neutral-600">
+                    <span className="font-semibold text-neutral-800">Instructions:</span> {instructionMessage}
+                  </p>
+                )}
               </div>
             )}
 
@@ -434,12 +519,14 @@ export default function CheckoutPage() {
                       <div className="space-y-2 rounded-lg border border-dashed border-neutral-300 p-4">
                         <input {...register('newAddrLine')} placeholder="Street address, area, landmark"
                           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]" />
-                        <select {...register('newAddrCity')}
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]">
-                          {['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad'].map((c) => (
-                            <option key={c}>{c}</option>
-                          ))}
-                        </select>
+                        {settings.enable_city_on_checkout && (
+                          <select {...register('newAddrCity')}
+                            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000]">
+                            {['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad'].map((c) => (
+                              <option key={c}>{c}</option>
+                            ))}
+                          </select>
+                        )}
                         <div className="flex gap-2">
                           <button type="button" onClick={handleAddAddress} disabled={apiAddrAdder.isPending}
                             className="flex-1 rounded-lg bg-black py-2 text-xs font-bold text-[#ffffff] hover:bg-red-700 disabled:opacity-50">

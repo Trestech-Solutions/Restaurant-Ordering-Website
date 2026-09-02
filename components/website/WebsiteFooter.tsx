@@ -4,9 +4,30 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
+import { useStoreSettings } from '@/lib/hooks/useCart'
+
+const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? ''
+const FALLBACK_LOGO = '/web/logo.webp'
+
+function resolveMediaUrl(path?: string | null): string {
+  if (!path || path.trim() === '') return FALLBACK_LOGO
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/')) {
+    const base = MEDIA_BASE.replace(/\/+$/, '').replace(/\/api$/i, '')
+    return base ? `${base}${path}` : FALLBACK_LOGO
+  }
+  return FALLBACK_LOGO
+}
 
 export function WebsiteFooter() {
   const [expanded, setExpanded] = useState(false)
+  const { settings } = useStoreSettings()
+  const androidIcon = resolveMediaUrl(settings.android_icon)
+  const iosIcon     = resolveMediaUrl(settings.ios_icon)
+  const androidLink = settings.android_app_link?.trim() || ''
+  const iosLink     = settings.ios_app_link?.trim() || ''
+  const showApps = (androidLink || iosLink) && Boolean(settings.android_icon || settings.ios_icon)
+  const merchantLogo = resolveMediaUrl(settings.merchant_logo)
 
   return (
     <footer className="bg-white pt-8 sm:pt-10">
@@ -51,9 +72,9 @@ export function WebsiteFooter() {
         {/* Brand / contact / social row */}
         <div className="flex flex-col items-center gap-8 border-b border-neutral-200 py-10 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           {/* Logo */}
-          <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full sm:h-36 sm:w-36">
+          <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full bg-white sm:h-36 sm:w-36">
             <Image
-              src="/web/logo.webp"
+              src={merchantLogo}
               alt="Angeethi"
               width={144}
               height={144}
@@ -74,6 +95,41 @@ export function WebsiteFooter() {
               <span className="font-semibold">Address:</span> Roshan Tower, Shop no 6 &amp; 7,
               Tipu Sultan Rd, Karachi, 75350
             </p>
+            {/* App download badges */}
+            {showApps && (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-3">
+                {androidLink && (
+                  <a
+                    href={androidLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-10 items-center gap-2 overflow-hidden rounded-lg border border-neutral-200 bg-black px-3 text-white shadow-sm hover:opacity-90"
+                  >
+                    <Image src={androidIcon} alt="Android app" width={22} height={22} className="object-contain"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }} />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-[9px] uppercase tracking-wide text-neutral-300">Get it on</span>
+                      <span className="text-sm font-bold">Android</span>
+                    </div>
+                  </a>
+                )}
+                {iosLink && (
+                  <a
+                    href={iosLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-10 items-center gap-2 overflow-hidden rounded-lg border border-neutral-200 bg-black px-3 text-white shadow-sm hover:opacity-90"
+                  >
+                    <Image src={iosIcon} alt="iOS app" width={22} height={22} className="object-contain"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }} />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-[9px] uppercase tracking-wide text-neutral-300">Download on the</span>
+                      <span className="text-sm font-bold">App Store</span>
+                    </div>
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Follow us + links */}

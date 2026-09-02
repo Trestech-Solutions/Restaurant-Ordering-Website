@@ -11,6 +11,7 @@ import { CartBar } from '@/components/cart/CartBar'
 import { WebsiteBootstrap } from '@/components/website/WebsiteBootstrap'
 import { WebsiteNavbar } from '@/components/website/WebsiteNavbar'
 import { WebsiteFooter } from '@/components/website/WebsiteFooter'
+import { WebsiteSkeleton } from '@/components/website/WebsiteSkeleton'
 import { AuthModal } from '@/components/auth/AuthModal'
 import { CorporateOrderModal } from '@/components/website/CorporateOrderModal'
 import { MenuDrawer } from '@/components/website/MenuDrawer'
@@ -33,10 +34,14 @@ export default function WebsiteLayout({ children }: { children: React.ReactNode 
 
 function WebsiteLayoutInner({ children }: { children: React.ReactNode }) {
   const { locationModalOpen, closeLocationModal } = useCart()
-  const { settings } = useStoreSettings()
+  const { settings, isLoading } = useStoreSettings()
   const [authModalOpen, setAuthModalOpen]           = useState(false)
   const [corporateModalOpen, setCorporateModalOpen] = useState(false)
   const [menuOpen, setMenuOpen]                     = useState(false)
+
+  // While the combine-menu API call is in-flight, show the full-page skeleton
+  // so the user never sees an unstyled / partial navbar before data is ready.
+  if (isLoading) return <WebsiteSkeleton />
 
   // Background: prefer menu_page_background_image → background_color → default pattern
   const bgImage = settings.menu_page_background_image || DEFAULT_PATTERN_URL
