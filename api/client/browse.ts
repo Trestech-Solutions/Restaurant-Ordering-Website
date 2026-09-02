@@ -226,22 +226,33 @@ export function useGetCities(options?: {
 
 // ─── Menu ──────────────────────────────────────────────────────────────────────
 
+const FALLBACK_BRANCH = 1;
+const FALLBACK_AREA   = 1;
+
 export function useGetMenu(params: {
   branchId: string | number | null;
   areaId?: string | number | null;
   onSuccess?: (data: MenuResponse) => void;
   onError?: (message: string) => void;
 }) {
-  const enabled = params.branchId !== null && params.branchId !== undefined;
+  // Treat NaN as null so we fall back to safe defaults
+  const rawBranch = typeof params.branchId === 'number' && isNaN(params.branchId) ? null : params.branchId;
+  const rawArea   = typeof params.areaId   === 'number' && isNaN(params.areaId)   ? null : params.areaId;
+
+  // Use fallbacks when branch is unavailable
+  const resolvedBranch = rawBranch ?? FALLBACK_BRANCH;
+  const resolvedArea   = rawArea   ?? FALLBACK_AREA;
+
+  const enabled = true; // always fetch — we always have a resolved branch
 
   const query = useQuery<MenuResponse, ApiError>({
-    queryKey: ['storefront-menu', params.branchId, params.areaId],
+    queryKey: ['storefront-menu', resolvedBranch, resolvedArea],
     queryFn: () => {
       const queryParams: Record<string, string | number> = {
-        branch: params.branchId as string | number,
+        branch: resolvedBranch,
       }
-      if (params.areaId !== null && params.areaId !== undefined) {
-        queryParams.area = params.areaId as string | number
+      if (resolvedArea !== null && resolvedArea !== undefined) {
+        queryParams.area = resolvedArea
       }
       return api
         .get<MenuResponse>(API_ENDPOINTS.StorefrontBrowse.getMenu, { params: queryParams })

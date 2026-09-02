@@ -3,7 +3,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   MapPin, Phone, Menu, ShoppingCart, MessageCircle,
 } from 'lucide-react'
@@ -35,7 +35,6 @@ export function WebsiteNavbar({
   onMenuClick,
 }: WebsiteNavbarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const { totalItems, openCart, location, openLocationModal } = useCart()
   const { settings } = useStoreSettings()
 
@@ -58,23 +57,8 @@ export function WebsiteNavbar({
   const showCartIcon = settings.show_cart_icon !== false
   const phoneIconType = settings.phone_icon_type || 'none'
 
-  const isCheckout = pathname === '/website/checkout'
-
   const handleLocationClick = () => {
-    const locLink = settings.location_link?.trim()
-    if (locLink) {
-      if (/^https?:\/\//i.test(locLink)) {
-        if (typeof window !== 'undefined') window.open(locLink, '_blank', 'noopener,noreferrer')
-        return
-      }
-      router.push(locLink)
-      return
-    }
-    if (isCheckout) {
-      router.push('/')
-    } else {
-      openLocationModal()
-    }
+    openLocationModal()
   }
 
   const isHome = pathname === '/' || pathname === '/website/home'
