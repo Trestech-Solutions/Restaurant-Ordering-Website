@@ -8,6 +8,9 @@ import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import {
   useGetCities,
   useGetAreasByCity,
+  useGetAreaDetail,
+  fetchAreaDetail,
+  resolveBranchId,
   locate,
 } from '@/api/client/browse'
 import type { Area, City } from '@/api/types'
@@ -70,6 +73,7 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
   const [selectedAreaId, setSelectedAreaId] = useState<string>('')
   const [geoLoading,    setGeoLoading]    = useState(false)
   const [geoError,      setGeoError]      = useState('')
+  const [confirming,    setConfirming]    = useState(false)
 
   const selectedCityObj = sortedCities.find((c) => String(c.id) === selectedCityId)
 
@@ -83,6 +87,12 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
 
   const areaList: Area[] = cityAreas ?? []
   const selectedAreaObj = areaList.find((a) => String(a.id) === selectedAreaId)
+
+  // ── Area Detail — loaded when an area is picked (canonical source of branch_id) ─
+  const {
+    data: areaDetail,
+    isLoading: loadingAreaDetail,
+  } = useGetAreaDetail(selectedAreaId || null)
 
   // Auto-select first city when cities load
   useEffect(() => {
@@ -166,41 +176,57 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
   }
 
   // ── Confirm ────────────────────────────────────────────────────────────────
-  const handleConfirm = () => {
+  async function handleConfirm() {
     if (!selectedCityId || !selectedAreaId || !selectedAreaObj) return
 
-    // Extract IDs from the selected Area object (as returned by backend):
-    //   area.id     → areaId
-    //   area.branch → branchId
-    const areaIdNum: number     = selectedAreaObj.id
-    const branchIdNum: number   = Number(selectedAreaObj.branch)
-    const cityName:  string     = selectedAreaObj.city_name  ?? selectedCityObj?.name ?? ''
-    const branchName: string    = selectedAreaObj.branch_name ?? ''
-    const areaName:   string    = selectedAreaObj.name
-    const displayLabel = orderType === 'pickup'
-      ? branchName || `${areaName}, ${cityName}`
-      : `${areaName}, ${cityName}`
+    setConfirming(true)
+    setGeoError('')
 
-    // Redux: store location slice (human-readable data)
-    setStoreLocation({
-      branchId:   branchIdNum,
-      branchName: branchName,
-      cityId:     selectedCityObj?.id ?? Number(selectedCityId),
-      cityName,
-      areaId:     areaIdNum,
-      areaName,
-      displayLabel,
-    })
+    try {
+      // ── Canonical step per user flow: call /storefront/areas/<id>/ to read branch_id ──
+      const detail = await fetchAreaDetail(selectedAreaId)
 
-    // Redux: order slice (the canonical branch/area IDs consumed by menu API)
-    setLocation(displayLabel)
-    setAreaId(areaIdNum)
-    setBranch(branchIdNum)
+      const resolvedBranchId = resolveBranchId(detail)
+      if (resolvedBranchId === undefined) {
+        setGeoError('Could not determine branch for this area. Please try again.')
+        return
+      }
 
-    onClose()
+      const areaIdNum: number   = detail.id
+      const branchIdNum: number = resolvedBranchId
+      const cityName:  string   = (detail as any).city_name  ?? selectedCityObj?.name ?? ''
+      const branchName: string  = (detail as any).branch_name ?? ''
+      const areaName:   string  = detail.name
+      const displayLabel = orderType === 'pickup'
+        ? branchName || `${areaName}, ${cityName}`
+        : `${areaName}, ${cityName}`
+
+      // Redux: store location slice (human-readable data)
+      setStoreLocation({
+        branchId:   branchIdNum,
+        branchName: branchName,
+        cityId:     selectedCityObj?.id ?? Number(selectedCityId),
+        cityName,
+        areaId:     areaIdNum,
+        areaName,
+        displayLabel,
+      })
+
+      // Redux: order slice (the canonical branch/area IDs consumed by menu API)
+      // Menu API call pattern: /storefront/menu/?branch=<branchId>&area=<areaId>
+      setLocation(displayLabel)
+      setAreaId(areaIdNum)
+      setBranch(branchIdNum)
+
+      onClose()
+    } catch (_err) {
+      setGeoError('Failed to load area details. Please try again.')
+    } finally {
+      setConfirming(false)
+    }
   }
 
-  const canConfirm = !!selectedCityId && !!selectedAreaId && !!selectedAreaObj
+  const canConfirm = !!selectedCityId && !!selectedAreaId && !!selectedAreaObj && !confirming
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -325,18 +351,25 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
             <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400" />
           </div>
 
-          {/* Branch preview — shows which branch is assigned by the area */}
+          {/* Branch preview — shows which branch is assigned by the area (from detail API) */}
           {selectedAreaObj && (
             <div className="mb-5 rounded-lg bg-neutral-50 px-3 py-3 space-y-1.5 border border-neutral-100">
               <p className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold sm:text-xs">
                 Assigned Outlet
               </p>
-              <p className="text-sm font-bold text-neutral-800">
-                {selectedAreaObj.branch_name || '—'}
-              </p>
+              {loadingAreaDetail && !(areaDetail ?? selectedAreaObj)?.branch_name ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-[#000000]" />
+                  <span className="text-xs text-neutral-500">Loading outlet…</span>
+                </div>
+              ) : (
+                <p className="text-sm font-bold text-neutral-800">
+                  {(areaDetail ?? selectedAreaObj)?.branch_name || '—'}
+                </p>
+              )}
               {orderType === 'delivery' && (
                 <p className="text-[11px] sm:text-xs text-neutral-500">
-                  Serving area: {selectedAreaObj.name}, {selectedAreaObj.city_name}
+                  Serving area: {selectedAreaObj.name}, {(areaDetail ?? selectedAreaObj)?.city_name ?? selectedCityObj?.name}
                 </p>
               )}
             </div>
@@ -345,9 +378,16 @@ export function OrderTypeModal({ onClose }: OrderTypeModalProps) {
           <button
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className="w-full rounded-xl bg-[#000000] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-40 sm:py-3 sm:text-sm"
+            className="w-full rounded-xl bg-[#000000] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-40 sm:py-3 sm:text-sm flex items-center justify-center gap-2"
           >
-            Confirm Location
+            {confirming ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Confirming…</span>
+              </>
+            ) : (
+              'Confirm Location'
+            )}
           </button>
         </div>
       </div>

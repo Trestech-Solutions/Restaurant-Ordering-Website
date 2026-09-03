@@ -289,6 +289,9 @@ export interface StoreSettingsDerived extends StoreSettings {
   convenienceFee: number
   /** free_delivery_above_subtotal parsed as number; Infinity means "never free" */
   freeDeliveryAboveSubtotal: number
+  /** Tax PERCENTAGE rate parsed from `tax_number` field (e.g. "18" → 0.18).
+   *  Falls back to DEFAULT_TAX_RATE when field is empty/invalid. */
+  taxPercentageRate: number
   /** delivery_time parsed as number (minutes) — global/legacy */
   deliveryTimeMinutes: number | null
   /** pickup_time parsed as number (minutes) — global/legacy */
@@ -335,6 +338,24 @@ function toPositiveNumberOrNull(
 
 function deriveSettings(raw: StoreSettings | undefined): StoreSettingsDerived {
   const r = (raw ?? {}) as StoreSettings
+
+  // Parse tax percentage from `tax_number` field:
+  //   e.g. "18" → 18% → multiplier 0.18
+  //   Also supports NUMBER (15) or STRING NUMBER ("15") —
+  //   we coerce to string first to avoid .trim() TypeError.
+  //   Empty, null, or invalid → fall back to DEFAULT_TAX_RATE (0.18).
+  const taxPercentNum = (() => {
+    const raw = r.tax_number
+    if (raw === null || raw === undefined) return NaN
+    const s = String(raw).trim()
+    if (!s) return NaN
+    const n = Number(s)
+    return Number.isFinite(n) ? n : NaN
+  })()
+  const taxPercentageRate = Number.isFinite(taxPercentNum)
+    ? taxPercentNum / 100
+    : DEFAULT_TAX_RATE
+
   return {
     ...r,
     deliveryFee:               toNumber(r.delivery_charges, 0),
@@ -344,6 +365,7 @@ function deriveSettings(raw: StoreSettings | undefined): StoreSettingsDerived {
       const n = toNumber(r.free_delivery_above_subtotal, NaN)
       return Number.isFinite(n) && n > 0 ? n : Infinity
     })(),
+    taxPercentageRate,
     deliveryTimeMinutes: toPositiveNumberOrNull(r.delivery_time),
     pickupTimeMinutes:   toPositiveNumberOrNull(r.pickup_time),
     dineinTimeMinutes:   toPositiveNumberOrNull(r.dinein_time),

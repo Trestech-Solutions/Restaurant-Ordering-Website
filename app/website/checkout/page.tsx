@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { CheckCircle, Circle, Plus, Bike, ArrowLeft, Navigation, Loader2 } from 'lucide-react'
 import {
   useCart, useStoreSettings,
-  DEFAULT_TAX_RATE, DEFAULT_DELIVERY_FEE,
+  DEFAULT_DELIVERY_FEE,
   type CartItem,
 } from '@/lib/hooks/useCart'
 import { UK_BRANCHES } from '@/components/website/OrderTypeModal'
@@ -17,7 +17,6 @@ import { PaymentSection } from '@/components/checkout/PaymentSection'
 import type { CheckoutFormValues } from '@/components/checkout/types'
 import OrderStatusTimeline, { ApprovalBanner } from '@/components/order/OrderStatusTimeline'
 
-const TAX_RATE = DEFAULT_TAX_RATE
 const UK_PHONE = '021-111-022-022'
 
 const inputClass =
@@ -130,7 +129,7 @@ export default function CheckoutPage() {
     settings.do_not_apply_tax_to_delivery_charges === false
       ? subtotal + effectiveDeliveryFee
       : subtotal
-  const tax        = Math.round(taxableBase * TAX_RATE)
+  const tax        = Math.round(taxableBase * settings.taxPercentageRate)
   const grandTotal = subtotal + tax + effectiveDeliveryFee + packagingFee + convenience
   const checkoutNote = settings.checkout_note
   const orderTypeStr = orderType as string

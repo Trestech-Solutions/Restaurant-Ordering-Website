@@ -5,12 +5,10 @@ import { X, Plus, Minus, Trash2, ArrowRight, ChevronLeft, ChevronRight, Plus as 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useCart } from '@/lib/hooks/useCart'
+import { useCart, DEFAULT_DELIVERY_FEE, useStoreSettings } from '@/lib/hooks/useCart'
 import { useStoreLocation } from '@/lib/hooks/useStoreLocation'
 import { useGetMenu } from '@/api/client/browse'
 
-const TAX_RATE     = 0.18
-const DELIVERY_FEE = 200
 const PLACEHOLDER  = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=400&auto=format&fit=crop'
 
 /** Resolves a relative /media/... path (as returned by the menu API) to a full
@@ -41,6 +39,7 @@ export function CartDrawer() {
     subtotal, orderType,
   } = useCart()
   const { branchId, areaId } = useStoreLocation()
+  const { settings } = useStoreSettings()
 
   const { data: menuData } = useGetMenu({ branchId, areaId })
 
@@ -50,8 +49,18 @@ export function CartDrawer() {
     .slice(0, 8)
 
   const scrollRef   = useRef<HTMLDivElement>(null)
-  const tax         = Math.round(subtotal * TAX_RATE)
-  const deliveryFee = orderType === 'delivery' ? DELIVERY_FEE : 0
+  const tax         = Math.round(subtotal * settings.taxPercentageRate)
+
+  // Delivery fee from settings, fallback to DEFAULT_DELIVERY_FEE
+  const deliveryFeeRaw = orderType === 'delivery'
+    ? (settings.deliveryFee > 0 ? settings.deliveryFee : DEFAULT_DELIVERY_FEE)
+    : 0
+  // Free delivery if subtotal meets threshold (settings.freeDeliveryAboveSubtotal maps free_delivery_above_subtotal)
+  const deliveryFee =
+    orderType === 'delivery' && subtotal >= settings.freeDeliveryAboveSubtotal
+      ? 0
+      : deliveryFeeRaw
+
   const grandTotal  = subtotal + tax + deliveryFee
   const { date, time } = fmtDateTimeDelivery()
 
@@ -161,7 +170,7 @@ export function CartDrawer() {
                   <span className="font-semibold text-neutral-800">Rs. {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">Tax 18%</span>
+                  <span className="text-neutral-600">Tax</span>
                   <span className="text-neutral-600">Rs. {tax.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">

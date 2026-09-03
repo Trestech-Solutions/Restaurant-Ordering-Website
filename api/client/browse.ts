@@ -20,6 +20,23 @@ import { useEffect as reactUseEffect } from 'react';
 
 export { extractErrorMessage } from '../types';
 
+// ─── Small helpers to normalise dual-naming (branch vs branch_id) in City/Area
+
+export function resolveBranchId(
+  obj: { branch?: number | string; branch_id?: number | string } | undefined | null,
+): number | undefined {
+  if (!obj) return undefined;
+  if (obj.branch_id !== undefined && obj.branch_id !== null && obj.branch_id !== '') {
+    const n = Number(obj.branch_id);
+    if (!isNaN(n)) return n;
+  }
+  if (obj.branch !== undefined && obj.branch !== null && obj.branch !== '') {
+    const n = Number(obj.branch);
+    if (!isNaN(n)) return n;
+  }
+  return undefined;
+}
+
 // ─── Branches ─────────────────────────────────────────────────────────────────
 
 export function useGetBranches(options?: {
@@ -134,6 +151,50 @@ export function useGetAreasByCity(options: {
   reactUseEffect(() => {
     if (query.error) {
       const msg = (query.error as ApiError)?.detail || 'Failed to load delivery areas';
+      toast.error(msg);
+      options?.onError?.(msg);
+    }
+  }, [query.error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return query;
+}
+
+// ─── Area Detail — fetch one area by ID (returns branch_id) ────────────────────
+
+/**
+ * Imperative helper: fetch `/storefront/areas/<id>/` and return the detail.
+ * This extracts the canonical `branch_id` for an area (per user flow: pick area →
+ * call detail API → read branch_id → save to Redux → use in /menu/?branch=X&area=Y).
+ */
+export async function fetchAreaDetail(areaId: number | string): Promise<Area> {
+  const res = await api.get<Area>(API_ENDPOINTS.StorefrontBrowse.getAreaDetail(areaId));
+  return res.data;
+}
+
+export function useGetAreaDetail(
+  areaId: number | string | null | undefined,
+  options?: {
+    onSuccess?: (data: Area) => void;
+    onError?: (message: string) => void;
+  }
+) {
+  const enabled = !!areaId && areaId !== '';
+
+  const query = useQuery<Area, ApiError>({
+    queryKey: ['storefront-area-detail', areaId],
+    queryFn: () => fetchAreaDetail(areaId!),
+    enabled,
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 90,
+  });
+
+  reactUseEffect(() => {
+    if (query.data && options?.onSuccess) options.onSuccess(query.data);
+  }, [query.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  reactUseEffect(() => {
+    if (query.error) {
+      const msg = (query.error as ApiError)?.detail || 'Failed to load area details';
       toast.error(msg);
       options?.onError?.(msg);
     }

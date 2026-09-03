@@ -377,7 +377,8 @@ export type City = {
   id: number;
   name: string;
   status?: boolean;
-  branch: number;          // FK to Branch
+  branch?: number;           // Legacy: FK to Branch
+  branch_id?: number;        // New storefront API: FK to Branch (per user's flow)
   branch_name?: string | null;
   latitude?: string | null;
   longitude?: string | null;
@@ -387,10 +388,12 @@ export type City = {
 export type Area = {
   id: number;
   name: string;
-  city: number;           // FK to City — always present per list response
-  city_name: string;      // read-only — always present per list response
-  branch: number;         // FK to Branch — extract this as the branchId
-  branch_name: string;    // read-only — always present per list response
+  city?: number;            // Legacy: FK to City (per list response)
+  city_id?: number;         // New: FK to City (storefront detail API)
+  city_name?: string;       // Legacy: read-only per list response
+  branch?: number;          // Legacy: FK to Branch
+  branch_id?: number;       // New storefront detail/list API: FK to Branch
+  branch_name?: string;     // Legacy: read-only per list response
   status?: boolean;
   latitude?: number | string | null;
   longitude?: number | string | null;

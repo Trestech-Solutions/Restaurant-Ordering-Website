@@ -11,15 +11,15 @@
         "delivery_status": true
     },
     "area": {
-        "id": 2,
-        "name": "DHA Phase 1",
+        "id": 5,
+        "name": "DHA Phase 4",
         "status": true,
         "branch_id": 1
     },
     "settings": {
         "id": 1,
         "date_added": "2026-08-10T20:23:36.737152Z",
-        "date_updated": "2026-09-02T16:02:24.300823Z",
+        "date_updated": "2026-09-03T15:38:04.364921Z",
         "merchant_logo": "/media/settings/merchant_logo/logo_d2ilsyF.webp",
         "menu_header": "default",
         "phone_icon_type": "none",
@@ -105,7 +105,7 @@
         "hide_delivery_instructions": false,
         "hide_nearest_landmark": false,
         "hide_email_address": false,
-        "tax_number": "",
+        "tax_number": "15",
         "hide_thanks_page_animation": false,
         "free_delivery_above_subtotal": "1000",
         "close_store": false,
