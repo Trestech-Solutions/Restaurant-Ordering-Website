@@ -167,14 +167,14 @@ export function WebsiteFooter() {
 
         {/* Bottom copyright */}
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-neutral-500">
-          <span>© {new Date().getFullYear()} Powered by</span>
-          <Image
+          <span>© {new Date().getFullYear()} All Rights Reserved</span>
+          {/* <Image
             src="https://assets.indolj.io/upload/indolj-logo.png"
             alt="Indolj"
             width={80}
             height={20}
             className="h-4 w-auto object-contain sm:h-5"
-          />
+          /> */}
         </div>
       </div>
     </footer>
