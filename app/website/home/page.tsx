@@ -16,13 +16,7 @@ import { CATEGORIES as FALLBACK_CATS, ALL_PRODUCTS as FALLBACK_PRODS, type Categ
 import { useGetMenu } from '@/api/client/browse'
 import { isDealActiveNowPKT } from '@/utils/dealTime'
 import type { ProductData } from '@/components/product/ProductCard'
-import type { MenuResponse, MenuItem, MenuFixedDeal, MenuOnSpotDeal } from '@/api/types'
-
-const HERO_SLIDES_FALLBACK = [
-  { id: 'slide-1', image: '/web/b1.webp', title: 'mango' },
-  { id: 'slide-2', image: '/web/b2.webp', title: 'mango' },
-  { id: 'slide-3', image: '/web/b3.webp', title: 'mango' },
-]
+import type { MenuResponse, MenuItem, MenuFixedDeal, MenuOnSpotDeal, MenuBanner } from '@/api/types'
 
 const DEFAULT_ICON = 'solar:cup-hot-bold-duotone'
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop'
@@ -544,8 +538,33 @@ type HeroSlide = {
   link?: string
 }
 
-/** Build hero slides from settings, falling back to local static ones when API data is empty. */
-function buildHeroSlides(settings: ReturnType<typeof useStoreSettings>['settings']): HeroSlide[] {
+/** Build hero slides from branch banners first, falling back to legacy settings.slide_image_N.
+ *  Returns an empty array if nothing is available — the hero section is then hidden.
+ *  Priority: 1) menu.banners (branch-wise banners — only if currently active), 2) settings.slide_image_N
+ */
+function buildHeroSlides(
+  settings: ReturnType<typeof useStoreSettings>['settings'],
+  banners: MenuBanner[] | undefined,
+): HeroSlide[] {
+  // 1) Branch-wise banners from menu API — only active (status + is_available_now) with an image
+  if (banners && banners.length > 0) {
+    const fromBanners = banners
+      .filter((b) => b.status === true && b.is_available_now === true)
+      .map((b) => {
+        const img = resolveMediaUrl(b.banner_image)
+        if (!img) return null
+        return {
+          id: `banner-${b.id}`,
+          image: img,
+          title: b.title || undefined,
+          link: b.url && b.url.trim() !== '' ? b.url : undefined,
+        }
+      })
+      .filter((s) => s !== null) as HeroSlide[]
+    if (fromBanners.length > 0) return fromBanners
+  }
+
+  // 2) Settings legacy slides (slide_image_1..4, heading/description/color/link per slide)
   const indices: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4]
   const fromSettings = indices
     .map((i) => {
@@ -565,8 +584,7 @@ function buildHeroSlides(settings: ReturnType<typeof useStoreSettings>['settings
     })
     .filter((s) => s !== null) as HeroSlide[]
 
-  if (fromSettings.length > 0) return fromSettings
-  return HERO_SLIDES_FALLBACK
+  return fromSettings
 }
 
 export default function HomePage() {
@@ -586,8 +604,13 @@ export default function HomePage() {
     areaId: numericArea,
   })
 
-  // ── Hero slides: prefer settings.slide_image_N, fallback to static files ─
-  const HERO_SLIDES = useMemo(() => buildHeroSlides(settings), [settings])
+  // ── Hero slides priority: 1) menu.banners, 2) settings.slide_image_N (empty = hide hero) ──
+  const HERO_SLIDES = useMemo(
+    () => buildHeroSlides(settings, menu?.banners),
+    [settings, menu?.banners],
+  )
+
+  const heroActive = HERO_SLIDES.length > 0
 
   const { categories, products, idPairs } = useMemo(() => transformMenu(menu), [menu])
 
@@ -609,13 +632,18 @@ export default function HomePage() {
   }, [categories, activeCategoryId])
 
   const goToSlide = useCallback((index: number) => {
+    if (HERO_SLIDES.length === 0) return
     setCurrentSlide((index + HERO_SLIDES.length) % HERO_SLIDES.length)
-  }, [])
+  }, [HERO_SLIDES.length])
 
   reactUseEffect(() => {
+    if (HERO_SLIDES.length === 0) {
+      setCurrentSlide(0)
+      return
+    }
     const t = setInterval(() => setCurrentSlide((p) => (p + 1) % HERO_SLIDES.length), 4500)
     return () => clearInterval(t)
-  }, [])
+  }, [HERO_SLIDES.length])
 
   const handleCategoryChange = (catId: string) => {
     const cat = categories.find((c) => c.id === catId)
@@ -659,8 +687,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen font-sans text-neutral-800">
-      {/* Hero carousel — black inset card, rounded, with floating arrows + pill pagination */}
-      <section className="bg-white px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
+      {/* Hero carousel — only rendered when banners or legacy slides are available */}
+      {heroActive && (
+        <section className="bg-white px-4 py-4 sm:px-6 sm:py-6 md:px-10 md:py-8">
         <div className="relative mx-auto h-[20vh] w-full max-w-[1400px] overflow-hidden rounded-2xl border border-white/10 sm:h-[40vh] sm:rounded-3xl md:h-[55vh] lg:h-[70vh] xl:h-[75vh]">
           {HERO_SLIDES.map((s, i) => {
             const isActive = i === currentSlide
@@ -754,7 +783,8 @@ export default function HomePage() {
             </div>
           )}
         </div>
-      </section>
+        </section>
+      )}
 
       {/* Category nav — sticks right below hero */}
       <CategoryNav

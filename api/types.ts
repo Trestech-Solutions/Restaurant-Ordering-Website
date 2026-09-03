@@ -575,6 +575,8 @@ export type MenuResponse = {
   // Deals — injected at top-level alongside menu
   fixed_deals?:    MenuFixedDeal[];
   on_spot_deals?:  MenuOnSpotDeal[];
+  // Branch-wise promotional banners (shown in hero carousel)
+  banners?:        MenuBanner[];
   // Legacy fallback
   categories?:      MenuCategory[];
 };
@@ -635,6 +637,21 @@ export type MenuOnSpotDealGroup = {
     status: boolean;
   } | null;
   options: MenuOnSpotDealGroupOption[];
+};
+
+/** Branch-wise banner as returned inside the menu endpoint response. */
+export type MenuBanner = {
+  id: number;
+  title: string;
+  url: string;
+  banner_image: string | null;
+  status: boolean;
+  valid_from_date: string | null;
+  valid_to_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  /** true if the current local time falls within the daily time window (if set). */
+  is_available_now: boolean;
 };
 
 /** Shape of a Fixed Deal as returned inside the menu endpoint response. */

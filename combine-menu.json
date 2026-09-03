@@ -11,15 +11,15 @@
         "delivery_status": true
     },
     "area": {
-        "id": 15,
-        "name": "Buffer Zone",
+        "id": 2,
+        "name": "DHA Phase 1",
         "status": true,
         "branch_id": 1
     },
     "settings": {
         "id": 1,
         "date_added": "2026-08-10T20:23:36.737152Z",
-        "date_updated": "2026-09-02T15:24:24.281355Z",
+        "date_updated": "2026-09-02T16:02:24.300823Z",
         "merchant_logo": "/media/settings/merchant_logo/logo_d2ilsyF.webp",
         "menu_header": "default",
         "phone_icon_type": "none",
@@ -27,7 +27,7 @@
         "hide_phone_from_header": false,
         "show_navbar": true,
         "logo_fit_to_navbar": false,
-        "logo_link": "https://angeethipk.com/_next/image?url=https%3A%2F…pload%2F1693475589-logo.webp%3Fq%3D10&w=3840&q=75",
+        "logo_link": "https://unitedking.trestechsolutions.com",
         "location_link": "https://maps.app.goo.gl/t7M3MD8PsctPYoqc6",
         "navbar_color": "#000000",
         "slide_image_1": null,
@@ -141,7 +141,7 @@
     "branch_settings": {
         "id": 1,
         "date_added": "2026-08-11T10:58:01.438900Z",
-        "date_updated": "2026-08-20T20:36:01.253691Z",
+        "date_updated": "2026-09-02T23:03:23.276362Z",
         "enable_city_on_checkout": false,
         "enable_save_my_info": false,
         "checkout_note": "Enjoy your meal buddy",
@@ -467,6 +467,32 @@
             ]
         }
     ],
+    "banners": [
+        {
+            "id": 5,
+            "title": "dd",
+            "url": "",
+            "banner_image": "/media/banners/b3_47jQtFS.webp",
+            "status": true,
+            "valid_from_date": null,
+            "valid_to_date": null,
+            "start_time": null,
+            "end_time": null,
+            "is_available_now": true
+        },
+        {
+            "id": 4,
+            "title": "dd",
+            "url": "",
+            "banner_image": "/media/banners/b2_J4RnH5Z.webp",
+            "status": true,
+            "valid_from_date": null,
+            "valid_to_date": null,
+            "start_time": null,
+            "end_time": null,
+            "is_available_now": true
+        }
+    ],
     "fixed_deals": [
         {
             "id": 2,
@@ -666,6 +692,29 @@
                     "quantity": 1
                 }
             ],
+            "branch_prices": [
+                {
+                    "id": 1,
+                    "branch": 1,
+                    "branch_name": "DHA Branch",
+                    "price": "10.00",
+                    "status": true
+                },
+                {
+                    "id": 2,
+                    "branch": 3,
+                    "branch_name": "North Nazimabad",
+                    "price": "20.00",
+                    "status": true
+                },
+                {
+                    "id": 3,
+                    "branch": 4,
+                    "branch_name": "gulshan branch",
+                    "price": "30.00",
+                    "status": true
+                }
+            ],
             "valid_from_date": "2026-08-01",
             "valid_to_date": "2026-12-31",
             "status": 1,
@@ -674,7 +723,8 @@
             "updated_by": 4,
             "updated_by_username": "admin",
             "date_added": "2026-08-28T11:24:33.682892Z",
-            "date_updated": "2026-08-30T21:44:07.068091Z"
+            "date_updated": "2026-08-30T21:44:07.068091Z",
+            "price_at_branch": "10.00"
         }
     ],
     "on_spot_deals": [
@@ -1103,6 +1153,29 @@
                     ]
                 }
             ],
+            "branch_prices": [
+                {
+                    "id": 1,
+                    "branch": 1,
+                    "branch_name": "DHA Branch",
+                    "price": "10.00",
+                    "status": true
+                },
+                {
+                    "id": 2,
+                    "branch": 3,
+                    "branch_name": "North Nazimabad",
+                    "price": "20.00",
+                    "status": true
+                },
+                {
+                    "id": 3,
+                    "branch": 4,
+                    "branch_name": "gulshan branch",
+                    "price": "30.00",
+                    "status": true
+                }
+            ],
             "valid_from_date": null,
             "valid_to_date": null,
             "start_time": null,
@@ -1114,6 +1187,7 @@
             "updated_by_username": "admin",
             "date_added": "2026-08-30T21:41:17.645951Z",
             "date_updated": "2026-08-30T22:13:44.057644Z",
+            "price_at_branch": "10.00",
             "is_available_now": true
         },
         {
@@ -1327,6 +1401,7 @@
                     ]
                 }
             ],
+            "branch_prices": [],
             "valid_from_date": null,
             "valid_to_date": null,
             "start_time": "00:00:00",
@@ -1338,6 +1413,7 @@
             "updated_by_username": "admin",
             "date_added": "2026-08-27T21:18:45.132132Z",
             "date_updated": "2026-08-28T18:51:21.297142Z",
+            "price_at_branch": "269.8380",
             "is_available_now": false
         }
     ],
@@ -2369,7 +2445,29 @@
                     "item_discount_type": "percentage",
                     "show_discount_tag": true,
                     "front_price": "700.00",
-                    "branch_prices": [],
+                    "branch_prices": [
+                        {
+                            "id": 1,
+                            "branch": 1,
+                            "branch_name": "DHA Branch",
+                            "price": "10.00",
+                            "status": true
+                        },
+                        {
+                            "id": 2,
+                            "branch": 3,
+                            "branch_name": "North Nazimabad",
+                            "price": "20.00",
+                            "status": true
+                        },
+                        {
+                            "id": 3,
+                            "branch": 4,
+                            "branch_name": "gulshan branch",
+                            "price": "30.00",
+                            "status": true
+                        }
+                    ],
                     "size_prices": [],
                     "created_by": 4,
                     "created_by_username": "admin",
@@ -2377,7 +2475,7 @@
                     "updated_by_username": "admin",
                     "date_added": "2026-08-21T11:38:27.950460Z",
                     "date_updated": "2026-08-21T12:48:00.378709Z",
-                    "price_at_branch": "700.00"
+                    "price_at_branch": "10.00"
                 },
                 {
                     "id": 8,
@@ -2979,7 +3077,29 @@
                     "item_discount_type": "percentage",
                     "show_discount_tag": true,
                     "front_price": "700.00",
-                    "branch_prices": [],
+                    "branch_prices": [
+                        {
+                            "id": 1,
+                            "branch": 1,
+                            "branch_name": "DHA Branch",
+                            "price": "10.00",
+                            "status": true
+                        },
+                        {
+                            "id": 2,
+                            "branch": 3,
+                            "branch_name": "North Nazimabad",
+                            "price": "20.00",
+                            "status": true
+                        },
+                        {
+                            "id": 3,
+                            "branch": 4,
+                            "branch_name": "gulshan branch",
+                            "price": "30.00",
+                            "status": true
+                        }
+                    ],
                     "size_prices": [],
                     "created_by": 4,
                     "created_by_username": "admin",
@@ -2987,7 +3107,7 @@
                     "updated_by_username": "admin",
                     "date_added": "2026-08-21T11:38:27.950460Z",
                     "date_updated": "2026-08-21T12:48:00.378709Z",
-                    "price_at_branch": "700.00"
+                    "price_at_branch": "10.00"
                 },
                 {
                     "id": 13,
@@ -3378,7 +3498,29 @@
                     "item_discount_type": "percentage",
                     "show_discount_tag": true,
                     "front_price": "700.00",
-                    "branch_prices": [],
+                    "branch_prices": [
+                        {
+                            "id": 1,
+                            "branch": 1,
+                            "branch_name": "DHA Branch",
+                            "price": "10.00",
+                            "status": true
+                        },
+                        {
+                            "id": 2,
+                            "branch": 3,
+                            "branch_name": "North Nazimabad",
+                            "price": "20.00",
+                            "status": true
+                        },
+                        {
+                            "id": 3,
+                            "branch": 4,
+                            "branch_name": "gulshan branch",
+                            "price": "30.00",
+                            "status": true
+                        }
+                    ],
                     "size_prices": [],
                     "created_by": 4,
                     "created_by_username": "admin",
@@ -3386,7 +3528,7 @@
                     "updated_by_username": "admin",
                     "date_added": "2026-08-21T11:38:27.950460Z",
                     "date_updated": "2026-08-21T12:48:00.378709Z",
-                    "price_at_branch": "700.00"
+                    "price_at_branch": "10.00"
                 },
                 {
                     "id": 12,
